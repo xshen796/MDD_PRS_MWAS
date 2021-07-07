@@ -1,0 +1,62 @@
+PRSice 2.3.3 (2020-08-05) 
+https://github.com/choishingwan/PRSice
+(C) 2016-2020 Shing Wan (Sam) Choi and Paul F. O'Reilly
+GNU General Public License v3
+If you use PRSice in any published work, please cite:
+Choi SW, O'Reilly PF.
+PRSice-2: Polygenic Risk Score Software for Biobank-Scale Data.
+GigaScience 8, no. 7 (July 1, 2019)
+2021-06-02 12:46:54
+/exports/igmm/eddie/GenScotDepression/shen/Tools/PRSice/PRSice_linux \
+    --a1 A1 \
+    --a2 A2 \
+    --allow-inter  \
+    --bar-levels 5e-08,1 \
+    --base /exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice \
+    --beta  \
+    --binary-target T \
+    --bp BP \
+    --chr CHR \
+    --interval 5e-05 \
+    --lower 5e-08 \
+    --no-clump  \
+    --num-auto 22 \
+    --out PRSice \
+    --pheno /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/GS_loo_PRS/dummy.MDD.GS \
+    --pheno-col dummy_MDD \
+    --pvalue P \
+    --seed 1387781433 \
+    --snp SNP \
+    --stat BETA \
+    --target /exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA_nodupvar \
+    --thread 5 \
+    --upper 0.5
+
+Warning: Intermediate not required. Will not generate 
+         intermediate file 
+
+Initializing Genotype file: 
+/exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA_nodupvar 
+(bed) 
+
+Start processing 
+23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta 
+================================================== 
+
+Base file: 
+/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice 
+Header of file is: 
+
+SNP	A1	A2	Freq1	FreqSE	MinFreq	MaxFreq	BETA	SE	P	Direction	CHR	BP 
+
+8123891 variant(s) observed in base file, with: 
+1043683 variant(s) excluded as they are on unknown/sex 
+chromosome 
+1084028 ambiguous variant(s) excluded 
+
+Error: A total of 7456 duplicated SNP ID detected out of 
+       5958288 input SNPs! Valid SNP ID (post --extract / 
+       --exclude, non-duplicated SNPs) stored at 
+       PRSice.valid. You can avoid this error by using 
+       --extract PRSice.valid 
+

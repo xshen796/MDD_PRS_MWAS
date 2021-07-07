@@ -1,0 +1,660 @@
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr10.dose.vcf.gz
+	--exclude-positions chr10_ExcludePositions.txt
+	--out chr10.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 1927503 out of a possible 1927503 Sites
+Run Time = 1278.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr11.dose.vcf.gz
+	--exclude-positions chr11_ExcludePositions.txt
+	--out chr11.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 1936990 out of a possible 1936990 Sites
+Run Time = 1268.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr12.dose.vcf.gz
+	--exclude-positions chr12_ExcludePositions.txt
+	--out chr12.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 1848117 out of a possible 1848117 Sites
+Run Time = 1176.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr13.dose.vcf.gz
+	--exclude-positions chr13_ExcludePositions.txt
+	--out chr13.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 1385433 out of a possible 1385433 Sites
+Run Time = 878.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr14.dose.vcf.gz
+	--exclude-positions chr14_ExcludePositions.txt
+	--out chr14.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 1266536 out of a possible 1266536 Sites
+Run Time = 812.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr15.dose.vcf.gz
+	--exclude-positions chr15_ExcludePositions.txt
+	--out chr15.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 1139215 out of a possible 1139215 Sites
+Run Time = 721.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr16.dose.vcf.gz
+	--exclude-positions chr16_ExcludePositions.txt
+	--out chr16.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 1281297 out of a possible 1281297 Sites
+Run Time = 825.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr17.dose.vcf.gz
+	--exclude-positions chr17_ExcludePositions.txt
+	--out chr17.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 1090072 out of a possible 1090072 Sites
+Run Time = 693.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr18.dose.vcf.gz
+	--exclude-positions chr18_ExcludePositions.txt
+	--out chr18.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 1104755 out of a possible 1104755 Sites
+Run Time = 726.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr19.dose.vcf.gz
+	--exclude-positions chr19_ExcludePositions.txt
+	--out chr19.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 868554 out of a possible 868554 Sites
+Run Time = 553.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr1.dose.vcf.gz
+	--exclude-positions chr1_ExcludePositions.txt
+	--out chr1.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 3069931 out of a possible 3069931 Sites
+Run Time = 1933.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr20.dose.vcf.gz
+	--exclude-positions chr20_ExcludePositions.txt
+	--out chr20.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 884983 out of a possible 884983 Sites
+Run Time = 570.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr21.dose.vcf.gz
+	--exclude-positions chr21_ExcludePositions.txt
+	--out chr21.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 531276 out of a possible 531276 Sites
+Run Time = 353.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr22.dose.vcf.gz
+	--exclude-positions chr22_ExcludePositions.txt
+	--out chr22.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 524544 out of a possible 524544 Sites
+Run Time = 332.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr2.dose.vcf.gz
+	--exclude-positions chr2_ExcludePositions.txt
+	--out chr2.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 3392237 out of a possible 3392237 Sites
+Run Time = 2252.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr3.dose.vcf.gz
+	--exclude-positions chr3_ExcludePositions.txt
+	--out chr3.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 2821894 out of a possible 2821894 Sites
+Run Time = 1789.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr4.dose.vcf.gz
+	--exclude-positions chr4_ExcludePositions.txt
+	--out chr4.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 2787581 out of a possible 2787581 Sites
+Run Time = 1796.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr5.dose.vcf.gz
+	--exclude-positions chr5_ExcludePositions.txt
+	--out chr5.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 2588168 out of a possible 2588168 Sites
+Run Time = 1686.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr6.dose.vcf.gz
+	--exclude-positions chr6_ExcludePositions.txt
+	--out chr6.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 2460111 out of a possible 2460111 Sites
+Run Time = 1598.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr7.dose.vcf.gz
+	--exclude-positions chr7_ExcludePositions.txt
+	--out chr7.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 2289305 out of a possible 2289305 Sites
+Run Time = 1491.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr8.dose.vcf.gz
+	--exclude-positions chr8_ExcludePositions.txt
+	--out chr8.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 2242705 out of a possible 2242705 Sites
+Run Time = 1445.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr9.dose.vcf.gz
+	--exclude-positions chr9_ExcludePositions.txt
+	--out chr9.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 517 out of 517 Individuals
+Outputting VCF file...
+After filtering, kept 1686471 out of a possible 1686471 Sites
+Run Time = 1105.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr10.dose.vcf.gz
+	--exclude-positions chr10_ExcludePositions.txt
+	--out chr10.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 1927503 out of a possible 1927503 Sites
+Run Time = 2409.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr11.dose.vcf.gz
+	--exclude-positions chr11_ExcludePositions.txt
+	--out chr11.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 1936990 out of a possible 1936990 Sites
+Run Time = 2386.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr12.dose.vcf.gz
+	--exclude-positions chr12_ExcludePositions.txt
+	--out chr12.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 1848117 out of a possible 1848117 Sites
+Run Time = 2297.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr13.dose.vcf.gz
+	--exclude-positions chr13_ExcludePositions.txt
+	--out chr13.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 1385433 out of a possible 1385433 Sites
+Run Time = 1675.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr14.dose.vcf.gz
+	--exclude-positions chr14_ExcludePositions.txt
+	--out chr14.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 1266536 out of a possible 1266536 Sites
+Run Time = 1572.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr15.dose.vcf.gz
+	--exclude-positions chr15_ExcludePositions.txt
+	--out chr15.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 1139215 out of a possible 1139215 Sites
+Run Time = 1408.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr16.dose.vcf.gz
+	--exclude-positions chr16_ExcludePositions.txt
+	--out chr16.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 1281297 out of a possible 1281297 Sites
+Run Time = 1609.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr17.dose.vcf.gz
+	--exclude-positions chr17_ExcludePositions.txt
+	--out chr17.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 1090072 out of a possible 1090072 Sites
+Run Time = 1358.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr18.dose.vcf.gz
+	--exclude-positions chr18_ExcludePositions.txt
+	--out chr18.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 1104755 out of a possible 1104755 Sites
+Run Time = 1375.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr19.dose.vcf.gz
+	--exclude-positions chr19_ExcludePositions.txt
+	--out chr19.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 868554 out of a possible 868554 Sites
+Run Time = 1072.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr1.dose.vcf.gz
+	--exclude-positions chr1_ExcludePositions.txt
+	--out chr1.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 3069931 out of a possible 3069931 Sites
+Run Time = 3770.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr20.dose.vcf.gz
+	--exclude-positions chr20_ExcludePositions.txt
+	--out chr20.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 884983 out of a possible 884983 Sites
+Run Time = 1105.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr21.dose.vcf.gz
+	--exclude-positions chr21_ExcludePositions.txt
+	--out chr21.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 531276 out of a possible 531276 Sites
+Run Time = 658.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr22.dose.vcf.gz
+	--exclude-positions chr22_ExcludePositions.txt
+	--out chr22.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 524544 out of a possible 524544 Sites
+Run Time = 664.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr2.dose.vcf.gz
+	--exclude-positions chr2_ExcludePositions.txt
+	--out chr2.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 3392237 out of a possible 3392237 Sites
+Run Time = 4201.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr3.dose.vcf.gz
+	--exclude-positions chr3_ExcludePositions.txt
+	--out chr3.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 2821894 out of a possible 2821894 Sites
+Run Time = 3511.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr4.dose.vcf.gz
+	--exclude-positions chr4_ExcludePositions.txt
+	--out chr4.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 2787581 out of a possible 2787581 Sites
+Run Time = 3475.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr5.dose.vcf.gz
+	--exclude-positions chr5_ExcludePositions.txt
+	--out chr5.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 2588168 out of a possible 2588168 Sites
+Run Time = 3334.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr6.dose.vcf.gz
+	--exclude-positions chr6_ExcludePositions.txt
+	--out chr6.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 2460111 out of a possible 2460111 Sites
+Run Time = 3010.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr7.dose.vcf.gz
+	--exclude-positions chr7_ExcludePositions.txt
+	--out chr7.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 2289305 out of a possible 2289305 Sites
+Run Time = 2845.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr8.dose.vcf.gz
+	--exclude-positions chr8_ExcludePositions.txt
+	--out chr8.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 2242705 out of a possible 2242705 Sites
+Run Time = 2791.00 seconds
+
+VCFtools - v0.1.13
+(C) Adam Auton and Anthony Marcketta 2009
+
+Parameters as interpreted:
+	--gzvcf chr9.dose.vcf.gz
+	--exclude-positions chr9_ExcludePositions.txt
+	--out chr9.dose_clean
+	--recode
+
+Using zlib version: 1.2.7
+After filtering, kept 1005 out of 1005 Individuals
+Outputting VCF file...
+After filtering, kept 1686471 out of a possible 1686471 Sites
+Run Time = 2123.00 seconds

@@ -1,0 +1,38 @@
+
+SEPARATOR WHITESPACE
+SCHEME STDERR
+GENOMICCONTROL ON
+MARKER rsid
+EFFECT beta
+PVALUE pval
+ALLELE a1 a2
+STDERRLABEL se
+
+
+PROCESS Processed//aparc-Desikan_lh_area_TotalSurface_InfoAdded
+PROCESS Processed//aparc-Desikan_rh_area_TotalSurface_InfoAdded
+OUTFILE Processed//aparc-Desikan_area_TotalSurface.metal.out .tbl
+
+ANALYZE 
+CLEAR
+
+
+
+SEPARATOR WHITESPACE
+SCHEME STDERR
+GENOMICCONTROL ON
+MARKER rsid
+EFFECT beta
+PVALUE pval
+ALLELE a1 a2
+STDERRLABEL se
+
+
+PROCESS Processed//aparc-Desikan_lh_thickness_GlobalMeanThickness_InfoAdded
+PROCESS Processed//aparc-Desikan_rh_thickness_GlobalMeanThickness_InfoAdded
+OUTFILE Processed//aparc-Desikan_thickness_GlobalMeanThickness.metal.out .tbl
+
+ANALYZE 
+CLEAR
+
+

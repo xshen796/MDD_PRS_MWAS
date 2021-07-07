@@ -1,0 +1,72 @@
+Lasso regression
+Started: Wed Jan  6 07:33:19 2021
+Methylation data folder: /exports/igmm/eddie/GenScotDepression/shen/bakup.dat/GS_methylation/EPIC_bothWaves
+Subject to include: data/GS_phenotype/wave1_all_ID.rds
+CpGs to include: data/methTraining/cpgList_MDDprs_assoc.rds
+Addition SNP CpGs to exclude: /exports/igmm/eddie/GenScotDepression/data/genscot/methylation/STRADL/Mvalues/SNP_CH_probes
+Phenotype file: data/methTraining/DNAm_training_pheno_MDD.rds
+Phenotype: resid.MDD_status
+Output file: data/methTraining/weights_wave1_residMDD_EPIC_MDDprs_e-8assoc_CpG.txt
+ 
+Methylation data loaded
+NCpG = 475
+N=3040
+Phenotype loaded
+[1] "/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/test.desc"
+Big.matrix transformed
+Lasso finished
+Lasso results saved
+Finished: Wed Jan  6 07:42:19 2021
+
+
+          used (Mb) gc trigger    (Mb)    max used     (Mb)
+Ncells 1821707 97.3    4018608   214.7     4018608    214.7
+Vcells 5540653 42.3 8273010600 63118.1 16158098438 123276.6
+Lasso regression
+Started: Wed Jan  6 07:42:28 2021
+Methylation data folder: /exports/igmm/eddie/GenScotDepression/shen/bakup.dat/GS_methylation/EPIC_bothWaves
+Subject to include: data/GS_phenotype/wave1_all_ID.rds
+CpGs to include: data/methTraining/cpgList_MDDprs_NOassoc.rds
+Addition SNP CpGs to exclude: /exports/igmm/eddie/GenScotDepression/data/genscot/methylation/STRADL/Mvalues/SNP_CH_probes
+Phenotype file: data/methTraining/DNAm_training_pheno_MDD.rds
+Phenotype: resid.MDD_status
+Output file: data/methTraining/weights_wave1_residMDD_EPIC_MDDprs_e-8_noassoc_CpG.txt
+ 
+Methylation data loaded
+NCpG = 635443
+N=3040
+Phenotype loaded
+[1] "/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/test.desc"
+Big.matrix transformed
+Lasso finished
+Lasso results saved
+Finished: Wed Jan  6 08:28:38 2021
+
+
+             used    (Mb)  gc trigger    (Mb)    max used     (Mb)
+Ncells    3196085   170.7     5870150   313.5     4018609    214.7
+Vcells 1943766796 14829.8 12409567100 94677.5 18187578556 138760.3
+Lasso regression
+Started: Wed Jan  6 08:28:50 2021
+Methylation data folder: /exports/igmm/eddie/GenScotDepression/shen/bakup.dat/GS_methylation/EPIC_bothWaves
+Subject to include: data/GS_phenotype/wave1_all_ID.rds
+CpGs to include: 
+Addition SNP CpGs to exclude: /exports/igmm/eddie/GenScotDepression/data/genscot/methylation/STRADL/Mvalues/SNP_CH_probes
+Phenotype file: data/methTraining/DNAm_training_pheno_MDD.rds
+Phenotype: resid.MDD_status
+Output file: data/methTraining/weights_wave1_residMDD_EPIC_wg_CpG.txt
+ 
+Methylation data loaded
+NCpG = 649386
+N=3040
+Phenotype loaded
+[1] "/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/test.desc"
+Big.matrix transformed
+Lasso finished
+Lasso results saved
+Finished: Wed Jan  6 09:14:04 2021
+
+
+             used    (Mb)  gc trigger    (Mb)    max used     (Mb)
+Ncells    3119335   166.6     5650820   301.8     4018739    214.7
+Vcells 1985343474 15147.0 12409567078 94677.5 18585601129 141796.9

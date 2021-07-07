@@ -1,0 +1,740 @@
+---
+title: "Supplementary Information"
+subtitle: "Methylome-wide association analysis of polygenic risk scores for depression"
+author: "Shen X. et al."
+output: 
+  word_document:
+    reference_docx: ref_style.docx
+bibliography: bibliography.bib
+csl: nature.csl
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(ggplot2)
+library(qqman)
+library(ggpubr)
+library(ggrepel)
+library(pbapply)
+library(tidyverse)
+library(data.table)
+library(tibble)
+library(flextable)
+library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)   # Data management
+library(LDlinkR)
+
+source(here::here('MR_meth_MDD/FUNs/manhattan_plot_XShen.R')) # EWAS manhattan plot
+
+set_flextable_defaults(
+  font.family = "Calibri", 
+  font.size = 9,
+  font.color = "black",
+  table.layout = "autofit",
+  digits = 3,
+  text.align = "center",
+  theme_fun = "theme_booktabs"
+  )
+```
+
+\newpage
+
+## Methods
+
+### Additional information for Avon Longitudinal Study of Parents and Children (ALSPAC)
+
+Pregnant women resident in Avon, UK with expected dates of delivery 1st April 1991 to 31st December 1992 were invited to take part in the study. The initial number of pregnancies enrolled is 14,541 (for these at least one questionnaire has been returned or a "Children in Focus" clinic had been attended by 19/07/99). Of these initial pregnancies, there was a total of 14,676 foetuses, resulting in 14,062 live births and 13,988 children who were alive at 1 year of age. When the oldest children were approximately 7 years of age, an attempt was made to bolster the initial sample with eligible cases who had failed to join the study originally. As a result, when considering variables collected from the age of seven onwards (and potentially abstracted from obstetric notes) there are data available for more than the 14,541 pregnancies mentioned above. The number of new pregnancies not in the initial sample (known as Phase I enrolment) that are currently represented on the built files and reflecting enrolment status at the age of 24 is 913 (456, 262 and 195 recruited during Phases II, III and IV respectively), resulting in an additional 913 children being enrolled. The phases of enrolment are described in more detail in the cohort profile paper and its update (see footnote 4 below). The total sample size for analyses using any data collected after the age of seven is therefore 15,454 pregnancies, resulting in 15,589 foetuses. Of these 14,901 were alive at 1 year of age. A 10% sample of the ALSPAC cohort, known as the Children in Focus (CiF) group, attended clinics at the University of Bristol at various time intervals between 4 to 61 months of age. The CiF group were chosen at random from the last 6 months of ALSPAC births (1432 families attended at least one clinic). Excluded were those mothers who had moved out of the area or were lost to follow-up, and those partaking in another study of infant development in Avon.
+
+Study data were collected and managed using REDCap electronic data capture tools hosted at the University of Bristol [@harris2009]. REDCap (Research Electronic Data Capture) is a secure, web-based software platform designed to support data capture for research studies.
+
+### Covarying confounders in the methylome-wide association study (MWAS)
+
+#### Generation Scotland: **Scottish Family Health Study (GS)**
+
+Technical confounders were pre-corrected. This was achived by residualising m-values against genetic relationship matrix (GRM), batch and estimated cell proportions. GRM was generated using PLINK2.0[@yang2011] and was corrected in set 1 only, as participants were unrelated in set 2. Other covariates were fitted in the MWAS regression model, which include: age, sex, pack years, ever smoked tobacco and the first 20 principal components of the methylation data.
+
+Ever smoked tobacco was an ordinal variable. Participants were asked to choose from one of the following responses: 'Yes, currently smoke' (= 3), 'Yes, but stopped within the past 12 months' (= 2), 'Yes, but stopped for more than 12 months ago' (= 1) and 'No, never smoked' (= 0). This variable was set as factor in all analyses using R.
+
+Principal components of the methylation data was derived using the 'FactoMineR' R package (version 2.4)[@FactoMineR2008]. This step was conducted on the m-values pre-corrected for technical confounders.
+
+#### Lothian Birth Cohort (LBC) 1921 and LBC 1936
+
+All participants were unrelated within each cohort itself and between the two cohorts. All covariates were fitted in the MWAS regression model, which include: estimated cell proportions, batch, age, sex, ever smoked tobacco and the first 20 principal components of the methylation data.
+
+Ever smoked tobacco variable was ordinal and thus was set as factor in all analyses. Responses include: 'Current smoker' (= 2), 'Previous smoker' (= 1) and 'Never smoked' (= 0).
+
+Principal components of the methylation data was derived using the same method as GS.
+
+#### ALSPAC
+
+MWAS was conducted on parents and youth respectively. For each of the MWAS, only unrelated participants were included in the analyses. Procedures for selecting unrelated sample can be found in[@Caramaschi2020]. Covariates that were fitted in the MWAS analysis include: estimated cell proportions, age, sex, ever smoked tobacco, the first 15 variables derived from surrogate variable analysis and the first 10 genetic principal components.
+
+Ever smoked tobacco was asked around the time of blood draw for DNAm processing. Participants were asked to choose from either smoked (= 1) or not smoked (= 0).
+
+### Meta-analysis on MWAS results
+
+Meta-analysis was conducted using METAL (version published on 25/03/2011)[@Willer2010] using the fixed-effect inverse-variance method.
+
+For each individual analyses in the discovery and replication MWAS, meta-analysis was conducted to obtain an overall summary statistics of MWAS results. In the discovery analysis, MWAS on set 1 and set 2 GS data was conducted separately and then meta-analysed. In the replication analysis, MWAS was conducted on the two LBC cohorts together and ALSPAC adults. Summary statistics for replication analyses were then meta-analysed.
+
+A final meta-analysis on the discovery and replication MWAS (LBC cohorts and ALSPAC adults) was conducted and presented in the Supplementary Information.
+
+As there was extensive control for relatedness and population structure for MWAS in all cohorts, genomic control correction was not included in the analyses.
+
+### Enrichment for CpG genomic positions
+
+Enrichment test for CpG genomic positions was conducted to compare the numbers of CpG probes landed in each category for genomic position between those significantly associated with MDD PRS at pT=5×10^-8^ and those that did not show significant associations.
+
+Chi-square test for enrichment was conducted using the 'chisq.test' function in R ('stats' package, version 3.6.2). Pearson's Chi-squared test with Yates' continuity correction was used for the analysis.
+
+CpG positions were categorised using the 'Relation_to_Island' column from the annotation object derived using the 'IlluminaHumanMethylationEPICanno.ilm10b4.hg19' R package (version 3.13). There were six categories according to the UCSC classification of CpG islands: Island (within a CpG island), N-shore (in the 2 kb upstream region of CpG island boundaries), S-shore (in the 2 kb downstream region of CpG island boundaries), N-shelf (in the 2-4kb upstream region of CpG island boundaries), S-shelf (in the 2-4kb downstream region of CpG island boundaries) and Open Sea.
+
+For each category, a chi-square test was performed on a 2×2 matrix of counts for CpG probes. Rows of the matrix are posistions of the target analysis and other positions, and columns are significant CpGs and non-significant CpGs. For example, when enrichment of the 'Island' position was tested, the matrix is consisted of counts (N) for significant CpGs within an Island (row 1, column 1), non-significant CpGs within an Island (row 1, column 2), significant CpGs outside of any Island (row 2, column 1) and non-significant outside of any Island (row 2, column 2).
+
+Results can be found in Supplementary Table 6.
+
+### Statistics for methylation quantitative trait loci (mQTL)
+
+#### **Genetics of DNA Methylation Consortium** (GoDMC)
+
+GoDMC(<http://www.godmc.org.uk/cohorts.html>) was established with the view of bringing together researchers with an interest in studying the genetic basis of DNA methylation variation, to consolidate as many resources and expertise as possible and thereby expedite this field of research[@min2020][.](https://www.medrxiv.org/content/10.1101/2020.09.01.20180406v1%7D.) The initial release of their findings consists of mQTL associations based on a sample size of 27,750 individuals. For the present study, LBC 1921, LBC 1936, GSK, and Brisbane Systems Genetics Study were removed from the mQTL meta-analysis as they were also included in the MDD GWAS by Howard *et al.*[@howard2019]. Details for the cohorts can be found at the GoDMC website . As a result, a total of \~25,000 participants were left in the meta-analysis, with no overlapping participants with GS and no overlapping cohort with the MDD GWAS[@howard2019].
+
+*Genotype data*
+
+Genotype data of all autosomes and chromosome X (if available) was imputed to 1000G reference panel and above using hg19/build37. Genotype data was filtered on an info score of 0.8 and a minor allele frequency (MAF) of 0.01. Genotype data was converted to best-guess data without a probability cut-off.
+
+*DNA methylation data*
+
+DNA methylation was measured in whole blood or cord blood using Illumina 450K or EPIC Beadchips in at least 100 European individuals. Normalized beta values were used, preferable normalized with the R package 'meffil' (version 1.1.1)@min2018. Most analysts used 'meffil' to quality control and normalize the DNA methylation data using functional normalization. Protocols can be found here: <https://github.com/perishky/meffil/wiki>.
+
+A github pipeline was implemented to run the analyses locally (<https://github.com/MRCIEU/godmc>) For the genotype data, several standard sample QC steps were performed including a sex check, removal of samples with \>5% missingness, and the identification and exclusion of ancestry outliers. In datasets of ostensibly unrelated individuals, those that were found to be related (identity by state \>0.125) were excluded.
+
+The pipeline then residualised the normalized methylation betas by replacing outliers that were 10 standard deviations from the mean (3 iterations) with the probe mean, rank transforming the normalized beta values and regressing out age, sex, predicted cell counts, predicted smoking, genetic principal components and non-genetic methylation principal components. In family-based cohorts, genetic relatedness matrices were constructed and relatedness adjusted for using the 'GRAMMAR' approach. Genomic lambdas were checked by performing a GWAS of probe cg07959070. These residualised methylation measurements were used in all analyses.
+
+*Association analysis*
+
+First, every study performed a full analysis of all candidate mQTL associations, returning only associations at a threshold of p\<1×10^-5^. All candidate mQTL associations at p\<1×10^~-5~^ were combined to create a unique 'candidate list' of mQTL associations. In total, 102,965,711 candidate mQTL associations in *cis* (p\<1×10^-5^, SNP located within 1Mb of the methylation site) and 710,638,230 candidate mQTL associations in *trans* were identified in at least one dataset. To avoid computational burden, we included *cis* associations found in at least one dataset and *trans* associations in at least two datasets. The candidate list (n=120,212,413) was then sent back to all cohorts and the association estimates obtained for every mQTL association on the candidate list. Meta analyses were run using a modified version of METAL using fixed-effect inverse-variance method[@Willer2010].
+
+#### GS
+
+Analysis of mQTL was conducted on DNAm data in GS for set 1 and set 2 separately. The OmicS-data-based Complex trait Analysis package was used for deriving mQTL summary statistics (<https://cnsgenomics.com/software/osca/>)[@zhang2019]. DNAm data and covariates were kept consistent with the MWAS. Genetic data used for the mQTL analysis was also used for calculating polygenic risk scores for depression. Finally, meta-analysis between set 1 and set 2 was conducted on the mQTL summary statistics for each CpG probe.
+
+\newpage
+
+## References
+
+::: {#refs}
+:::
+
+##### Supplementary Figure 1 (a-f). Manhattan plots for discovery MWAS on GS. Panels (a-i) are for PRSs at p thresholds 5×10^~-8~^, 1×10^~-6~^, 1×10^~-4~^, 1×10^~-3~^, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5 and 1.
+
+```{r, warning=F,echo=F,fig.width=8.3,fig.height=8}
+anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
+ref.tomerge <- anno %>% as.data.frame %>%
+  dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
+         Islands_Name,Relation_to_Island) %>%
+  filter(CHR!='chrX',CHR!='chrY') %>% 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) 
+
+discovery.summstats = list.files(here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/'),
+                                 recursive = T,pattern = 'ewas_meta',full.names = T) %>% 
+    .[!grepl('.info$',.)] %>% 
+    as.list %>% 
+    pblapply(.,read.delim,sep='\t',header=T,stringsAsFactors=F) %>% 
+    pblapply(.,dplyr::rename,CpG=MarkerName) %>% 
+    pblapply(.,left_join,y=ref.tomerge,by=c('CpG'='ID'))
+
+names(discovery.summstats) = list.files(here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/'),
+                                        recursive = T,pattern = 'ewas_meta',full.names = T) %>% 
+    .[!grepl('.info$',.)] %>% 
+    strsplit(.,'/') %>% 
+    lapply(.,function(x) tail(x,1)) %>% 
+    unlist %>% as.vector %>% 
+    gsub('ewas_meta_pT_','',.) %>% gsub('.metal.out1.tbl','',.)
+# Reorder by pT
+ls.input = data.frame(ls.name=names(discovery.summstats)) %>% 
+  mutate(pt=gsub('e_','e-',ls.name) %>% as.numeric) %>% 
+  .[order(.$pt,decreasing = F),]
+discovery.summstats = discovery.summstats[ls.input$ls.name]
+
+discovery.m_plots = discovery.summstats %>% 
+  pblapply(.,m_plot,chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,120))
+ggarrange(plotlist = discovery.m_plots[1:6],nrow = 3,ncol=2,labels = letters[1:6],font.label = list(size=8))
+
+```
+
+##### Supplementary Figure 1 (g-j). Manhattan plots for discovery MWAS on GS. Panels (a-i) are for PRSs at p thresholds 5×10^~-8~^, 1×10^~-6~^, 1×10^~-4~^, 1×10^~-3~^, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5 and 1.
+
+```{r,warning=F,echo=F,fig.width=8.3,fig.height=8*2/3}
+ggarrange(plotlist = discovery.m_plots[7:9],nrow = 2,ncol=2,labels = letters[7:9],font.label = list(size=8))
+```
+
+##### Supplementary Figure 2. Quantile-quantile plots for methylome-wide association studies (MWAS) of polygenic risk scores (PRS) for depression at p threshold of 5e-8 on Generation Scotland: Scottish Family Health Study (GS).
+
+```{r,warning=F,echo=F,fig.height=5,fig.width=5}
+load_summsdat <- function(tmp.fname){
+    ewas_res = read.delim(tmp.fname,sep='\t',header=T,stringsAsFactors=F)
+    return(ewas_res)
+}
+
+summstats.5e_08 = list.files(here::here('MR_meth_MDD/result/'),
+                                   recursive = T,pattern = '5e|0.00000005',full.names = T) %>% 
+  .[grep('MDD3_k_5e08|REPmeta_EWAS|ewas_meta_pT_0.00000005',.)] %>% 
+  .[!grepl('.info|.Rdata',.)] %>% as.list %>% 
+  pblapply(.,load_summsdat) 
+
+names(summstats.5e_08) = list.files(here::here('MR_meth_MDD/result/'),
+                                   recursive = T,pattern = '5e|0.00000005',full.names = T) %>% 
+  .[grep('MDD3_k_5e08|REPmeta_EWAS|ewas_meta_pT_0.00000005',.)] %>% 
+  .[!grepl('.info|.Rdata',.)] %>% strsplit(.,'/') %>% 
+    lapply(.,function(x) tail(x,2) %>% head(.,1)) 
+
+qqman::qq(summstats.5e_08$MDDprs_ewas_meta$P.value, cex=0.4, las=1)
+
+```
+
+##### Supplementary Figure 3. Supplementary MWAS investigating the MHC region. (a) MWAS for PRS calculated using the leading genetic risk variants. (b) MWAS for PRS calculated using genome-wide significant variants located outside of the MHC region.
+
+```{r, warning=F,echo=F,fig.width=8.3,fig.height=7}
+
+nomhc.summstats = list.files(here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/noMHC_and_gwsig/'),
+                                 recursive = T,pattern = 'ewas_BothWaves',full.names = T) %>% 
+    .[!grepl('.info$',.)] %>% 
+    as.list %>% 
+    pblapply(.,read.delim,sep='\t',header=T,stringsAsFactors=F) %>% 
+    pblapply(.,dplyr::rename,CpG=MarkerName) %>% 
+    pblapply(.,left_join,y=ref.tomerge,by=c('CpG'='ID'))
+
+names(discovery.summstats) = list.files(here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/noMHC_and_gwsig/'),
+                                        recursive = T,pattern = 'ewas_BothWaves',full.names = T) %>% 
+    .[!grepl('.info$',.)] %>% 
+    strsplit(.,'/') %>% 
+    lapply(.,function(x) tail(x,1)) %>% 
+    unlist %>% as.vector %>% 
+    gsub('ewas_BothWaves_','',.) %>% gsub('.metal.out1.tbl','',.)
+
+nomhc.m_plots = nomhc.summstats %>% 
+  pblapply(.,m_plot,chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,22))
+ggarrange(plotlist = nomhc.m_plots,nrow = 2,ncol=1,labels = c('a','b'),font.label = list(size=8))
+
+```
+
+##### Supplementary Figure 4 (a-f). Manhattan plots for replication MWAS on LBC 1921, LBC 1963 and ALSPAC adults. Panels (a-i) are for PRSs at p thresholds 5×10^~-8~^, 1×10^~-6~^, 1×10^~-4~^, 1×10^~-3~^, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5 and 1.
+
+```{r, warning=F,echo=F,fig.width=8.3,fig.height=8}
+replication.summstats = list.files(here::here('MR_meth_MDD/result/EWAS_MDDprs_meta_LBC_ALSPAC/'),
+                                 recursive = T,pattern = 'REPmeta',full.names = T) %>% 
+    .[!grepl('.info$',.)] %>% 
+    as.list %>% 
+    pblapply(.,read.delim,sep='\t',header=T,stringsAsFactors=F) %>% 
+    pblapply(.,dplyr::rename,CpG=MarkerName) %>% 
+    pblapply(.,left_join,y=ref.tomerge,by=c('CpG'='ID'))
+
+names(replication.summstats) = list.files(here::here('MR_meth_MDD/result/EWAS_MDDprs_meta_LBC_ALSPAC/'),
+                                        recursive = T,pattern = 'REPmeta',full.names = T) %>% 
+    .[!grepl('.info$',.)] %>% 
+    strsplit(.,'/') %>% 
+    lapply(.,function(x) tail(x,1)) %>% 
+    unlist %>% as.vector %>% 
+    gsub('REPmeta_EWAS_MDDprs_pT_','',.) %>% gsub('.metal.out1.tbl','',.)
+ls.input = data.frame(ls.name=names(replication.summstats)) %>% 
+  mutate(pt=gsub('e.','e-',ls.name) %>% as.numeric) %>% 
+  .[order(.$pt,decreasing = F),]
+replication.summstats = replication.summstats[ls.input$ls.name]
+
+replication.m_plots = replication.summstats %>% 
+  pblapply(.,m_plot,chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,120))
+ggarrange(plotlist = replication.m_plots[1:6],nrow = 3,ncol=2,labels = letters[1:6],font.label = list(size=8))
+```
+
+##### Supplementary Figure 4 (g-j). Manhattan plots for replication MWAS on LBC 1921, LBC 1963 and ALSPAC adults. Panels (a-i) are for PRSs at p thresholds 5×10^~-8~^, 1×10^~-6~^, 1×10^~-4~^, 1×10^~-3~^, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5 and 1.
+
+```{r,warning=F,echo=F,fig.width=8.3,fig.height=8*2/3}
+ggarrange(plotlist = replication.m_plots[7:9],nrow = 2,ncol=2,labels = letters[7:9],font.label = list(size=8))
+```
+
+##### Supplementary Figure 5. Quantile-quantile plots for replication MWAS of PRS for depression at p threshold of 5e-8 on Lothian Birth Cohort (LBC) 1921, LBC 1936 and Avon Longitudinal Study of Parents and Children (ALSPAC) adults.
+
+```{r,warning=F,echo=F,fig.height=5,fig.width=5}
+qqman::qq(summstats.5e_08$EWAS_MDDprs_meta_LBC_ALSPAC$P.value, cex=0.4, las=1)
+```
+
+##### Supplementary Figure 6 (a-f). Manhattan plots for replication MWAS ALSPAC children. Panels (a-i) are for PRSs at p thresholds 5×10^~-8~^, 1×10^~-6~^, 1×10^~-4~^, 1×10^~-3~^, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5 and 1.
+
+```{r, warning=F,echo=F,fig.width=8.3,fig.height=8}
+# load_youthdat <- function(tmp.fname){
+#     load(tmp.fname)
+#     ewas_res = ewas_res %>% mutate(P.value=P_VAL)
+#     return(ewas_res)
+# }
+youth.summstats = list.files(here::here('MR_meth_MDD/result/EWAS_MDDprs_ALSPAC/'),
+                                   recursive = T,pattern = 'MDD3_k_',full.names = T) %>% 
+    .[grep('.csv',.)] %>% 
+    .[!grepl('.info$|MDD3_k_102',.)] %>% 
+    as.list %>% 
+    pblapply(.,read.delim,sep='\t',header=T,stringsAsFactors=F) %>% 
+    pblapply(.,dplyr::rename,CpG=probeID) %>% 
+    pblapply(.,dplyr::mutate,P.value=P_VAL) %>%
+    pblapply(.,left_join,y=ref.tomerge,by=c('CpG'='ID'))
+
+names(youth.summstats) = list.files(here::here('MR_meth_MDD/result/EWAS_MDDprs_ALSPAC/'),
+                                   recursive = T,pattern = 'MDD3_k_',full.names = T) %>% 
+    .[grep('.csv',.)] %>% 
+    .[!grepl('.info$|MDD3_k_102',.)] %>%  
+    strsplit(.,'/') %>% 
+    lapply(.,function(x) tail(x,1)) %>% 
+    unlist %>% as.vector %>% 
+    gsub('MDD3_k_','',.) %>% gsub('_std_sex,age,child_smoke,pc1,pc2,pc3,pc4,pc5,pc6,pc7,pc8,pc9,pc10_houseman_2021-02-12.csv','',.)
+ls.input = data.frame(ls.name=names(youth.summstats)) %>% 
+  mutate(pt=gsub('e','e-',ls.name) %>% as.numeric) %>% 
+  .[order(.$pt,decreasing = F),]
+youth.summstats = youth.summstats[ls.input$ls.name]
+
+youth.m_plots = youth.summstats %>% 
+  pblapply(.,m_plot,chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,28))
+ggarrange(plotlist = youth.m_plots[1:6],nrow = 3,ncol=2,labels=letters[1:6],font.label = list(size=8))
+```
+
+##### Supplementary Figure 6 (g-j). Manhattan plots for replication MWAS ALSPAC children. Panels (a-i) are for PRSs at p thresholds 5×10^~-8~^, 1×10^~-6~^, 1×10^~-4~^, 1×10^~-3~^, 0.005, 0.01, 0.05, 0.1, 0.2, 0.5 and 1.
+
+```{r,warning=F,echo=F,fig.width=8.3,fig.height=8*2/3}
+ggarrange(plotlist = youth.m_plots[7:9],nrow = 2,ncol=2,labels = letters[7:9],font.label = list(size=8))
+```
+
+##### Supplementary Figure 7. Quantile-quantile plots for replication MWAS of PRS for depression at p threshold of 5×10^~-8~^ on ALSPAC children.
+
+```{r,warning=F,echo=F,fig.height=5,fig.width=5}
+qqman::qq(summstats.5e_08$EWAS_MDDprs_ALSPAC$P_VAL, cex=0.4, las=1)
+```
+
+##### Supplementary Figure 8. Regional association plots for the genetic loci showed associations with methylation levels at CpGs located in more than half of the distal autosomal chromosomes (window = 1Mb).
+
+![](/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/Figs/zoomlocus/zoomlocusplots.png){width="680" height="800"}
+
+##### Supplementary Figure 9. Scatter plot for discovery Mendelian randomisation (MR) of DNA methylation (DNAm) to depression (a-i).
+
+```{r, warning=F,echo=F}
+# Define function for loading scatter plots
+load_scatterplot <- function(tmp.fname){
+    load(tmp.fname)
+    return(fig.scatter)
+}
+```
+
+```{r, warning=F,echo=F,fig.width=8.3,fig.height=8.5}
+# Load figure data
+f.scatter = list.files(here::here('MR_meth_MDD/result/GoDMC_MR_DNAm_to_MDD/'),pattern = 'scatterplot.RData',recursive = T,full.names = T) 
+
+fig.names = f.scatter %>% strsplit(.,'/') %>% 
+  lapply(.,function(x) tail(x,1)) %>% unlist %>% 
+  gsub('_MDD_scatterplot.RData','',.)
+
+GoDMC.DNAm_to_MDD.scatterfig = f.scatter %>% as.list %>% 
+  pblapply(.,load_scatterplot) 
+names(GoDMC.DNAm_to_MDD.scatterfig) = fig.names
+
+# Reorder and select reliable causal associations
+
+mr.sig.discovery = readRDS(here::here('MR_meth_MDD/result/GoDMC_MR_DNAm_to_MDD/mr_SigOutput.rds'))
+ls.CpG.MR = mr.sig.discovery %>% .[order(.$ivw.p,decreasing = F),]
+
+targetplot = GoDMC.DNAm_to_MDD.scatterfig[ls.CpG.MR$exposure]
+
+# Combined the graphs
+ggarrange(plotlist = targetplot[1:9],ncol=3,nrow=3,
+          labels = letters[1:9],
+          font.label = list(size=8),common.legend =T)
+
+```
+
+##### Supplementary Figure 9. Scatter plot for discovery Mendelian randomisation (MR) of DNA methylation (DNAm) to depression (j-n).
+
+```{r,warning=F,echo=F,fig.width=8.3,fig.height=8.5}
+ggarrange(plotlist = targetplot[10:14],ncol=3,nrow=3,
+          labels = letters[10:14],
+          font.label = list(size=8),common.legend =T)
+```
+
+##### Supplementary Figure 10. Scatter plot for replication MR of DNAm to depression (a-i).
+
+```{r, warning=F,echo=F,fig.width=8.3,fig.height=8.5}
+# Load figure data
+f.scatter = list.files(here::here('MR_meth_MDD/result/GS_MR_DNAm_to_MDD/'),pattern = 'scatterplot.RData',recursive = T,full.names = T) 
+
+fig.names = f.scatter %>% strsplit(.,'/') %>% 
+  lapply(.,function(x) tail(x,1)) %>% unlist %>% 
+  gsub('_MDD_scatterplot.RData','',.)
+
+GS.DNAm_to_MDD.scatterfig = f.scatter %>% as.list %>% 
+  pblapply(.,load_scatterplot) 
+names(GS.DNAm_to_MDD.scatterfig) = fig.names
+
+# Reorder and select reliable causal associations
+
+mr.sig.discovery = readRDS(here::here('MR_meth_MDD/result/GoDMC_MR_DNAm_to_MDD/mr_SigOutput.rds'))
+ls.CpG.MR = mr.sig.discovery %>% .[order(.$ivw.p,decreasing = F),]
+
+targetplot = GS.DNAm_to_MDD.scatterfig[ls.CpG.MR$exposure]
+
+# Combined the graphs
+ggarrange(plotlist = targetplot[1:9],ncol=3,nrow=3,
+          labels = letters[1:9],
+          font.label = list(size=8),common.legend =T)
+
+```
+
+##### Supplementary Figure 10. Scatter plot for replication MR of DNAm to depression (j-n).
+
+```{r,warning=F,echo=F,fig.width=8.3,fig.height=8.5}
+ggarrange(plotlist = targetplot[10:14],ncol=3,nrow=3,
+          labels = letters[10:14],
+          font.label = list(size=8),common.legend =T)
+```
+
+##### Supplementary Figure 11. Scatter plot for MR of liability of depression to DNAm (a-i).
+
+```{r,warning=F,echo=F,fig.width=8.3,fig.height=8.5}
+# Load figure data
+f.scatter = list.files(here::here('MR_meth_MDD/result/GS_MR_MDD_to_DNAm/'),pattern = 'scatterplot.RData',recursive = T,full.names = T) 
+
+fig.names = f.scatter %>% strsplit(.,'/') %>% 
+  lapply(.,function(x) tail(x,1)) %>% unlist %>% 
+  gsub('_scatterplot.RData','',.) %>% 
+  gsub('MDD_','',.)
+
+GS.MDD_to_DNAm.scatterfig = f.scatter %>% as.list %>% 
+  pblapply(.,load_scatterplot) 
+names(GS.MDD_to_DNAm.scatterfig) = fig.names
+
+# Reorder and select reliable causal associations
+
+mr.sig.discovery = readRDS(here::here('MR_meth_MDD/result/GoDMC_MR_DNAm_to_MDD/mr_SigOutput.rds'))
+ls.CpG.MR = mr.sig.discovery %>% .[order(.$ivw.p,decreasing = F),]
+
+targetplot = GS.MDD_to_DNAm.scatterfig[ls.CpG.MR$exposure]
+
+# Combined the graphs
+ggarrange(plotlist = targetplot[1:9],ncol=3,nrow=3,
+          labels = letters[1:9],
+          font.label = list(size=8),common.legend =T)
+```
+
+##### Supplementary Figure 11. Scatter plot for MR of liability of depression to DNAm (j-n).
+
+```{r,warning=F,echo=F,fig.width=8.3,fig.height=8.5}
+ggarrange(plotlist = targetplot[10:14],ncol=3,nrow=3,
+          labels = letters[10:14],
+          font.label = list(size=8),common.legend =T)
+```
+
+##### Supplementary Table 1. Number of genetic variants used for calculating PRSs. pT = p threshold used for calculating PRS, N~SNP~ = total number of SNPs used for calculating PRS, N~noMHC~ = number of SNPs outside of the MHC region, N~MHC~ = number of SNPs within the MHC region.
+
+ 
+
+```{r Round up function, warning=F,echo=F}
+round_if <- function(x,tmp.digit=3){
+  new.x = format(x,scientific=T,digits=3)
+  new.x[abs(x)>0.001]=as.character(round(x,tmp.digit)[abs(x)>0.001])
+  new.x[x==0]='<1e-324'
+  return(new.x)
+}
+```
+
+```{r,warning=F,echo=FALSE}
+Nsnp_forPRS = fread(here::here('MR_meth_MDD/data/GS_genetic_meth/Nsnp_forPRS.txt')) %>% mutate_if(is.numeric, round_if)
+
+ft.table.s1 <- flextable(Nsnp_forPRS) %>% 
+  compose(part = "header", i = 1, j = 2,
+         value = as_paragraph('N',as_sub('SNP'))) %>% 
+  compose(part = "header", i = 1, j = 3,
+         value = as_paragraph('N',as_sub('noMHC'))) %>% 
+  compose(part = "header", i = 1, j = 4,
+         value = as_paragraph('N',as_sub('MHC')))
+  
+ft.table.s1
+```
+
+##### Supplementary Table 2. Association between PRSs and prevalence MDD. PRS pT = p threshold used for selecting SNPs for calculating PRS.
+
+ 
+
+```{r,warning=F,echo=F}
+PRS_predict_MDD = fread(here::here('MR_meth_MDD/result/MDDprs_predicion.txt')) %>% .[c(1:7,9:10),] %>% 
+  mutate(`PRS pT`=Nsnp_forPRS$pT,R2=R2*100) %>% 
+    mutate_if(is.numeric, round_if) %>% 
+  select(`PRS pT`,Beta=Estimate,
+         SE=`Std. Error`,p=`Pr(>|z|)`,
+         `R2 (%)`=R2) 
+
+ft.table.s2=flextable(PRS_predict_MDD)
+ft.table.s2
+```
+
+##### Supplementary Table 3. Association between PRSs and DNAm-estimated white-blood cell proportions.
+
+ 
+
+```{r,warning=F,echo=F,message=F}
+load(here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/Cell_proportion_MDDprs/Reg_res.RData'))
+cell_PRS = summ.res %>% as.data.frame %>% 
+  mutate_if(is.numeric, round_if) %>% 
+  mutate(PRS.pT=gsub('sex\\+age\\+ever_smoke\\+pack_years\\+Batch\\+wave\\+','',Var2)) %>% 
+  mutate(PRS.pT=gsub('SCORE_','',PRS.pT)) %>% 
+  mutate(PRS.pT=gsub('_',' ',PRS.pT)) %>% 
+  .[order(.$PRS.pT),] %>% 
+  select(`PRS pT/MDD`=PRS.pT,`Cell type`=Var1,
+         Beta=Estimate,
+         p=`Pr...t..`,)
+ft.table.s3 = as.list(unique(cell_PRS$`Cell type`)) %>% 
+  lapply(.,function(x) filter(cell_PRS,`Cell type`==x)) %>% 
+  lapply(.,select,-`Cell type`,-`PRS pT/MDD`) %>% 
+  bind_cols 
+ft.table.s3 = ft.table.s3 %>% 
+  mutate(`PRS pT/MDD`=unique(cell_PRS$`PRS pT/MDD`)) %>% 
+  select(`PRS pT/MDD`,everything()) %>% 
+  flextable %>% 
+  set_header_labels(Beta...1 = "Beta",p...2='p', Beta...3 = "Beta", p...4 = "p",
+    Beta...5 = "Beta",p...6='p',Beta...7 = "Beta",p...8='p',
+    Beta...9 = "Beta",p...10='p', Beta...11 = "Beta",p...12='p')
+ft.table.s3 = add_header_row(
+  x = ft.table.s3, values = c('',unique(cell_PRS$`Cell type`)),
+  colwidths = c(1,rep(2,length(unique(cell_PRS$`Cell type`)))))
+ft.table.s3
+```
+
+##### Supplementary Table 4. Genomic inflation factor for discovery, adult replication (LBC 1921 + LBC 1936 + ALSPAC adults) and adolescent replication (ALSPAC adolescents) MWAS.
+
+ 
+
+```{bash, warning=F, echo=F, eval=F}
+R CMD BATCH ../ANALY.MDDprs_EWAS/ANALY.ewas_lambda.R
+```
+
+```{r, warning=F,echo=F}
+table.lambda = read.table(here::here('MR_meth_MDD/result/lambda_MWAS_discovery_repAdult_repYouth.txt'),sep = '\t',header=T) %>% 
+  mutate_if(is.numeric, round_if) %>% 
+  dplyr::rename(`p threshold`=pT,`Discovery    `=GS.lambda,`Replication (adults)`=LBC_ALSPACadult.lambda,`Replication (adolescent)`=ALSPACyouth.lambda) 
+ft.table.s4 <- flextable(table.lambda) 
+ft.table.s4
+```
+
+##### Supplementary Table 5. Top CpG probes associated with PRS at pT = 5e-8. CHR=chromosome, BP=base pair position, SE = standard error, p.adj = Bonferroni-corrected p value, HetChiSq = Chi-square statistics for heterogeneity analysis, and HetPVal = p value for heterogeneity analysis.
+
+ 
+
+```{r,warning=F,echo=F}
+table.sigcpg.withMHC=fread(here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/top_CpG_withMHC.txt')) %>% 
+  select(CpG,CHR,BP=MAPINFO,Beta=Effect,SE=StdErr,p=P.value,p.adj,Direction,HetChiSq,HetPVal) %>% 
+  mutate(Location='With MHC region')
+
+table.sigcpg.noMHC=fread(here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/top_CpG_noMHC.txt')) %>% 
+  select(CpG,CHR,BP=MAPINFO,Beta=Effect,SE=StdErr,p=P.value,p.adj,Direction,HetChiSq,HetPVal) %>% 
+  mutate(Location='Without MHC region')
+
+table.sigcpg = rbind(table.sigcpg.withMHC,table.sigcpg.noMHC) %>% 
+  select(Location,everything()) %>% 
+  mutate_if(is.numeric, round_if) %>% 
+  flextable %>% 
+  merge_at(i=1:10,j=1) %>% 
+  merge_at(i=11:20,j=1)
+
+table.sigcpg
+```
+
+##### Supplementary Table 6. Descriptive statistics for CpG locations.
+
+ 
+
+```{r,warning=F,echo=F}
+location_mat=read.delim(here::here('MR_meth_MDD/result/location_mat.txt'),header=T) 
+
+ft.table.s6=location_mat %>% mutate_if(is.numeric, round_if) %>% 
+  dplyr::rename(`Relation to Island`=Relation_to_Island,
+        `Sig CpGs (% in Sig CpGs)`=sig,
+        `Non-sig CpGs (% in non-sig CpGs)`=non_sig,
+        `X squared`=X.squared,
+        `p`=p.value) %>% 
+  flextable 
+ft.table.s6
+```
+
+##### Supplementary Table 7. Results for discovery MR of DNAm to depression. N~SNP~ = Number of genetic instruments included in the analysis. IVW = inverse‐variance weighted, WM = weighted median, p.adj = FDR-corrected p value, p~Egger intercept~ = p value for Egger intercept evaluation, Q = Q statistics for heterogeneity, p~Q~ = p value for Q statistics.
+
+ 
+
+```{r,warning=F,echo=F}
+numerise_mr<-function(x){
+  x[,3:ncol(x)]=apply(x[,3:ncol(x)],MARGIN=2,as.numeric)
+  x=x[,!colnames(x) %in% c('sig_over3')] %>% 
+    select(-ends_with('.p'))
+  return(x)
+}
+
+mr.res = list.files(here::here('MR_meth_MDD/result/'),
+        recursive = T,pattern = 'mr_SigOutput.rds',full.names = T) %>% 
+    as.list %>% 
+    pblapply(.,readRDS) %>% 
+    pblapply(.,numerise_mr)
+
+topology=data.frame(col_keys=c('exposure','Nsnp',
+                               'ivw.beta','ivw.padj','wm.beta','wm.padj',
+                               'mregger.beta','mregger.padj',
+                               'Egger intercept','Egger pval','Q','Q pval'),
+                    what=c('','','IVW','IVW','WM','WM','MR Egger','MR Egger',
+                           rep('QC measures',4)),
+                    measure=c('Exposure','Nsnp',
+                              'Beta','p.adj','Beta','p.adj','Beta','p.adj',
+                              'Egger intercept','pEgger intercept','Q','pQ'),
+                    stringsAsFactors = F)
+
+ft.table.s7=mr.res[[1]] %>% 
+  select(-outcome) %>% 
+  mutate_if(is.numeric, round_if) %>%  
+  
+  flextable %>% 
+  set_header_df( mapping = topology, key = "col_keys" ) %>% 
+  merge_h(part = "header") %>% 
+  compose(part = "header", i = 2, j = 2,
+         value = as_paragraph('N',as_sub('SNP'))) %>% 
+  compose(part = "header", i = 2, j = 10,
+         value = as_paragraph('p',as_sub('Egger intercept'))) %>% 
+  compose(part = "header", i = 2, j = 12,
+         value = as_paragraph('p',as_sub('Q')))
+ft.table.s7
+```
+
+##### Supplementary Table 8. Results for replication MR of DNAm to depression. N~SNP~ = Number of genetic instruments included in the analysis. IVW = inverse‐variance weighted, WM = weighted median, p.adj = FDR-corrected p value, p~Egger intercept~ = p value for Egger intercept evaluation, Q = Q statistics for heterogeneity, p~Q~ = p value for Q statistics.
+
+ 
+
+```{r,warning=F,echo=F}
+ft.table.s8=mr.res[[2]] %>% select(-outcome) %>% select(-p,-p.1,-p.2) %>% 
+  mutate_if(is.numeric, round_if) %>% 
+  dplyr::rename(ivw.beta=beta,ivw.padj=padj,
+                wm.beta=beta.1,wm.padj=padj.1,
+                mregger.beta=beta.2,mregger.padj=padj.2) %>% 
+  flextable %>% 
+  set_header_df( mapping = topology, key = "col_keys" ) %>% 
+  merge_h(part = "header") %>% 
+  compose(part = "header", i = 2, j = 2,
+         value = as_paragraph('N',as_sub('SNP'))) %>% 
+  compose(part = "header", i = 2, j = 10,
+         value = as_paragraph('p',as_sub('Egger intercept'))) %>% 
+  compose(part = "header", i = 2, j = 12,
+         value = as_paragraph('p',as_sub('Q')))
+ft.table.s8
+```
+
+##### Supplementary Table 9. Results for multivariable MR of DNAm to depression.
+
+ 
+
+```{r,warning=F,echo=F}
+mvmr.res=fread(here::here('MR_meth_MDD/result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_MDD_mvMR.txt'))
+ft.table.s9=mvmr.res %>% mutate_if(is.numeric, round_if) %>%
+  select(-starts_with('id.')) %>% 
+  dplyr::select(Exposure=exposure,Outcome=outcome,Beta=b,SE=se,p=pval) %>% 
+  flextable %>% 
+  compose(part = "header", i = 1, j = 2,
+         value = as_paragraph('N',as_sub('SNP')))
+ft.table.s9
+```
+
+##### Supplementary Table 10. Results for MR of liability of depression to DNAm. N~SNP~ = Number of genetic instruments included in the analysis. IVW = inverse‐variance weighted, WM = weighted median, p.adj = FDR-corrected p value, p~Egger intercept~ = p value for Egger intercept evaluation, Q = Q statistics for heterogeneity, p~Q~ = p value for Q statistics.
+
+ 
+
+```{r,warning=F,echo=F}
+topology=data.frame(col_keys=c('outcome','Nsnp',
+                               'ivw.beta','ivw.padj','wm.beta','wm.padj',
+                               'mregger.beta','mregger.padj',
+                               'Egger intercept','Egger pval','Q','Q pval'),
+                    what=c('','','IVW','IVW','WM','WM','MR Egger','MR Egger',
+                           rep('QC measures',4)),
+                    measure=c('Outcome','Nsnp',
+                              'Beta','p.adj','Beta','p.adj','Beta','p.adj',
+                              'Egger intercept','pEgger intercept','Q','pQ'),
+                    stringsAsFactors = F)
+
+ft.table.s10=mr.res[[3]] %>% mutate_if(is.numeric, round_if) %>% 
+  select(-ends_with('.adj'),-exposure) %>% flextable %>% 
+  set_header_df( mapping = topology, key = "col_keys" ) %>% 
+  merge_h(part = "header") %>% 
+  compose(part = "header", i = 2, j = 2,
+         value = as_paragraph('N',as_sub('SNP'))) %>% 
+  compose(part = "header", i = 2, j = 10,
+         value = as_paragraph('p',as_sub('Egger intercept'))) %>% 
+  compose(part = "header", i = 2, j = 12,
+         value = as_paragraph('p',as_sub('Q')))
+ft.table.s10
+```
+
+##### Supplementary Data 1. MWAS summary statistics of PRS for depression at p threshold of 5×10^~-8~^~.~ CpG probes associated with PRS for depression at p threshold of 5×10^~-8~^ were included in the table.
+
+```{r Supplementary Data 1,warning=F,echo=F,eval=F}
+sig.discovery = summstats.5e_08$MDDprs_ewas_meta %>%
+  mutate(p.adj=p.adjust(P.value,method='bonferroni')) %>% 
+  filter(p.adj<0.05) %>% 
+  select(CpG=MarkerName,Beta=Effect,SE=StdErr,P=P.value,Direction,p.adj) 
+
+repli.adult = summstats.5e_08$EWAS_MDDprs_meta_LBC_ALSPAC %>% 
+  mutate(p.adj=p.adjust(P.value,method='bonferroni')) %>% 
+  select(CpG=MarkerName,Beta.rep_adult=Effect,SE.rep_adult=StdErr,
+         P.rep_adult=P.value,p.adj.rep_adult=p.adj)
+
+repli.adolescent = summstats.5e_08$EWAS_MDDprs_ALSPAC %>% 
+  mutate(p.adj=p.adjust(P_VAL,method='bonferroni')) %>% 
+  select(CpG=probeID,Beta.youth=BETA,SE.youth=SE,P.youth=P_VAL,p.adj.youth=p.adj)
+
+sig.res.MWAS = left_join(sig.discovery,repli.adult,by='CpG') %>% 
+  left_join(.,repli.adolescent,by='CpG') %>% 
+  left_join(.,y=ref.tomerge,by=c('CpG'='ID'))
+
+# Find if these CpGs locate in MDD GWAS risk regions
+paper.102=fread('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/GS_genetic_meth/ls.102SNP.GS.txt',header=T)
+# mdd_gwas=fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice')
+
+find_proxy <- function(tmp.input){
+  tmp.rs=tmp.input[1] 
+  tmp.bp=tmp.input[2] %>% as.numeric
+  tmp.proxy = LDproxy(tmp.rs,pop='CEU',r2d='r2',token = '81423ba617e2', file = FALSE)  %>% filter(R2>0.1)
+  tmp.region = str_split(as.character(tmp.proxy$Coord),':',simplify=T) %>% as.data.frame %>%
+    mutate(chr=gsub('chr','',V1) %>% as.numeric,bp=V2 %>% as.character %>% as.numeric)
+  output=data.frame(chr=unique(tmp.region$chr),
+                    bp.min=min(c(tmp.region$bp),tmp.bp-1000000),
+                    bp.max=max(c(tmp.region$bp),tmp.bp+1000000))
+  return(output)
+}
+
+MDD_gwas_range=paper.102 %>% select(MarkerName,BP) %>% 
+  transpose %>% as.list %>% 
+  pblapply(.,find_proxy) %>%
+  bind_rows
+
+check_range_byline<-function(tmp.input,tmp.bp){
+    output = between(tmp.bp,tmp.input['bp.min'],tmp.input['bp.max'])
+    return(output)
+}
+
+check_MDD_range<-function(tmp.summstats,ref.dat){
+  tmp.target.chr=tmp.summstats['CHR']
+  tmp.target.bp=tmp.summstats['MAPINFO']
+  block.ref = filter(ref.dat,chr==tmp.target.chr)
+  
+  tmp.check = apply(ref.dat,FUN = check_range_byline, MARGIN=1,tmp.bp=tmp.target.bp) %>% sum
+}
+
+k.riskrange=purrr::transpose(sig.res.MWAS) %>% 
+  pblapply(.,check_MDD_range,ref.dat=MDD_gwas_range) %>% unlist
+
+sig.res.MWAS = sig.res.MWAS %>% mutate(is.in_MDD_risk_region=k.riskrange)
+
+write.table(sig.res.MWAS,file=here::here('MR_meth_MDD/result/summary_sig_CpG_discovery_replication.csv'),sep='\t',col.names = T,row.names = F)
+
+```
+
+Supplementary Data 2. Results for colocalisation analysis between MDD and CpG probes.

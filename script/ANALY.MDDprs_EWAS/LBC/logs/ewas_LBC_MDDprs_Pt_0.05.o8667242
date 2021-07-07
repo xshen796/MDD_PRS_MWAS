@@ -1,0 +1,32 @@
+elapsed 
+  0.012 
+Fri Nov 27 19:25:10 2020 Starting EWAS 
+EWAS for chromosome 1 
+EWAS for chromosome 2 
+EWAS for chromosome 3 
+EWAS for chromosome 4 
+EWAS for chromosome 5 
+EWAS for chromosome 6 
+EWAS for chromosome 7 
+EWAS for chromosome 8 
+EWAS for chromosome 9 
+EWAS for chromosome 10 
+EWAS for chromosome 11 
+EWAS for chromosome 12 
+EWAS for chromosome 13 
+EWAS for chromosome 14 
+EWAS for chromosome 15 
+EWAS for chromosome 16 
+EWAS for chromosome 17 
+EWAS for chromosome 18 
+EWAS for chromosome 19 
+EWAS for chromosome 20 
+EWAS for chromosome 21 
+EWAS for chromosome 22 
+Fri Nov 27 19:32:40 2020 Merging EWAS 
+ [1] "coefficients"     "rank"             "assign"           "qr"              
+ [5] "df.residual"      "sigma"            "cov.coefficients" "stdev.unscaled"  
+ [9] "pivot"            "Amean"            "method"           "design"          
+[13] "N"               
+Fri Nov 27 19:32:41 2020 eBayes analysis 
+Fri Nov 27 20:08:29 2020 Writing results 

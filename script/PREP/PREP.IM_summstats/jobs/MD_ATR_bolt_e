@@ -1,0 +1,20 @@
+WARNING: Ignoring indiv not in genotype data: FID=3861856, IID=3861856
+WARNING: Ignoring indiv not in genotype data: FID=2860855, IID=2860855
+WARNING: Ignoring indiv not in genotype data: FID=1704002, IID=1704002
+WARNING: Ignoring indiv not in genotype data: FID=4624753, IID=4624753
+WARNING: Ignoring indiv not in genotype data: FID=1692679, IID=1692679
+WARNING: Ignoring indiv not in genotype data: FID=1000145, IID=1000145
+WARNING: Ignoring indiv not in genotype data: FID=1000968, IID=1000968
+WARNING: Ignoring indiv not in genotype data: FID=1001886, IID=1001886
+WARNING: Ignoring indiv not in genotype data: FID=1003749, IID=1003749
+WARNING: Ignoring indiv not in genotype data: FID=1006581, IID=1006581
+NOTE: Using all-1s vector (constant term) in addition to specified covariates
+WARNING: Covariate centre has a large number of distinct values (22)
+         Should this covariate be quantitative rather than categorical?
+WARNING: Secant iteration for h2 estimation may not have converged
+NOTE: Using all-1s vector (constant term) in addition to specified covariates
+WARNING: Covariate centre has a large number of distinct values (22)
+         Should this covariate be quantitative rather than categorical?
+NOTE: Using all-1s vector (constant term) in addition to specified covariates
+WARNING: Covariate centre has a large number of distinct values (22)
+         Should this covariate be quantitative rather than categorical?

@@ -1,0 +1,2026 @@
+                      +-----------------------------+
+                      |                       ___   |
+                      |   BOLT-LMM, v2.3.2   /_ /   |
+                      |   March 10, 2018      /_/   |
+                      |   Po-Ru Loh            //   |
+                      |                        /    |
+                      +-----------------------------+
+
+Copyright (C) 2014-2018 Harvard University.
+Distributed under the GNU GPLv3 open source license.
+
+Compiled with USE_SSE: fast aligned memory access
+Compiled with USE_MKL: Intel Math Kernel Library linear algebra
+Boost version: 1_58
+
+Command line options:
+
+/exports/igmm/eddie/GenScotDepression/local/bin/bolt \
+    --phenoFile=/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/UKB_IM_summstats/local_GWAS/pheno/gMD_TR_forGWAS.tsv \
+    --phenoCol=gMD_TR \
+    --covarFile=/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/UKB_IM_summstats/local_GWAS/pheno/bolt_covariates.tsv \
+    --covarCol=sex \
+    --covarCol=site \
+    --qCovarCol=age \
+    --qCovarCol=pos.x \
+    --qCovarCol=pos.y \
+    --qCovarCol=pos.z \
+    --qCovarCol=pos.table \
+    --statsFile=/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/UKB_IM_summstats/local_GWAS/gMD_TR.bolt.bed.stats.gz \
+    --statsFileBgenSnps=/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/UKB_IM_summstats/local_GWAS/gMD_TR.bolt.bed.stats.gz \
+    --bed=/exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv2/bfile/autosome/autosome.bed \
+    --bim=/exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv2/bfile/autosome/autosome.bim \
+    --fam=/exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/ukb_chr1_v2.fixCol6.fam \
+    --remove=/exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/not_imputed.979.id \
+    --remove=/exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/non_whitebritish.30k.id \
+    --exclude=/exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/autosome_qc_maf001_geno1_remove.snplist \
+    --covarCol=centre \
+    --covarCol=genotyping_array \
+    --covarMaxLevels=30 \
+    --qCovarCol=PC{1:20} \
+    --LDscoresFile=/exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/LDSCORE.1000G_EUR.tab.gz \
+    --geneticMapFile=/exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/genetic_map_hg19_withX.txt.gz \
+    --lmmForceNonInf \
+    --numThreads=12 \
+    --bgenFile=/exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr{1:22}_v3.bgen \
+    --bgenMinMAF=1e-3 \
+    --bgenMinINFO=0.3 \
+    --sampleFile=/exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample \
+    --verboseStats 
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr1_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 7402791
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 1:10177_A_AC
+first rsID: rs367896724
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr2_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 8129063
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 2:10179_TA_T
+first rsID: 2:10179_TA_T
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr3_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 6696680
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 3:60069_C_T
+first rsID: rs549251461
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr4_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 6555871
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 4:10005_T_TA
+first rsID: rs531254437
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr5_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 6070641
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 5:10043_T_A
+first rsID: rs546183826
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr6_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 5751712
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 6:63854_T_G
+first rsID: rs544586840
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr7_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 5405524
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 7:14808_T_C
+first rsID: rs555283805
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr8_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 5282223
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 8:11740_G_A
+first rsID: rs531589080
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr9_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 4066774
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 9:10163_CT_C
+first rsID: 9:10163_CT_C
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr10_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 4562904
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 10:60494_A_G
+first rsID: rs568182971
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr11_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 4628348
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 11:61395_CTT_C
+first rsID: 11:61395_CTT_C
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr12_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 4431052
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 12:60181_G_C
+first rsID: rs374249515
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr13_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 3270217
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 13:19020047_A_T
+first rsID: rs186129910
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr14_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 3037521
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 14:19000017_C_T
+first rsID: rs375700886
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr15_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 2767971
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 15:20000041_T_A
+first rsID: rs371549847
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr16_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 3089612
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 16:60086_G_C
+first rsID: rs537499872
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr17_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 2660711
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 17:52_C_A
+first rsID: rs556541063
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr18_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 2599579
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 18:10636_A_C
+first rsID: 18:10636_A_C
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr19_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 2087017
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 19:60842_A_G
+first rsID: rs541392352
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr20_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 2082571
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 20:60309_G_T
+first rsID: rs574852966
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr21_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 1261158
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 21:9411239_G_A
+first rsID: rs559462325
+
+Checking BGEN file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr22_v3.bgen
+(with SAMPLE file /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb4844_imp_chr1_v3_s487395.sample)...
+snpBlocks (Mbgen): 1255683
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+first snpID: 22:16050075_A_G
+first rsID: rs587697622
+
+Setting number of threads to 12
+fam: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/ukb_chr1_v2.fixCol6.fam
+bim(s): /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv2/bfile/autosome/autosome.bim
+bed(s): /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv2/bfile/autosome/autosome.bed
+
+=== Reading genotype data ===
+
+Total indivs in PLINK data: Nbed = 488377
+Reading remove file (indivs to remove): /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/not_imputed.979.id
+Removed 979 individual(s)
+Reading remove file (indivs to remove): /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/non_whitebritish.30k.id
+Removed 30314 individual(s)
+Total indivs stored in memory: N = 457084
+Reading bim file #1: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv2/bfile/autosome/autosome.bim
+    Read 784256 snps
+Total snps in PLINK data: Mbed = 784256
+Reading exclude file (SNPs to exclude): /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/autosome_qc_maf001_geno1_remove.snplist
+Excluded 111911 SNP(s)
+
+Breakdown of SNP pre-filtering results:
+  672345 SNPs to include in model (i.e., GRM)
+  0 additional non-GRM SNPs loaded
+  111911 excluded SNPs
+Filling in genetic map coordinates using reference file:
+  /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/gwas/BOLT/genetic_map_hg19_withX.txt.gz
+Allocating 672345 x 457084/4 bytes to store genotypes
+Reading genotypes and performing QC filtering on snps and indivs...
+Reading bed file #1: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv2/bfile/autosome/autosome.bed
+    Expecting 95753736320 (+3) bytes for 488377 indivs, 784256 snps
+Filtering indiv 1011053 1011053: 73217/672345 missing
+Filtered 1 indivs with > 0.1 missing
+Total indivs after QC: 457083
+Total post-QC SNPs: M = 672345
+  Variance component 1: 672345 post-QC SNPs (name: 'modelSnps')
+Time for SnpData setup = 2706.18 sec
+
+=== Reading phenotype and covariate data ===
+
+Read data for 457546 indivs (ignored 462 without genotypes) from:
+  /exports/igmm/eddie/GenScotDepression/shen/bakup.dat/UKB_IM_summstats/local_GWAS/pheno/bolt_covariates.tsv
+Read data for 47934 indivs (ignored 3023 without genotypes) from:
+  /exports/igmm/eddie/GenScotDepression/shen/bakup.dat/UKB_IM_summstats/local_GWAS/pheno/gMD_TR_forGWAS.tsv
+Number of indivs with no missing phenotype(s) to use: 34765
+    Using categorical covariate: sex (adding level Female)
+    Using categorical covariate: sex (adding level Male)
+    Using categorical covariate: site (adding level 11025)
+    Using categorical covariate: site (adding level 11026)
+    Using categorical covariate: site (adding level 11027)
+    Using categorical covariate: centre (adding level 1)
+    Using categorical covariate: centre (adding level 10)
+    Using categorical covariate: centre (adding level 11)
+    Using categorical covariate: centre (adding level 12)
+    Using categorical covariate: centre (adding level 13)
+    Using categorical covariate: centre (adding level 14)
+    Using categorical covariate: centre (adding level 15)
+    Using categorical covariate: centre (adding level 16)
+    Using categorical covariate: centre (adding level 17)
+    Using categorical covariate: centre (adding level 18)
+    Using categorical covariate: centre (adding level 19)
+    Using categorical covariate: centre (adding level 2)
+    Using categorical covariate: centre (adding level 20)
+    Using categorical covariate: centre (adding level 21)
+    Using categorical covariate: centre (adding level 22)
+    Using categorical covariate: centre (adding level 3)
+    Using categorical covariate: centre (adding level 4)
+    Using categorical covariate: centre (adding level 5)
+    Using categorical covariate: centre (adding level 6)
+    Using categorical covariate: centre (adding level 7)
+    Using categorical covariate: centre (adding level 8)
+    Using categorical covariate: centre (adding level 9)
+    Using categorical covariate: genotyping_array (adding level 1)
+    Using categorical covariate: genotyping_array (adding level 2)
+    Using quantitative covariate: age
+    Using quantitative covariate: pos.x
+    Using quantitative covariate: pos.y
+    Using quantitative covariate: pos.z
+    Using quantitative covariate: pos.table
+    Using quantitative covariate: PC1
+    Using quantitative covariate: PC2
+    Using quantitative covariate: PC3
+    Using quantitative covariate: PC4
+    Using quantitative covariate: PC5
+    Using quantitative covariate: PC6
+    Using quantitative covariate: PC7
+    Using quantitative covariate: PC8
+    Using quantitative covariate: PC9
+    Using quantitative covariate: PC10
+    Using quantitative covariate: PC11
+    Using quantitative covariate: PC12
+    Using quantitative covariate: PC13
+    Using quantitative covariate: PC14
+    Using quantitative covariate: PC15
+    Using quantitative covariate: PC16
+    Using quantitative covariate: PC17
+    Using quantitative covariate: PC18
+    Using quantitative covariate: PC19
+    Using quantitative covariate: PC20
+    Using quantitative covariate: CONST_ALL_ONES
+Number of individuals used in analysis: Nused = 34765
+Singular values of covariate matrix:
+    S[0] = 197563
+    S[1] = 5218.67
+    S[2] = 1380.88
+    S[3] = 1064.79
+    S[4] = 549.74
+    S[5] = 131.617
+    S[6] = 96.0133
+    S[7] = 81.3638
+    S[8] = 77.7111
+    S[9] = 60.5854
+    S[10] = 57.384
+    S[11] = 55.0939
+    S[12] = 54.4789
+    S[13] = 54.1739
+    S[14] = 45.53
+    S[15] = 41.109
+    S[16] = 40.356
+    S[17] = 39.0539
+    S[18] = 35.9737
+    S[19] = 30.7745
+    S[20] = 29.627
+    S[21] = 26.5838
+    S[22] = 24.8113
+    S[23] = 14.9294
+    S[24] = 12.1372
+    S[25] = 11.163
+    S[26] = 9.74301
+    S[27] = 8.21278
+    S[28] = 5.50249
+    S[29] = 3.35273
+    S[30] = 2.9993
+    S[31] = 2.45569
+    S[32] = 2.04504
+    S[33] = 1.65267
+    S[34] = 1.49643
+    S[35] = 1.37797
+    S[36] = 1.31706
+    S[37] = 1.24436
+    S[38] = 1.08231
+    S[39] = 1.05399
+    S[40] = 1.01397
+    S[41] = 1.00768
+    S[42] = 1.00035
+    S[43] = 0.993799
+    S[44] = 0.987903
+    S[45] = 0.985461
+    S[46] = 0.981322
+    S[47] = 0.977961
+    S[48] = 0.976789
+    S[49] = 0.971171
+    S[50] = 0.965071
+    S[51] = 1.95448e-12
+    S[52] = 3.15898e-13
+    S[53] = 1.31767e-13
+    S[54] = 3.1947e-14
+Total covariate vectors: C = 55
+Total independent covariate vectors: Cindep = 51
+
+=== Initializing Bolt object: projecting and normalizing SNPs ===
+
+Number of chroms with >= 1 good SNP: 22
+Average norm of projected SNPs:           34714.153368
+Dimension of all-1s proj space (Nused-1): 34764
+Time for covariate data setup + Bolt initialization = 3923.96 sec
+
+Phenotype 1:   N = 34765   mean = 5.50389e-07   std = 7.59466e-05
+
+=== Computing linear regression (LINREG) stats ===
+
+Time for computing LINREG stats = 344.93 sec
+
+=== Estimating variance parameters ===
+
+Using CGtol of 0.005 for this step
+Using default number of random trials: 3 (for Nused = 34765)
+
+Estimating MC scaling f_REML at log(delta) = 1.09862, h2 = 0.25...
+  Batch-solving 4 systems of equations using conjugate gradient iteration
+  iter 1:  time=291.20  rNorms/orig: (0.4,4)  res2s: 47254..7.98073e-05
+  iter 2:  time=285.72  rNorms/orig: (0.2,0.5)  res2s: 75470.3..8.02011e-05
+  iter 3:  time=271.13  rNorms/orig: (0.2,0.2)  res2s: 76477.6..8.0839e-05
+  iter 4:  time=279.70  rNorms/orig: (0.1,0.1)  res2s: 77447.1..8.21613e-05
+  iter 5:  time=270.36  rNorms/orig: (0.06,0.08)  res2s: 78865.8..8.31095e-05
+  iter 6:  time=268.37  rNorms/orig: (0.02,0.04)  res2s: 79404.8..8.34223e-05
+  iter 7:  time=258.90  rNorms/orig: (0.01,0.02)  res2s: 79541.4..8.34875e-05
+  iter 8:  time=258.73  rNorms/orig: (0.007,0.007)  res2s: 79584.1..8.35141e-05
+  iter 9:  time=258.10  rNorms/orig: (0.003,0.004)  res2s: 79595.1..8.3524e-05
+  Converged at iter 9: rNorms/orig all < CGtol=0.005
+  Time breakdown: dgemm = 46.1%, memory/overhead = 53.9%
+  MCscaling: logDelta = 1.10, h2 = 0.250, f = -0.0465412
+
+Estimating MC scaling f_REML at log(delta) = 1.94591, h2 = 0.125...
+  Batch-solving 4 systems of equations using conjugate gradient iteration
+  iter 1:  time=262.77  rNorms/orig: (0.2,2)  res2s: 182000..0.000108714
+  iter 2:  time=257.06  rNorms/orig: (0.09,0.2)  res2s: 211247..0.00010898
+  iter 3:  time=256.11  rNorms/orig: (0.07,0.09)  res2s: 212194..0.000109373
+  iter 4:  time=255.91  rNorms/orig: (0.03,0.05)  res2s: 213270..0.00010994
+  iter 5:  time=254.87  rNorms/orig: (0.01,0.02)  res2s: 214007..0.000110164
+  iter 6:  time=254.24  rNorms/orig: (0.004,0.007)  res2s: 214139..0.000110206
+  iter 7:  time=254.95  rNorms/orig: (0.001,0.002)  res2s: 214158..0.000110212
+  Converged at iter 7: rNorms/orig all < CGtol=0.005
+  Time breakdown: dgemm = 46.9%, memory/overhead = 53.1%
+  MCscaling: logDelta = 1.95, h2 = 0.125, f = -0.0232068
+
+Estimating MC scaling f_REML at log(delta) = 2.78858, h2 = 0.0579446...
+  Batch-solving 4 systems of equations using conjugate gradient iteration
+  iter 1:  time=258.53  rNorms/orig: (0.09,0.6)  res2s: 510765..0.000126069
+  iter 2:  time=260.44  rNorms/orig: (0.04,0.06)  res2s: 531754..0.00012621
+  iter 3:  time=258.03  rNorms/orig: (0.03,0.03)  res2s: 532499..0.000126381
+  iter 4:  time=266.23  rNorms/orig: (0.005,0.01)  res2s: 533187..0.000126519
+  iter 5:  time=268.60  rNorms/orig: (0.001,0.003)  res2s: 533333..0.000126544
+  Converged at iter 5: rNorms/orig all < CGtol=0.005
+  Time breakdown: dgemm = 46.2%, memory/overhead = 53.8%
+  MCscaling: logDelta = 2.79, h2 = 0.058, f = -0.00887074
+
+Estimating MC scaling f_REML at log(delta) = 3.31, h2 = 0.03523...
+  Batch-solving 4 systems of equations using conjugate gradient iteration
+  iter 1:  time=258.84  rNorms/orig: (0.04,0.3)  res2s: 902160..0.000132241
+  iter 2:  time=257.15  rNorms/orig: (0.02,0.03)  res2s: 918020..0.000132329
+  iter 3:  time=260.55  rNorms/orig: (0.01,0.02)  res2s: 918615..0.000132416
+  iter 4:  time=268.95  rNorms/orig: (0.002,0.004)  res2s: 918994..0.00013246
+  Converged at iter 4: rNorms/orig all < CGtol=0.005
+  Time breakdown: dgemm = 46.2%, memory/overhead = 53.8%
+  MCscaling: logDelta = 3.31, h2 = 0.035, f = -0.00317041
+
+Estimating MC scaling f_REML at log(delta) = 3.6, h2 = 0.0265971...
+  Batch-solving 4 systems of equations using conjugate gradient iteration
+  iter 1:  time=274.29  rNorms/orig: (0.02,0.2)  res2s: 1.2245e+06..0.000134626
+  iter 2:  time=268.13  rNorms/orig: (0.02,0.02)  res2s: 1.23794e+06..0.000134692
+  iter 3:  time=261.10  rNorms/orig: (0.009,0.01)  res2s: 1.23845e+06..0.000134749
+  iter 4:  time=264.16  rNorms/orig: (0.0008,0.002)  res2s: 1.2387e+06..0.00013477
+  Converged at iter 4: rNorms/orig all < CGtol=0.005
+  Time breakdown: dgemm = 46.2%, memory/overhead = 53.8%
+  MCscaling: logDelta = 3.60, h2 = 0.027, f = -0.00110219
+
+Estimating MC scaling f_REML at log(delta) = 3.75455, h2 = 0.0228756...
+  Batch-solving 4 systems of equations using conjugate gradient iteration
+  iter 1:  time=267.48  rNorms/orig: (0.02,0.2)  res2s: 1.43805e+06..0.000135661
+  iter 2:  time=259.68  rNorms/orig: (0.01,0.02)  res2s: 1.45035e+06..0.000135718
+  iter 3:  time=265.33  rNorms/orig: (0.007,0.008)  res2s: 1.45081e+06..0.000135762
+  iter 4:  time=265.48  rNorms/orig: (0.0005,0.001)  res2s: 1.451e+06..0.000135776
+  Converged at iter 4: rNorms/orig all < CGtol=0.005
+  Time breakdown: dgemm = 46.0%, memory/overhead = 54.0%
+  MCscaling: logDelta = 3.75, h2 = 0.023, f = -0.000172517
+
+Estimating MC scaling f_REML at log(delta) = 3.78322, h2 = 0.0222433...
+  Batch-solving 4 systems of equations using conjugate gradient iteration
+  iter 1:  time=265.97  rNorms/orig: (0.02,0.2)  res2s: 1.48141e+06..0.000135837
+  iter 2:  time=270.00  rNorms/orig: (0.01,0.02)  res2s: 1.49351e+06..0.000135892
+  iter 3:  time=264.00  rNorms/orig: (0.007,0.007)  res2s: 1.49396e+06..0.000135934
+  iter 4:  time=271.55  rNorms/orig: (0.0005,0.001)  res2s: 1.49414e+06..0.000135947
+  Converged at iter 4: rNorms/orig all < CGtol=0.005
+  Time breakdown: dgemm = 45.9%, memory/overhead = 54.1%
+  MCscaling: logDelta = 3.78, h2 = 0.022, f = -1.24191e-05
+
+Estimated (pseudo-)heritability: h2g = 0.022
+To more precisely estimate variance parameters and estimate s.e., use --reml
+Variance params: sigma^2_K = 0.000000, logDelta = 3.783224, f = -1.24191e-05
+
+Time for fitting variance components = 10826 sec
+
+=== Computing mixed model assoc stats (inf. model) ===
+
+Selected 30 SNPs for computation of prospective stat
+Tried 30; threw out 0 with GRAMMAR chisq > 5
+Assigning SNPs to 22 chunks for leave-out analysis
+Each chunk is excluded when testing SNPs belonging to the chunk
+  Batch-solving 52 systems of equations using conjugate gradient iteration
+  iter 1:  time=481.91  rNorms/orig: (0.04,0.9)  res2s: 0.000135833..32310.2
+  iter 2:  time=475.98  rNorms/orig: (0.01,0.2)  res2s: 0.00013589..32949.1
+  iter 3:  time=488.92  rNorms/orig: (0.006,0.01)  res2s: 0.000135936..32990.6
+  iter 4:  time=483.23  rNorms/orig: (0.0006,0.003)  res2s: 0.00013595..32997
+  iter 5:  time=478.83  rNorms/orig: (6e-05,0.0005)  res2s: 0.00013595..32997.2
+  Converged at iter 5: rNorms/orig all < CGtol=0.0005
+  Time breakdown: dgemm = 65.9%, memory/overhead = 34.1%
+
+AvgPro: 0.972   AvgRetro: 0.964   Calibration: 1.008 (0.004)   (30 SNPs)
+Ratio of medians: 1.005   Median of ratios: 1.002
+
+Time for computing infinitesimal model assoc stats = 2749.42 sec
+
+=== Estimating chip LD Scores using 400 indivs ===
+
+
+Time for estimating chip LD Scores = 17.5831 sec
+
+=== Reading LD Scores for calibration of Bayesian assoc stats ===
+
+Looking up LD Scores...
+  Looking for column header 'SNP': column number = 1
+  Looking for column header 'LDSCORE': column number = 5
+Found LD Scores for 624708/672345 SNPs
+
+Estimating inflation of LINREG chisq stats using MLMe as reference...
+Filtering to SNPs with chisq stats, LD Scores, and MAF > 0.01
+# of SNPs passing filters before outlier removal: 604653/672345
+Masking windows around outlier snps (chisq > 34.8)
+# of SNPs remaining after outlier window removal: 604653/604653
+Intercept of LD Score regression for ref stats:   1.003 (0.004)
+Estimated attenuation: -1.770 (9.748)
+Intercept of LD Score regression for cur stats: 1.000 (0.004)
+Calibration factor (ref/cur) to multiply by:      1.003 (0.000)
+LINREG intercept inflation = 0.996951
+NOTE: LINREG stats in output are NOT corrected for estimated inflation
+
+=== Estimating mixture parameters by cross-validation ===
+
+Setting maximum number of iterations to 250 for this step
+Max CV folds to compute = 2 (to have > 10000 samples)
+
+====> Starting CV fold 1 <====
+
+    Using categorical covariate: sex (adding level Female)
+    Using categorical covariate: sex (adding level Male)
+    Using categorical covariate: site (adding level 11025)
+    Using categorical covariate: site (adding level 11026)
+    Using categorical covariate: site (adding level 11027)
+    Using categorical covariate: centre (adding level 1)
+    Using categorical covariate: centre (adding level 10)
+    Using categorical covariate: centre (adding level 11)
+    Using categorical covariate: centre (adding level 12)
+    Using categorical covariate: centre (adding level 13)
+    Using categorical covariate: centre (adding level 14)
+    Using categorical covariate: centre (adding level 15)
+    Using categorical covariate: centre (adding level 16)
+    Using categorical covariate: centre (adding level 17)
+    Using categorical covariate: centre (adding level 18)
+    Using categorical covariate: centre (adding level 19)
+    Using categorical covariate: centre (adding level 2)
+    Using categorical covariate: centre (adding level 20)
+    Using categorical covariate: centre (adding level 21)
+    Using categorical covariate: centre (adding level 22)
+    Using categorical covariate: centre (adding level 3)
+    Using categorical covariate: centre (adding level 4)
+    Using categorical covariate: centre (adding level 5)
+    Using categorical covariate: centre (adding level 6)
+    Using categorical covariate: centre (adding level 7)
+    Using categorical covariate: centre (adding level 8)
+    Using categorical covariate: centre (adding level 9)
+    Using categorical covariate: genotyping_array (adding level 1)
+    Using categorical covariate: genotyping_array (adding level 2)
+    Using quantitative covariate: age
+    Using quantitative covariate: pos.x
+    Using quantitative covariate: pos.y
+    Using quantitative covariate: pos.z
+    Using quantitative covariate: pos.table
+    Using quantitative covariate: PC1
+    Using quantitative covariate: PC2
+    Using quantitative covariate: PC3
+    Using quantitative covariate: PC4
+    Using quantitative covariate: PC5
+    Using quantitative covariate: PC6
+    Using quantitative covariate: PC7
+    Using quantitative covariate: PC8
+    Using quantitative covariate: PC9
+    Using quantitative covariate: PC10
+    Using quantitative covariate: PC11
+    Using quantitative covariate: PC12
+    Using quantitative covariate: PC13
+    Using quantitative covariate: PC14
+    Using quantitative covariate: PC15
+    Using quantitative covariate: PC16
+    Using quantitative covariate: PC17
+    Using quantitative covariate: PC18
+    Using quantitative covariate: PC19
+    Using quantitative covariate: PC20
+    Using quantitative covariate: CONST_ALL_ONES
+Number of individuals used in analysis: Nused = 27812
+Singular values of covariate matrix:
+    S[0] = 176685
+    S[1] = 4648.03
+    S[2] = 1238.69
+    S[3] = 954.04
+    S[4] = 489.281
+    S[5] = 117.678
+    S[6] = 86.1384
+    S[7] = 72.705
+    S[8] = 69.5047
+    S[9] = 54.3053
+    S[10] = 51.4458
+    S[11] = 49.1598
+    S[12] = 48.6566
+    S[13] = 48.3194
+    S[14] = 40.8284
+    S[15] = 36.7595
+    S[16] = 36.016
+    S[17] = 34.7927
+    S[18] = 32.2807
+    S[19] = 27.3845
+    S[20] = 26.6869
+    S[21] = 23.5195
+    S[22] = 22.2427
+    S[23] = 13.3092
+    S[24] = 10.7689
+    S[25] = 10.0827
+    S[26] = 8.67675
+    S[27] = 7.37968
+    S[28] = 4.79198
+    S[29] = 3.00168
+    S[30] = 2.67949
+    S[31] = 2.20356
+    S[32] = 2.04442
+    S[33] = 1.45863
+    S[34] = 1.33603
+    S[35] = 1.22821
+    S[36] = 1.17174
+    S[37] = 1.10899
+    S[38] = 0.971609
+    S[39] = 0.942001
+    S[40] = 0.907997
+    S[41] = 0.898559
+    S[42] = 0.89522
+    S[43] = 0.888605
+    S[44] = 0.883862
+    S[45] = 0.880046
+    S[46] = 0.876934
+    S[47] = 0.874553
+    S[48] = 0.868094
+    S[49] = 0.863642
+    S[50] = 0.861966
+    S[51] = 2.99336e-13
+    S[52] = 2.1345e-13
+    S[53] = 6.56592e-14
+    S[54] = 2.24156e-14
+Total covariate vectors: C = 55
+Total independent covariate vectors: Cindep = 51
+
+=== Initializing Bolt object: projecting and normalizing SNPs ===
+
+Number of chroms with >= 1 good SNP: 22
+Average norm of projected SNPs:           27761.228570
+Dimension of all-1s proj space (Nused-1): 27811
+  Beginning variational Bayes
+  iter 1:  time=571.69 for 18 active reps
+  iter 2:  time=429.00 for 18 active reps  approxLL diffs: (0.26,0.28)
+  iter 3:  time=427.49 for 18 active reps  approxLL diffs: (0.02,0.02)
+  iter 4:  time=423.35 for 18 active reps  approxLL diffs: (0.01,0.01)
+  Converged at iter 4: approxLL diffs each have been < LLtol=0.01
+  Time breakdown: dgemm = 81.6%, memory/overhead = 18.4%
+Computing predictions on left-out cross-validation fold
+Time for computing predictions = 7180.42 sec
+
+Average PVEs obtained by param pairs tested (high to low):
+ f2=0.1, p=0.01: 0.000185
+ f2=0.3, p=0.01: 0.000183
+ f2=0.1, p=0.02: 0.000183
+            ...
+  f2=0.5, p=0.5: 0.000181
+
+Detailed CV fold results:
+  Absolute prediction MSE baseline (covariates only): 4.09683e-09
+  Absolute prediction MSE using standard LMM:         4.09609e-09
+  Absolute prediction MSE, fold-best f2=0.1, p=0.01:  4.09607e-09
+    Absolute pred MSE using   f2=0.5, p=0.5: 0.000000
+    Absolute pred MSE using   f2=0.5, p=0.2: 0.000000
+    Absolute pred MSE using   f2=0.5, p=0.1: 0.000000
+    Absolute pred MSE using  f2=0.5, p=0.05: 0.000000
+    Absolute pred MSE using  f2=0.5, p=0.02: 0.000000
+    Absolute pred MSE using  f2=0.5, p=0.01: 0.000000
+    Absolute pred MSE using   f2=0.3, p=0.5: 0.000000
+    Absolute pred MSE using   f2=0.3, p=0.2: 0.000000
+    Absolute pred MSE using   f2=0.3, p=0.1: 0.000000
+    Absolute pred MSE using  f2=0.3, p=0.05: 0.000000
+    Absolute pred MSE using  f2=0.3, p=0.02: 0.000000
+    Absolute pred MSE using  f2=0.3, p=0.01: 0.000000
+    Absolute pred MSE using   f2=0.1, p=0.5: 0.000000
+    Absolute pred MSE using   f2=0.1, p=0.2: 0.000000
+    Absolute pred MSE using   f2=0.1, p=0.1: 0.000000
+    Absolute pred MSE using  f2=0.1, p=0.05: 0.000000
+    Absolute pred MSE using  f2=0.1, p=0.02: 0.000000
+    Absolute pred MSE using  f2=0.1, p=0.01: 0.000000
+
+====> End CV fold 1: 18 remaining param pair(s) <====
+
+Estimated proportion of variance explained using inf model: 0.000
+Relative improvement in prediction MSE using non-inf model: 0.000
+
+====> Starting CV fold 2 <====
+
+    Using categorical covariate: sex (adding level Female)
+    Using categorical covariate: sex (adding level Male)
+    Using categorical covariate: site (adding level 11025)
+    Using categorical covariate: site (adding level 11026)
+    Using categorical covariate: site (adding level 11027)
+    Using categorical covariate: centre (adding level 1)
+    Using categorical covariate: centre (adding level 10)
+    Using categorical covariate: centre (adding level 11)
+    Using categorical covariate: centre (adding level 12)
+    Using categorical covariate: centre (adding level 13)
+    Using categorical covariate: centre (adding level 14)
+    Using categorical covariate: centre (adding level 15)
+    Using categorical covariate: centre (adding level 16)
+    Using categorical covariate: centre (adding level 17)
+    Using categorical covariate: centre (adding level 18)
+    Using categorical covariate: centre (adding level 19)
+    Using categorical covariate: centre (adding level 2)
+    Using categorical covariate: centre (adding level 20)
+    Using categorical covariate: centre (adding level 21)
+    Using categorical covariate: centre (adding level 22)
+    Using categorical covariate: centre (adding level 3)
+    Using categorical covariate: centre (adding level 4)
+    Using categorical covariate: centre (adding level 5)
+    Using categorical covariate: centre (adding level 6)
+    Using categorical covariate: centre (adding level 7)
+    Using categorical covariate: centre (adding level 8)
+    Using categorical covariate: centre (adding level 9)
+    Using categorical covariate: genotyping_array (adding level 1)
+    Using categorical covariate: genotyping_array (adding level 2)
+    Using quantitative covariate: age
+    Using quantitative covariate: pos.x
+    Using quantitative covariate: pos.y
+    Using quantitative covariate: pos.z
+    Using quantitative covariate: pos.table
+    Using quantitative covariate: PC1
+    Using quantitative covariate: PC2
+    Using quantitative covariate: PC3
+    Using quantitative covariate: PC4
+    Using quantitative covariate: PC5
+    Using quantitative covariate: PC6
+    Using quantitative covariate: PC7
+    Using quantitative covariate: PC8
+    Using quantitative covariate: PC9
+    Using quantitative covariate: PC10
+    Using quantitative covariate: PC11
+    Using quantitative covariate: PC12
+    Using quantitative covariate: PC13
+    Using quantitative covariate: PC14
+    Using quantitative covariate: PC15
+    Using quantitative covariate: PC16
+    Using quantitative covariate: PC17
+    Using quantitative covariate: PC18
+    Using quantitative covariate: PC19
+    Using quantitative covariate: PC20
+    Using quantitative covariate: CONST_ALL_ONES
+Number of individuals used in analysis: Nused = 27812
+Singular values of covariate matrix:
+    S[0] = 176716
+    S[1] = 4669.72
+    S[2] = 1232.93
+    S[3] = 951.425
+    S[4] = 489.884
+    S[5] = 117.705
+    S[6] = 85.9913
+    S[7] = 72.7919
+    S[8] = 69.5139
+    S[9] = 54.1619
+    S[10] = 51.3053
+    S[11] = 49.2851
+    S[12] = 48.8829
+    S[13] = 48.5461
+    S[14] = 40.7848
+    S[15] = 36.7448
+    S[16] = 35.9019
+    S[17] = 35.049
+    S[18] = 32.1213
+    S[19] = 27.4497
+    S[20] = 25.984
+    S[21] = 23.7572
+    S[22] = 22.3141
+    S[23] = 13.4384
+    S[24] = 10.9005
+    S[25] = 9.95253
+    S[26] = 8.77911
+    S[27] = 7.27669
+    S[28] = 5.00187
+    S[29] = 2.93903
+    S[30] = 2.69238
+    S[31] = 2.19204
+    S[32] = 2.04446
+    S[33] = 1.45854
+    S[34] = 1.33881
+    S[35] = 1.23738
+    S[36] = 1.17299
+    S[37] = 1.11821
+    S[38] = 0.969516
+    S[39] = 0.944182
+    S[40] = 0.909255
+    S[41] = 0.901467
+    S[42] = 0.898186
+    S[43] = 0.890869
+    S[44] = 0.885109
+    S[45] = 0.879703
+    S[46] = 0.879062
+    S[47] = 0.876352
+    S[48] = 0.873901
+    S[49] = 0.871146
+    S[50] = 0.859609
+    S[51] = 2.59033e-12
+    S[52] = 1.7621e-13
+    S[53] = 8.56414e-14
+    S[54] = 1.35801e-14
+Total covariate vectors: C = 55
+Total independent covariate vectors: Cindep = 51
+
+=== Initializing Bolt object: projecting and normalizing SNPs ===
+
+Number of chroms with >= 1 good SNP: 22
+Average norm of projected SNPs:           27761.095633
+Dimension of all-1s proj space (Nused-1): 27811
+  Beginning variational Bayes
+  iter 1:  time=574.99 for 18 active reps
+  iter 2:  time=422.37 for 18 active reps  approxLL diffs: (0.23,0.25)
+  iter 3:  time=409.91 for 18 active reps  approxLL diffs: (0.02,0.02)
+  iter 4:  time=409.46 for 18 active reps  approxLL diffs: (0.01,0.01)
+  Converged at iter 4: approxLL diffs each have been < LLtol=0.01
+  Time breakdown: dgemm = 81.9%, memory/overhead = 18.1%
+Computing predictions on left-out cross-validation fold
+Time for computing predictions = 7905.6 sec
+
+Average PVEs obtained by param pairs tested (high to low):
+  f2=0.5, p=0.5: 0.000176
+  f2=0.3, p=0.5: 0.000176
+  f2=0.5, p=0.2: 0.000176
+            ...
+ f2=0.1, p=0.01: 0.000174
+
+Detailed CV fold results:
+  Absolute prediction MSE baseline (covariates only): 4.16346e-09
+  Absolute prediction MSE using standard LMM:         4.16274e-09
+  Absolute prediction MSE, fold-best  f2=0.5, p=0.5:  4.16274e-09
+    Absolute pred MSE using   f2=0.5, p=0.5: 0.000000
+    Absolute pred MSE using   f2=0.5, p=0.2: 0.000000
+    Absolute pred MSE using   f2=0.5, p=0.1: 0.000000
+    Absolute pred MSE using  f2=0.5, p=0.05: 0.000000
+    Absolute pred MSE using  f2=0.5, p=0.02: 0.000000
+    Absolute pred MSE using  f2=0.5, p=0.01: 0.000000
+    Absolute pred MSE using   f2=0.3, p=0.5: 0.000000
+    Absolute pred MSE using   f2=0.3, p=0.2: 0.000000
+    Absolute pred MSE using   f2=0.3, p=0.1: 0.000000
+    Absolute pred MSE using  f2=0.3, p=0.05: 0.000000
+    Absolute pred MSE using  f2=0.3, p=0.02: 0.000000
+    Absolute pred MSE using  f2=0.3, p=0.01: 0.000000
+    Absolute pred MSE using   f2=0.1, p=0.5: 0.000000
+    Absolute pred MSE using   f2=0.1, p=0.2: 0.000000
+    Absolute pred MSE using   f2=0.1, p=0.1: 0.000000
+    Absolute pred MSE using  f2=0.1, p=0.05: 0.000000
+    Absolute pred MSE using  f2=0.1, p=0.02: 0.000000
+    Absolute pred MSE using  f2=0.1, p=0.01: 0.000000
+
+====> End CV fold 2: 18 remaining param pair(s) <====
+
+Optimal mixture parameters according to CV: f2 = 0.5, p = 0.5
+
+Time for estimating mixture parameters = 28043.1 sec
+
+=== Computing Bayesian mixed model assoc stats with mixture prior ===
+
+Assigning SNPs to 22 chunks for leave-out analysis
+Each chunk is excluded when testing SNPs belonging to the chunk
+  Beginning variational Bayes
+  iter 1:  time=629.07 for 22 active reps
+  iter 2:  time=498.80 for 22 active reps  approxLL diffs: (0.26,0.37)
+  iter 3:  time=448.80 for 22 active reps  approxLL diffs: (0.02,0.03)
+  iter 4:  time=452.62 for 22 active reps  approxLL diffs: (0.01,0.01)
+  iter 5:  time=449.71 for 22 active reps  approxLL diffs: (0.01,0.01)
+  Converged at iter 5: approxLL diffs each have been < LLtol=0.01
+  Time breakdown: dgemm = 83.5%, memory/overhead = 16.5%
+Filtering to SNPs with chisq stats, LD Scores, and MAF > 0.01
+# of SNPs passing filters before outlier removal: 604653/672345
+Masking windows around outlier snps (chisq > 34.8)
+# of SNPs remaining after outlier window removal: 604653/604653
+Intercept of LD Score regression for ref stats:   1.003 (0.004)
+Estimated attenuation: -1.770 (9.748)
+Intercept of LD Score regression for cur stats: 0.994 (0.004)
+Calibration factor (ref/cur) to multiply by:      1.008 (0.000)
+
+Time for computing Bayesian mixed model assoc stats = 2811.61 sec
+
+Calibration stats: mean and lambdaGC (over SNPs used in GRM)
+  (note that both should be >1 because of polygenicity)
+Mean LINREG: 1.00321 (672345 good SNPs)   lambdaGC: 1.00395
+Mean BOLT_LMM_INF: 1.00215 (672345 good SNPs)   lambdaGC: 1.00318
+Mean BOLT_LMM: 1.0021 (672345 good SNPs)   lambdaGC: 1.00319
+
+=== Streaming genotypes to compute and write assoc stats at all SNPs ===
+
+Time for streaming genotypes and writing output = 6746.08 sec
+
+
+=== Streaming genotypes to compute and write assoc stats at BGEN SNPs ===
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr1_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 7402791
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 103.032
+At SNP 200000; time for block: 109.26
+At SNP 300000; time for block: 102.566
+At SNP 400000; time for block: 99.8705
+At SNP 500000; time for block: 109.55
+At SNP 600000; time for block: 109.768
+At SNP 700000; time for block: 105.862
+At SNP 800000; time for block: 104.924
+At SNP 900000; time for block: 101.07
+At SNP 1000000; time for block: 95.0797
+At SNP 1100000; time for block: 104.278
+At SNP 1200000; time for block: 97.018
+At SNP 1300000; time for block: 95.2232
+At SNP 1400000; time for block: 101.844
+At SNP 1500000; time for block: 98.1208
+At SNP 1600000; time for block: 97.1471
+At SNP 1700000; time for block: 94.0748
+At SNP 1800000; time for block: 98.4928
+At SNP 1900000; time for block: 104.673
+At SNP 2000000; time for block: 103.111
+At SNP 2100000; time for block: 100.181
+At SNP 2200000; time for block: 105.865
+At SNP 2300000; time for block: 103.546
+At SNP 2400000; time for block: 98.1824
+At SNP 2500000; time for block: 98.4004
+At SNP 2600000; time for block: 105.652
+At SNP 2700000; time for block: 109.882
+At SNP 2800000; time for block: 105.915
+At SNP 2900000; time for block: 106.532
+At SNP 3000000; time for block: 100.323
+At SNP 3100000; time for block: 103.483
+At SNP 3200000; time for block: 102.916
+At SNP 3300000; time for block: 102.136
+At SNP 3400000; time for block: 107.4
+At SNP 3500000; time for block: 109.21
+At SNP 3600000; time for block: 101.296
+At SNP 3700000; time for block: 103.117
+At SNP 3800000; time for block: 102.385
+At SNP 3900000; time for block: 100.422
+At SNP 4000000; time for block: 101.106
+At SNP 4100000; time for block: 104.053
+At SNP 4200000; time for block: 100.628
+At SNP 4300000; time for block: 95.4956
+At SNP 4400000; time for block: 107.064
+At SNP 4500000; time for block: 106.033
+At SNP 4600000; time for block: 105.142
+At SNP 4700000; time for block: 105.611
+At SNP 4800000; time for block: 106.461
+At SNP 4900000; time for block: 100.074
+At SNP 5000000; time for block: 97.0544
+At SNP 5100000; time for block: 102.936
+At SNP 5200000; time for block: 102.665
+At SNP 5300000; time for block: 100.202
+At SNP 5400000; time for block: 109.92
+At SNP 5500000; time for block: 102.335
+At SNP 5600000; time for block: 107.658
+At SNP 5700000; time for block: 101.982
+At SNP 5800000; time for block: 106.017
+At SNP 5900000; time for block: 102.287
+At SNP 6000000; time for block: 101.465
+At SNP 6100000; time for block: 101.649
+At SNP 6200000; time for block: 103.974
+At SNP 6300000; time for block: 101.757
+At SNP 6400000; time for block: 103.749
+At SNP 6500000; time for block: 101.693
+At SNP 6600000; time for block: 103.865
+At SNP 6700000; time for block: 101.972
+At SNP 6800000; time for block: 102.595
+At SNP 6900000; time for block: 109.145
+At SNP 7000000; time for block: 106.949
+At SNP 7100000; time for block: 113.973
+At SNP 7200000; time for block: 110.915
+At SNP 7300000; time for block: 103.356
+At SNP 7400000; time for block: 119.614
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr2_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 8129063
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 111.981
+At SNP 200000; time for block: 110.133
+At SNP 300000; time for block: 101.674
+At SNP 400000; time for block: 103.802
+At SNP 500000; time for block: 106.588
+At SNP 600000; time for block: 105.105
+At SNP 700000; time for block: 102.012
+At SNP 800000; time for block: 98.6004
+At SNP 900000; time for block: 98.1765
+At SNP 1000000; time for block: 93.4903
+At SNP 1100000; time for block: 103.931
+At SNP 1200000; time for block: 100.64
+At SNP 1300000; time for block: 114.188
+At SNP 1400000; time for block: 102.84
+At SNP 1500000; time for block: 97.7388
+At SNP 1600000; time for block: 98.6432
+At SNP 1700000; time for block: 99.745
+At SNP 1800000; time for block: 101.298
+At SNP 1900000; time for block: 97.8238
+At SNP 2000000; time for block: 103.618
+At SNP 2100000; time for block: 99.9422
+At SNP 2200000; time for block: 99.327
+At SNP 2300000; time for block: 93.2021
+At SNP 2400000; time for block: 94.8471
+At SNP 2500000; time for block: 103.656
+At SNP 2600000; time for block: 102.189
+At SNP 2700000; time for block: 99.4833
+At SNP 2800000; time for block: 99.8315
+At SNP 2900000; time for block: 104.286
+At SNP 3000000; time for block: 101.882
+At SNP 3100000; time for block: 106.253
+At SNP 3200000; time for block: 103.215
+At SNP 3300000; time for block: 88.2903
+At SNP 3400000; time for block: 91.0365
+At SNP 3500000; time for block: 101.384
+At SNP 3600000; time for block: 93.9118
+At SNP 3700000; time for block: 102.653
+At SNP 3800000; time for block: 102.555
+At SNP 3900000; time for block: 102.281
+At SNP 4000000; time for block: 105.255
+At SNP 4100000; time for block: 100.807
+At SNP 4200000; time for block: 101.523
+At SNP 4300000; time for block: 100.477
+At SNP 4400000; time for block: 102.846
+At SNP 4500000; time for block: 107.817
+At SNP 4600000; time for block: 96.4546
+At SNP 4700000; time for block: 96.8989
+At SNP 4800000; time for block: 103.869
+At SNP 4900000; time for block: 97.9335
+At SNP 5000000; time for block: 89.3198
+At SNP 5100000; time for block: 95.9641
+At SNP 5200000; time for block: 100.52
+At SNP 5300000; time for block: 100.382
+At SNP 5400000; time for block: 101.601
+At SNP 5500000; time for block: 95.8544
+At SNP 5600000; time for block: 100.005
+At SNP 5700000; time for block: 105.046
+At SNP 5800000; time for block: 108.367
+At SNP 5900000; time for block: 102.825
+At SNP 6000000; time for block: 101.425
+At SNP 6100000; time for block: 104.508
+At SNP 6200000; time for block: 101.929
+At SNP 6300000; time for block: 97.004
+At SNP 6400000; time for block: 98.3642
+At SNP 6500000; time for block: 95.3812
+At SNP 6600000; time for block: 100.786
+At SNP 6700000; time for block: 93.977
+At SNP 6800000; time for block: 91.9171
+At SNP 6900000; time for block: 99.214
+At SNP 7000000; time for block: 103.227
+At SNP 7100000; time for block: 106.876
+At SNP 7200000; time for block: 104.626
+At SNP 7300000; time for block: 98.0742
+At SNP 7400000; time for block: 99.4737
+At SNP 7500000; time for block: 101.508
+At SNP 7600000; time for block: 104.991
+At SNP 7700000; time for block: 103.63
+At SNP 7800000; time for block: 100.772
+At SNP 7900000; time for block: 105.253
+At SNP 8000000; time for block: 103.935
+At SNP 8100000; time for block: 109.644
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr3_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 6696680
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 109.606
+At SNP 200000; time for block: 106.025
+At SNP 300000; time for block: 105.41
+At SNP 400000; time for block: 104.202
+At SNP 500000; time for block: 99.5262
+At SNP 600000; time for block: 102.167
+At SNP 700000; time for block: 100.056
+At SNP 800000; time for block: 101.535
+At SNP 900000; time for block: 105.02
+At SNP 1000000; time for block: 99.4374
+At SNP 1100000; time for block: 101.452
+At SNP 1200000; time for block: 105.959
+At SNP 1300000; time for block: 102.899
+At SNP 1400000; time for block: 98.802
+At SNP 1500000; time for block: 100.926
+At SNP 1600000; time for block: 99.9671
+At SNP 1700000; time for block: 99.5054
+At SNP 1800000; time for block: 81.7323
+At SNP 1900000; time for block: 91.5918
+At SNP 2000000; time for block: 99.0791
+At SNP 2100000; time for block: 97.7302
+At SNP 2200000; time for block: 101.925
+At SNP 2300000; time for block: 100.431
+At SNP 2400000; time for block: 102.452
+At SNP 2500000; time for block: 99.2813
+At SNP 2600000; time for block: 98.8021
+At SNP 2700000; time for block: 107.319
+At SNP 2800000; time for block: 101.003
+At SNP 2900000; time for block: 98.1255
+At SNP 3000000; time for block: 95.4112
+At SNP 3100000; time for block: 99.3029
+At SNP 3200000; time for block: 96.0499
+At SNP 3300000; time for block: 97.4615
+At SNP 3400000; time for block: 102.557
+At SNP 3500000; time for block: 99.6031
+At SNP 3600000; time for block: 104.207
+At SNP 3700000; time for block: 102.122
+At SNP 3800000; time for block: 100.891
+At SNP 3900000; time for block: 105.341
+At SNP 4000000; time for block: 99.1217
+At SNP 4100000; time for block: 100.718
+At SNP 4200000; time for block: 98.6511
+At SNP 4300000; time for block: 105.436
+At SNP 4400000; time for block: 96.5838
+At SNP 4500000; time for block: 107.183
+At SNP 4600000; time for block: 103.074
+At SNP 4700000; time for block: 90.9118
+At SNP 4800000; time for block: 98.3211
+At SNP 4900000; time for block: 100.951
+At SNP 5000000; time for block: 105.276
+At SNP 5100000; time for block: 103.688
+At SNP 5200000; time for block: 102.612
+At SNP 5300000; time for block: 102.541
+At SNP 5400000; time for block: 98.6
+At SNP 5500000; time for block: 105.112
+At SNP 5600000; time for block: 104.781
+At SNP 5700000; time for block: 106.198
+At SNP 5800000; time for block: 101.51
+At SNP 5900000; time for block: 103.167
+At SNP 6000000; time for block: 105.037
+At SNP 6100000; time for block: 100.628
+At SNP 6200000; time for block: 99.3068
+At SNP 6300000; time for block: 99.6056
+At SNP 6400000; time for block: 102.756
+At SNP 6500000; time for block: 113.238
+At SNP 6600000; time for block: 109.658
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr4_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 6555871
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 101.037
+At SNP 200000; time for block: 109.153
+At SNP 300000; time for block: 107.066
+At SNP 400000; time for block: 110.574
+At SNP 500000; time for block: 103.067
+At SNP 600000; time for block: 103.817
+At SNP 700000; time for block: 102.407
+At SNP 800000; time for block: 104.508
+At SNP 900000; time for block: 104.01
+At SNP 1000000; time for block: 101.27
+At SNP 1100000; time for block: 102.832
+At SNP 1200000; time for block: 103.137
+At SNP 1300000; time for block: 105.675
+At SNP 1400000; time for block: 104.187
+At SNP 1500000; time for block: 106.949
+At SNP 1600000; time for block: 105.505
+At SNP 1700000; time for block: 102.067
+At SNP 1800000; time for block: 93.0227
+At SNP 1900000; time for block: 96.7883
+At SNP 2000000; time for block: 102.116
+At SNP 2100000; time for block: 107.536
+At SNP 2200000; time for block: 105.323
+At SNP 2300000; time for block: 102.567
+At SNP 2400000; time for block: 103.089
+At SNP 2500000; time for block: 106.339
+At SNP 2600000; time for block: 103.43
+At SNP 2700000; time for block: 95.6996
+At SNP 2800000; time for block: 102.717
+At SNP 2900000; time for block: 103.279
+At SNP 3000000; time for block: 103.952
+At SNP 3100000; time for block: 99.8852
+At SNP 3200000; time for block: 101.136
+At SNP 3300000; time for block: 98.5358
+At SNP 3400000; time for block: 105.939
+At SNP 3500000; time for block: 109.256
+At SNP 3600000; time for block: 106.876
+At SNP 3700000; time for block: 100.172
+At SNP 3800000; time for block: 97.348
+At SNP 3900000; time for block: 102.224
+At SNP 4000000; time for block: 102.858
+At SNP 4100000; time for block: 105.459
+At SNP 4200000; time for block: 108.123
+At SNP 4300000; time for block: 103.79
+At SNP 4400000; time for block: 107.017
+At SNP 4500000; time for block: 101.312
+At SNP 4600000; time for block: 107.883
+At SNP 4700000; time for block: 100.259
+At SNP 4800000; time for block: 103.904
+At SNP 4900000; time for block: 100.335
+At SNP 5000000; time for block: 98.901
+At SNP 5100000; time for block: 93.8265
+At SNP 5200000; time for block: 96.2541
+At SNP 5300000; time for block: 100.032
+At SNP 5400000; time for block: 105.13
+At SNP 5500000; time for block: 100.774
+At SNP 5600000; time for block: 112.726
+At SNP 5700000; time for block: 108.801
+At SNP 5800000; time for block: 108.468
+At SNP 5900000; time for block: 104.823
+At SNP 6000000; time for block: 102.377
+At SNP 6100000; time for block: 106.724
+At SNP 6200000; time for block: 108.845
+At SNP 6300000; time for block: 108.79
+At SNP 6400000; time for block: 111.91
+At SNP 6500000; time for block: 111.595
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr5_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 6070641
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 112.334
+At SNP 200000; time for block: 111.064
+At SNP 300000; time for block: 109.532
+At SNP 400000; time for block: 109.641
+At SNP 500000; time for block: 103.219
+At SNP 600000; time for block: 98.6261
+At SNP 700000; time for block: 106.186
+At SNP 800000; time for block: 110.454
+At SNP 900000; time for block: 105.163
+At SNP 1000000; time for block: 107.528
+At SNP 1100000; time for block: 109.077
+At SNP 1200000; time for block: 104.816
+At SNP 1300000; time for block: 102.315
+At SNP 1400000; time for block: 99.4691
+At SNP 1500000; time for block: 99.8269
+At SNP 1600000; time for block: 95.1116
+At SNP 1700000; time for block: 87.6311
+At SNP 1800000; time for block: 98.0504
+At SNP 1900000; time for block: 103.758
+At SNP 2000000; time for block: 104.72
+At SNP 2100000; time for block: 93.7324
+At SNP 2200000; time for block: 100.016
+At SNP 2300000; time for block: 104.817
+At SNP 2400000; time for block: 97.5503
+At SNP 2500000; time for block: 104.561
+At SNP 2600000; time for block: 100.728
+At SNP 2700000; time for block: 101.086
+At SNP 2800000; time for block: 103.483
+At SNP 2900000; time for block: 93.6529
+At SNP 3000000; time for block: 94.158
+At SNP 3100000; time for block: 91.2357
+At SNP 3200000; time for block: 105.097
+At SNP 3300000; time for block: 106.519
+At SNP 3400000; time for block: 102.317
+At SNP 3500000; time for block: 98.2707
+At SNP 3600000; time for block: 101.131
+At SNP 3700000; time for block: 99.5359
+At SNP 3800000; time for block: 101.652
+At SNP 3900000; time for block: 106.004
+At SNP 4000000; time for block: 102.456
+At SNP 4100000; time for block: 102.01
+At SNP 4200000; time for block: 101.688
+At SNP 4300000; time for block: 100.407
+At SNP 4400000; time for block: 95.8066
+At SNP 4500000; time for block: 95.4388
+At SNP 4600000; time for block: 97.8992
+At SNP 4700000; time for block: 92.1473
+At SNP 4800000; time for block: 98.7509
+At SNP 4900000; time for block: 98.5639
+At SNP 5000000; time for block: 104.414
+At SNP 5100000; time for block: 104.116
+At SNP 5200000; time for block: 103.636
+At SNP 5300000; time for block: 102.227
+At SNP 5400000; time for block: 100.401
+At SNP 5500000; time for block: 100.003
+At SNP 5600000; time for block: 98.2344
+At SNP 5700000; time for block: 103.114
+At SNP 5800000; time for block: 100.568
+At SNP 5900000; time for block: 102.175
+At SNP 6000000; time for block: 105.063
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr6_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 5751712
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 110.06
+At SNP 200000; time for block: 108.247
+At SNP 300000; time for block: 106.472
+At SNP 400000; time for block: 106.287
+At SNP 500000; time for block: 101.969
+At SNP 600000; time for block: 101.059
+At SNP 700000; time for block: 104.395
+At SNP 800000; time for block: 104.496
+At SNP 900000; time for block: 108.033
+At SNP 1000000; time for block: 105.48
+At SNP 1100000; time for block: 161.866
+At SNP 1200000; time for block: 177.49
+At SNP 1300000; time for block: 103.215
+At SNP 1400000; time for block: 103.706
+At SNP 1500000; time for block: 101.435
+At SNP 1600000; time for block: 98.2714
+At SNP 1700000; time for block: 93.4739
+At SNP 1800000; time for block: 95.5611
+At SNP 1900000; time for block: 103.337
+At SNP 2000000; time for block: 108.964
+At SNP 2100000; time for block: 100.307
+At SNP 2200000; time for block: 100.06
+At SNP 2300000; time for block: 109.853
+At SNP 2400000; time for block: 105.14
+At SNP 2500000; time for block: 102.54
+At SNP 2600000; time for block: 100.535
+At SNP 2700000; time for block: 103.473
+At SNP 2800000; time for block: 104.504
+At SNP 2900000; time for block: 97.7504
+At SNP 3000000; time for block: 94.8045
+At SNP 3100000; time for block: 100.92
+At SNP 3200000; time for block: 101.191
+At SNP 3300000; time for block: 104.245
+At SNP 3400000; time for block: 96.3712
+At SNP 3500000; time for block: 107.181
+At SNP 3600000; time for block: 103.675
+At SNP 3700000; time for block: 102.152
+At SNP 3800000; time for block: 99.1358
+At SNP 3900000; time for block: 101.002
+At SNP 4000000; time for block: 103.427
+At SNP 4100000; time for block: 106.808
+At SNP 4200000; time for block: 100.556
+At SNP 4300000; time for block: 91.6843
+At SNP 4400000; time for block: 103.167
+At SNP 4500000; time for block: 103.125
+At SNP 4600000; time for block: 98.836
+At SNP 4700000; time for block: 101.965
+At SNP 4800000; time for block: 99.0565
+At SNP 4900000; time for block: 97.027
+At SNP 5000000; time for block: 103.73
+At SNP 5100000; time for block: 106.323
+At SNP 5200000; time for block: 106.849
+At SNP 5300000; time for block: 103.237
+At SNP 5400000; time for block: 104.625
+At SNP 5500000; time for block: 105.047
+At SNP 5600000; time for block: 107.061
+At SNP 5700000; time for block: 114.599
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr7_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 5405524
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 109.231
+At SNP 200000; time for block: 100.346
+At SNP 300000; time for block: 106.108
+At SNP 400000; time for block: 110.254
+At SNP 500000; time for block: 108.302
+At SNP 600000; time for block: 111.526
+At SNP 700000; time for block: 104.12
+At SNP 800000; time for block: 99.1694
+At SNP 900000; time for block: 100.552
+At SNP 1000000; time for block: 101.556
+At SNP 1100000; time for block: 103.714
+At SNP 1200000; time for block: 102.502
+At SNP 1300000; time for block: 102.544
+At SNP 1400000; time for block: 102.659
+At SNP 1500000; time for block: 106.6
+At SNP 1600000; time for block: 99.0693
+At SNP 1700000; time for block: 100.239
+At SNP 1800000; time for block: 100.95
+At SNP 1900000; time for block: 104.484
+At SNP 2000000; time for block: 109.386
+At SNP 2100000; time for block: 111.744
+At SNP 2200000; time for block: 109.533
+At SNP 2300000; time for block: 105.786
+At SNP 2400000; time for block: 106.42
+At SNP 2500000; time for block: 99.9226
+At SNP 2600000; time for block: 96.4937
+At SNP 2700000; time for block: 106.004
+At SNP 2800000; time for block: 102.232
+At SNP 2900000; time for block: 104.578
+At SNP 3000000; time for block: 102.267
+At SNP 3100000; time for block: 98.2139
+At SNP 3200000; time for block: 94.7171
+At SNP 3300000; time for block: 96.0831
+At SNP 3400000; time for block: 99.9813
+At SNP 3500000; time for block: 98.2498
+At SNP 3600000; time for block: 100.325
+At SNP 3700000; time for block: 98.6389
+At SNP 3800000; time for block: 96.8524
+At SNP 3900000; time for block: 96.8129
+At SNP 4000000; time for block: 94.1529
+At SNP 4100000; time for block: 99.0455
+At SNP 4200000; time for block: 99.5743
+At SNP 4300000; time for block: 106.376
+At SNP 4400000; time for block: 100.698
+At SNP 4500000; time for block: 99.6285
+At SNP 4600000; time for block: 104.425
+At SNP 4700000; time for block: 102.538
+At SNP 4800000; time for block: 97.9728
+At SNP 4900000; time for block: 101.081
+At SNP 5000000; time for block: 108.252
+At SNP 5100000; time for block: 107.696
+At SNP 5200000; time for block: 107.971
+At SNP 5300000; time for block: 109.067
+At SNP 5400000; time for block: 109.556
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr8_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 5282223
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 106.275
+At SNP 200000; time for block: 111.727
+At SNP 300000; time for block: 101.31
+At SNP 400000; time for block: 106.951
+At SNP 500000; time for block: 109.211
+At SNP 600000; time for block: 98.1701
+At SNP 700000; time for block: 101.268
+At SNP 800000; time for block: 111.901
+At SNP 900000; time for block: 107.748
+At SNP 1000000; time for block: 108.723
+At SNP 1100000; time for block: 105.078
+At SNP 1200000; time for block: 102.807
+At SNP 1300000; time for block: 109.501
+At SNP 1400000; time for block: 103.706
+At SNP 1500000; time for block: 106.972
+At SNP 1600000; time for block: 102.634
+At SNP 1700000; time for block: 92.7451
+At SNP 1800000; time for block: 105.721
+At SNP 1900000; time for block: 97.7819
+At SNP 2000000; time for block: 90.4258
+At SNP 2100000; time for block: 102.456
+At SNP 2200000; time for block: 106.663
+At SNP 2300000; time for block: 100.442
+At SNP 2400000; time for block: 105.542
+At SNP 2500000; time for block: 102.829
+At SNP 2600000; time for block: 99.4529
+At SNP 2700000; time for block: 99.4369
+At SNP 2800000; time for block: 103.698
+At SNP 2900000; time for block: 106.615
+At SNP 3000000; time for block: 103.502
+At SNP 3100000; time for block: 107.437
+At SNP 3200000; time for block: 113.043
+At SNP 3300000; time for block: 101.494
+At SNP 3400000; time for block: 103.539
+At SNP 3500000; time for block: 96.4209
+At SNP 3600000; time for block: 103.51
+At SNP 3700000; time for block: 101.224
+At SNP 3800000; time for block: 105.801
+At SNP 3900000; time for block: 103.86
+At SNP 4000000; time for block: 109.127
+At SNP 4100000; time for block: 101.321
+At SNP 4200000; time for block: 104.831
+At SNP 4300000; time for block: 100.718
+At SNP 4400000; time for block: 106.006
+At SNP 4500000; time for block: 101.172
+At SNP 4600000; time for block: 103.472
+At SNP 4700000; time for block: 107.661
+At SNP 4800000; time for block: 108.915
+At SNP 4900000; time for block: 109.721
+At SNP 5000000; time for block: 107.867
+At SNP 5100000; time for block: 104.927
+At SNP 5200000; time for block: 105.012
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr9_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 4066774
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 107.107
+At SNP 200000; time for block: 99.8585
+At SNP 300000; time for block: 94.047
+At SNP 400000; time for block: 100.826
+At SNP 500000; time for block: 101.566
+At SNP 600000; time for block: 105.31
+At SNP 700000; time for block: 98.0423
+At SNP 800000; time for block: 101
+At SNP 900000; time for block: 97.9138
+At SNP 1000000; time for block: 95.2642
+At SNP 1100000; time for block: 97.2266
+At SNP 1200000; time for block: 100.491
+At SNP 1300000; time for block: 108.703
+At SNP 1400000; time for block: 110.593
+At SNP 1500000; time for block: 100.837
+At SNP 1600000; time for block: 105.828
+At SNP 1700000; time for block: 93.9645
+At SNP 1800000; time for block: 103.056
+At SNP 1900000; time for block: 101.644
+At SNP 2000000; time for block: 104.641
+At SNP 2100000; time for block: 105.005
+At SNP 2200000; time for block: 100.518
+At SNP 2300000; time for block: 101.618
+At SNP 2400000; time for block: 105.807
+At SNP 2500000; time for block: 103.114
+At SNP 2600000; time for block: 101.621
+At SNP 2700000; time for block: 102.002
+At SNP 2800000; time for block: 98.3947
+At SNP 2900000; time for block: 110.045
+At SNP 3000000; time for block: 101.12
+At SNP 3100000; time for block: 103.352
+At SNP 3200000; time for block: 104.788
+At SNP 3300000; time for block: 100.445
+At SNP 3400000; time for block: 99.3899
+At SNP 3500000; time for block: 96.9098
+At SNP 3600000; time for block: 95.5976
+At SNP 3700000; time for block: 98.5891
+At SNP 3800000; time for block: 104.548
+At SNP 3900000; time for block: 102.823
+At SNP 4000000; time for block: 105.476
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr10_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 4562904
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 107.121
+At SNP 200000; time for block: 108.4
+At SNP 300000; time for block: 113.198
+At SNP 400000; time for block: 105.013
+At SNP 500000; time for block: 103.195
+At SNP 600000; time for block: 106.778
+At SNP 700000; time for block: 105.237
+At SNP 800000; time for block: 107.27
+At SNP 900000; time for block: 95.2405
+At SNP 1000000; time for block: 104.777
+At SNP 1100000; time for block: 111.964
+At SNP 1200000; time for block: 105.219
+At SNP 1300000; time for block: 102.614
+At SNP 1400000; time for block: 97.6594
+At SNP 1500000; time for block: 110.106
+At SNP 1600000; time for block: 104.975
+At SNP 1700000; time for block: 103.318
+At SNP 1800000; time for block: 106.469
+At SNP 1900000; time for block: 111.317
+At SNP 2000000; time for block: 112.166
+At SNP 2100000; time for block: 100.24
+At SNP 2200000; time for block: 100.313
+At SNP 2300000; time for block: 111.177
+At SNP 2400000; time for block: 107.129
+At SNP 2500000; time for block: 101.635
+At SNP 2600000; time for block: 91.3121
+At SNP 2700000; time for block: 99.0278
+At SNP 2800000; time for block: 109.501
+At SNP 2900000; time for block: 102.592
+At SNP 3000000; time for block: 103.946
+At SNP 3100000; time for block: 103.694
+At SNP 3200000; time for block: 100.033
+At SNP 3300000; time for block: 101.643
+At SNP 3400000; time for block: 100.398
+At SNP 3500000; time for block: 93.8215
+At SNP 3600000; time for block: 102.906
+At SNP 3700000; time for block: 102.615
+At SNP 3800000; time for block: 99.8909
+At SNP 3900000; time for block: 95.7525
+At SNP 4000000; time for block: 99.5164
+At SNP 4100000; time for block: 105.03
+At SNP 4200000; time for block: 104.882
+At SNP 4300000; time for block: 102.162
+At SNP 4400000; time for block: 105.579
+At SNP 4500000; time for block: 107.33
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr11_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 4628348
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 105.269
+At SNP 200000; time for block: 111.532
+At SNP 300000; time for block: 111.631
+At SNP 400000; time for block: 104.81
+At SNP 500000; time for block: 105.282
+At SNP 600000; time for block: 92.8758
+At SNP 700000; time for block: 99.1096
+At SNP 800000; time for block: 107.024
+At SNP 900000; time for block: 111.302
+At SNP 1000000; time for block: 116.211
+At SNP 1100000; time for block: 94.0007
+At SNP 1200000; time for block: 97.3206
+At SNP 1300000; time for block: 102.67
+At SNP 1400000; time for block: 107.103
+At SNP 1500000; time for block: 103.457
+At SNP 1600000; time for block: 100.983
+At SNP 1700000; time for block: 92.2434
+At SNP 1800000; time for block: 93.7257
+At SNP 1900000; time for block: 96.7907
+At SNP 2000000; time for block: 95.7979
+At SNP 2100000; time for block: 98.6043
+At SNP 2200000; time for block: 94.2611
+At SNP 2300000; time for block: 94.6249
+At SNP 2400000; time for block: 98.2973
+At SNP 2500000; time for block: 101.331
+At SNP 2600000; time for block: 99.1473
+At SNP 2700000; time for block: 98.6855
+At SNP 2800000; time for block: 103.47
+At SNP 2900000; time for block: 97.6726
+At SNP 3000000; time for block: 102.835
+At SNP 3100000; time for block: 103.503
+At SNP 3200000; time for block: 98.0051
+At SNP 3300000; time for block: 101.506
+At SNP 3400000; time for block: 108.615
+At SNP 3500000; time for block: 100.438
+At SNP 3600000; time for block: 104.167
+At SNP 3700000; time for block: 99.6896
+At SNP 3800000; time for block: 95.46
+At SNP 3900000; time for block: 95.9444
+At SNP 4000000; time for block: 98.763
+At SNP 4100000; time for block: 99.202
+At SNP 4200000; time for block: 99.3013
+At SNP 4300000; time for block: 104.31
+At SNP 4400000; time for block: 100.019
+At SNP 4500000; time for block: 101.531
+At SNP 4600000; time for block: 99.5783
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr12_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 4431052
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 103.907
+At SNP 200000; time for block: 102.464
+At SNP 300000; time for block: 109.772
+At SNP 400000; time for block: 117.004
+At SNP 500000; time for block: 106.697
+At SNP 600000; time for block: 97.7211
+At SNP 700000; time for block: 104.217
+At SNP 800000; time for block: 104.595
+At SNP 900000; time for block: 103.62
+At SNP 1000000; time for block: 103.008
+At SNP 1100000; time for block: 112.561
+At SNP 1200000; time for block: 109.816
+At SNP 1300000; time for block: 103.464
+At SNP 1400000; time for block: 104.428
+At SNP 1500000; time for block: 102.678
+At SNP 1600000; time for block: 100.912
+At SNP 1700000; time for block: 97.8333
+At SNP 1800000; time for block: 99.537
+At SNP 1900000; time for block: 96.2878
+At SNP 2000000; time for block: 99.2487
+At SNP 2100000; time for block: 105.985
+At SNP 2200000; time for block: 97.5348
+At SNP 2300000; time for block: 102.522
+At SNP 2400000; time for block: 101.37
+At SNP 2500000; time for block: 98.5393
+At SNP 2600000; time for block: 99.4738
+At SNP 2700000; time for block: 96.1067
+At SNP 2800000; time for block: 100.342
+At SNP 2900000; time for block: 97.8811
+At SNP 3000000; time for block: 92.6616
+At SNP 3100000; time for block: 99.441
+At SNP 3200000; time for block: 107.196
+At SNP 3300000; time for block: 97.6996
+At SNP 3400000; time for block: 102.024
+At SNP 3500000; time for block: 104.372
+At SNP 3600000; time for block: 100.795
+At SNP 3700000; time for block: 92.5759
+At SNP 3800000; time for block: 103.076
+At SNP 3900000; time for block: 101.416
+At SNP 4000000; time for block: 100.801
+At SNP 4100000; time for block: 99.5852
+At SNP 4200000; time for block: 106.3
+At SNP 4300000; time for block: 109.942
+At SNP 4400000; time for block: 110.303
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr13_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 3270217
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 116.741
+At SNP 200000; time for block: 110.806
+At SNP 300000; time for block: 109.354
+At SNP 400000; time for block: 106.304
+At SNP 500000; time for block: 103.173
+At SNP 600000; time for block: 98.2112
+At SNP 700000; time for block: 103.642
+At SNP 800000; time for block: 100.151
+At SNP 900000; time for block: 101.781
+At SNP 1000000; time for block: 101.552
+At SNP 1100000; time for block: 101.214
+At SNP 1200000; time for block: 98.6566
+At SNP 1300000; time for block: 98.8456
+At SNP 1400000; time for block: 98.6291
+At SNP 1500000; time for block: 107.171
+At SNP 1600000; time for block: 101.397
+At SNP 1700000; time for block: 101.225
+At SNP 1800000; time for block: 104.046
+At SNP 1900000; time for block: 103.45
+At SNP 2000000; time for block: 98.297
+At SNP 2100000; time for block: 103.714
+At SNP 2200000; time for block: 104.212
+At SNP 2300000; time for block: 108.708
+At SNP 2400000; time for block: 98.2548
+At SNP 2500000; time for block: 104.679
+At SNP 2600000; time for block: 104.255
+At SNP 2700000; time for block: 99.2017
+At SNP 2800000; time for block: 104.419
+At SNP 2900000; time for block: 107.212
+At SNP 3000000; time for block: 104.352
+At SNP 3100000; time for block: 107.379
+At SNP 3200000; time for block: 107.107
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr14_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 3037521
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 106.783
+At SNP 200000; time for block: 105.801
+At SNP 300000; time for block: 101.852
+At SNP 400000; time for block: 100.268
+At SNP 500000; time for block: 100.51
+At SNP 600000; time for block: 102.181
+At SNP 700000; time for block: 98.4237
+At SNP 800000; time for block: 109.61
+At SNP 900000; time for block: 104.203
+At SNP 1000000; time for block: 100.064
+At SNP 1100000; time for block: 97.8456
+At SNP 1200000; time for block: 103.736
+At SNP 1300000; time for block: 104.146
+At SNP 1400000; time for block: 101.079
+At SNP 1500000; time for block: 98.258
+At SNP 1600000; time for block: 100.361
+At SNP 1700000; time for block: 99.7199
+At SNP 1800000; time for block: 99.397
+At SNP 1900000; time for block: 103.17
+At SNP 2000000; time for block: 103.65
+At SNP 2100000; time for block: 99.0011
+At SNP 2200000; time for block: 101.674
+At SNP 2300000; time for block: 102.481
+At SNP 2400000; time for block: 102.145
+At SNP 2500000; time for block: 108.492
+At SNP 2600000; time for block: 103.742
+At SNP 2700000; time for block: 101.362
+At SNP 2800000; time for block: 102.518
+At SNP 2900000; time for block: 101.109
+At SNP 3000000; time for block: 104.953
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr15_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 2767971
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 96.9793
+At SNP 200000; time for block: 110.862
+At SNP 300000; time for block: 102.704
+At SNP 400000; time for block: 104.491
+At SNP 500000; time for block: 109.774
+At SNP 600000; time for block: 102.577
+At SNP 700000; time for block: 99.3634
+At SNP 800000; time for block: 94.1044
+At SNP 900000; time for block: 101.552
+At SNP 1000000; time for block: 101.55
+At SNP 1100000; time for block: 107.121
+At SNP 1200000; time for block: 104.298
+At SNP 1300000; time for block: 98.8312
+At SNP 1400000; time for block: 99.5801
+At SNP 1500000; time for block: 100.383
+At SNP 1600000; time for block: 99.2239
+At SNP 1700000; time for block: 100.411
+At SNP 1800000; time for block: 95.9867
+At SNP 1900000; time for block: 96.6863
+At SNP 2000000; time for block: 104.683
+At SNP 2100000; time for block: 98.0212
+At SNP 2200000; time for block: 101.982
+At SNP 2300000; time for block: 98.0469
+At SNP 2400000; time for block: 102.86
+At SNP 2500000; time for block: 108.461
+At SNP 2600000; time for block: 101.296
+At SNP 2700000; time for block: 107.04
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr16_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 3089612
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 103.288
+At SNP 200000; time for block: 93.8218
+At SNP 300000; time for block: 99.8568
+At SNP 400000; time for block: 101.629
+At SNP 500000; time for block: 108.097
+At SNP 600000; time for block: 103.557
+At SNP 700000; time for block: 102.454
+At SNP 800000; time for block: 102.336
+At SNP 900000; time for block: 106.653
+At SNP 1000000; time for block: 100.892
+At SNP 1100000; time for block: 106.629
+At SNP 1200000; time for block: 96.5095
+At SNP 1300000; time for block: 89.0734
+At SNP 1400000; time for block: 84.1176
+At SNP 1500000; time for block: 97.0173
+At SNP 1600000; time for block: 99.9216
+At SNP 1700000; time for block: 105.24
+At SNP 1800000; time for block: 107.308
+At SNP 1900000; time for block: 102.302
+At SNP 2000000; time for block: 101.138
+At SNP 2100000; time for block: 93.6857
+At SNP 2200000; time for block: 98.1775
+At SNP 2300000; time for block: 97.438
+At SNP 2400000; time for block: 99.6354
+At SNP 2500000; time for block: 106.553
+At SNP 2600000; time for block: 98.5196
+At SNP 2700000; time for block: 103.745
+At SNP 2800000; time for block: 103.75
+At SNP 2900000; time for block: 102.851
+At SNP 3000000; time for block: 103.667
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr17_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 2660711
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 108.28
+At SNP 200000; time for block: 109.681
+At SNP 300000; time for block: 106.763
+At SNP 400000; time for block: 103.985
+At SNP 500000; time for block: 107.964
+At SNP 600000; time for block: 110.73
+At SNP 700000; time for block: 99.0972
+At SNP 800000; time for block: 98.8444
+At SNP 900000; time for block: 89.8003
+At SNP 1000000; time for block: 99.01
+At SNP 1100000; time for block: 103.751
+At SNP 1200000; time for block: 98.1486
+At SNP 1300000; time for block: 96.8987
+At SNP 1400000; time for block: 99.8118
+At SNP 1500000; time for block: 104.901
+At SNP 1600000; time for block: 98.9867
+At SNP 1700000; time for block: 100.173
+At SNP 1800000; time for block: 99.2408
+At SNP 1900000; time for block: 93.6808
+At SNP 2000000; time for block: 95.7681
+At SNP 2100000; time for block: 105.856
+At SNP 2200000; time for block: 101.774
+At SNP 2300000; time for block: 101.536
+At SNP 2400000; time for block: 104.165
+At SNP 2500000; time for block: 106.973
+At SNP 2600000; time for block: 111.441
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr18_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 2599579
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 111.962
+At SNP 200000; time for block: 108.763
+At SNP 300000; time for block: 104.342
+At SNP 400000; time for block: 105.93
+At SNP 500000; time for block: 107.417
+At SNP 600000; time for block: 103.436
+At SNP 700000; time for block: 100.071
+At SNP 800000; time for block: 99.5978
+At SNP 900000; time for block: 102.541
+At SNP 1000000; time for block: 95.7591
+At SNP 1100000; time for block: 98.4286
+At SNP 1200000; time for block: 97.0381
+At SNP 1300000; time for block: 97.5778
+At SNP 1400000; time for block: 95.509
+At SNP 1500000; time for block: 99.8702
+At SNP 1600000; time for block: 100.89
+At SNP 1700000; time for block: 105.944
+At SNP 1800000; time for block: 103.057
+At SNP 1900000; time for block: 106.476
+At SNP 2000000; time for block: 106.137
+At SNP 2100000; time for block: 106.596
+At SNP 2200000; time for block: 110.807
+At SNP 2300000; time for block: 107.067
+At SNP 2400000; time for block: 106.028
+At SNP 2500000; time for block: 109.202
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr19_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 2087017
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 105.214
+At SNP 200000; time for block: 106.342
+At SNP 300000; time for block: 110.041
+At SNP 400000; time for block: 108.192
+At SNP 500000; time for block: 97.7124
+At SNP 600000; time for block: 103.141
+At SNP 700000; time for block: 104.309
+At SNP 800000; time for block: 107.251
+At SNP 900000; time for block: 116.392
+At SNP 1000000; time for block: 99.5878
+At SNP 1100000; time for block: 99.4601
+At SNP 1200000; time for block: 101.885
+At SNP 1300000; time for block: 102.935
+At SNP 1400000; time for block: 100.138
+At SNP 1500000; time for block: 96.2481
+At SNP 1600000; time for block: 105.681
+At SNP 1700000; time for block: 103.644
+At SNP 1800000; time for block: 106.852
+At SNP 1900000; time for block: 120.622
+At SNP 2000000; time for block: 115.361
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr20_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 2082571
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 107.337
+At SNP 200000; time for block: 108.74
+At SNP 300000; time for block: 108.091
+At SNP 400000; time for block: 105.03
+At SNP 500000; time for block: 104.641
+At SNP 600000; time for block: 108.168
+At SNP 700000; time for block: 106.021
+At SNP 800000; time for block: 92.4141
+At SNP 900000; time for block: 103.254
+At SNP 1000000; time for block: 97.5861
+At SNP 1100000; time for block: 89.5303
+At SNP 1200000; time for block: 94.3673
+At SNP 1300000; time for block: 97.4205
+At SNP 1400000; time for block: 100.674
+At SNP 1500000; time for block: 101.103
+At SNP 1600000; time for block: 99.6722
+At SNP 1700000; time for block: 103.359
+At SNP 1800000; time for block: 105.468
+At SNP 1900000; time for block: 100.075
+At SNP 2000000; time for block: 103.763
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr21_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 1261158
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 101.313
+At SNP 200000; time for block: 102.131
+At SNP 300000; time for block: 108.89
+At SNP 400000; time for block: 103.443
+At SNP 500000; time for block: 105.966
+At SNP 600000; time for block: 105.974
+At SNP 700000; time for block: 102.67
+At SNP 800000; time for block: 99.71
+At SNP 900000; time for block: 102.689
+At SNP 1000000; time for block: 104.043
+At SNP 1100000; time for block: 107.907
+At SNP 1200000; time for block: 103.289
+
+BGEN file: /exports/igmm/eddie/GenScotDepression/data/ukb/genetics/impv3/ukb_imp_chr22_v3.bgen
+
+Read 487409 indivs; using 457084 in filtered PLINK data
+snpBlocks (Mbgen): 1255683
+samples (Nbgen): 487409
+CompressedSNPBlocks: 1
+Layout: 2
+At SNP 100000; time for block: 109.581
+At SNP 200000; time for block: 107.011
+At SNP 300000; time for block: 111.021
+At SNP 400000; time for block: 108.246
+At SNP 500000; time for block: 97.838
+At SNP 600000; time for block: 106.23
+At SNP 700000; time for block: 104.552
+At SNP 800000; time for block: 100.561
+At SNP 900000; time for block: 95.7032
+At SNP 1000000; time for block: 106.752
+At SNP 1100000; time for block: 103.653
+At SNP 1200000; time for block: 111.422
+
+Time for streaming BGEN genotypes and writing output = 95841.4 sec
+
+Total elapsed time for analysis = 154010 sec

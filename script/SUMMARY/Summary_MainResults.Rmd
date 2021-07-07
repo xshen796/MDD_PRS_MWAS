@@ -1,0 +1,1134 @@
+---
+title: "EWAS of MDD PRS - Main Results"
+author: "X Shen"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    theme: cerulean
+    code_folding: hide
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+library(knitr)                                           # For md
+library(rmarkdown)                                       # For md
+library(dplyr)                                           # Data management
+library(ggplot2)                                         # Graph
+library(ggrepel)                                         # Graph
+library(ggpubr)                                          # Graph
+library(patchwork)                                       # Graph
+library(igraph)                                          # Circular connectivity graph
+library(ggraph)                                          # Circular connectivity graph
+library(here)                                            # Data loading
+library(data.table)                                      # Data loading
+library(tidyr)                                           # Data management
+library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)   # Data management
+library(tibble)                                          # Data management
+library(hrbrthemes)                                      # Graph
+library(superheat)                                       # Graph
+library(kableExtra)                                      # Table
+library(missMethyl)                                      # Extra pathway analysis
+library(pbapply)                                         # Process control
+
+# My own functions
+source(here::here('MR_meth_MDD/FUNs/manhattan_plot_XShen.R')) # EWAS manhattan plot
+source(here::here('MR_meth_MDD/FUNs/circular_graph_mr.R'))    # circular connectivity graph
+
+# Render from MR_meth_MDD folder
+```
+  
+  
+------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
+## EWAS for MDD PRS
+
+------------------------------------------------------------------------
+
+### Methods
+
+#### Subjects
+
+From Generation Scotland,
+
+-   Wave 1: N = 4977
+
+-   Wave 2: N = 4312
+
+    
+#### DNA methylation data and technical covariates
+
+Processed by Rosie, using EPIC array. M values.
+
+Relatedness controlled for by regressing against GRM. Other regressors include batch and cell proportion.
+
+#### Additional covariates
+
+Ever smoke, pack years, age, sex and 20 methylation PCs.
+
+  
+#### Pipeline
+
+From Mark, [wiki](https://www.wiki.ed.ac.uk/pages/viewpage.action?spaceKey=Psychiatry&title=STRADL+EWAS+pipeline).
+
+------------------------------------------------------------------------
+
+### EWAS Results{.tabset}
+
+```{r Load summary stats - EWAS, echo=FALSE, warning=FALSE, message=FALSE,cache=F}
+anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
+ref.tomerge <- anno %>% as.data.frame %>%
+  dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
+         Islands_Name,Relation_to_Island)
+
+ls.pt=c('5e_08','0.000001','0.0001','0.001','0.01','0.05','0.1','0.5','1')
+for (pt in ls.pt){
+    # Load data
+    f.path=paste0('MR_meth_MDD/result/EWAS_MDDprs_Shen/archiv/MDDprs_ewas_meta/MDDprs_pT',pt,'_meta/mddprs_pT',pt,'_meta_RosieData.toptable.txt1.tbl')
+    ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
+      mutate(p.adj = p.adjust(P.value,method='bonferroni')) 
+    colnames(ewasResults)[1]='CpG'
+    # Add annotations
+    ewasResults=merge(ewasResults,ref.tomerge,by.x='CpG',by.y='ID',all.x=T)
+    # Reformat data for printing
+    qman.dat=ewasResults
+    qman.dat$CHR=gsub('chr','',qman.dat$CHR)
+    qman.dat$CHR=as.numeric(qman.dat$CHR)
+    qman.dat=filter(qman.dat,!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value))
+    # Store data
+    expre=paste0('fig.dat.GS.pT.',pt,'=qman.dat')
+    eval(parse(text=expre))
+    # Make manhattan plot (save as tiff files and store in R environment)
+    tmp.path = paste0('MR_meth_MDD/Figs/GS_EWAS_pplot_',pt,'.png')
+    tmp.fig = m_plot(dat=qman.dat,
+                    chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,120),
+                    outputpath=here::here(tmp.path))
+    expre=paste0('fig.GSewas.',pt,'=tmp.fig')
+    eval(parse(text=expre))  
+}
+rm(list=ls(pattern='^0//.'))
+```
+
+#### PRS pT=5e-8
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=13,fig.height=7}
+# fig.GSewas.5e_08: recall the function to put this figure in the main text
+m_plot(dat=fig.dat.GS.pT.5e_08,
+                    chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,20),
+                    outputpath=here::here('MR_meth_MDD/Figs/GS_EWAS_pplot_5e_08.png'))
+```
+
+#### PRS pT=5e-8 no MHC region
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=13,fig.height=7}
+    f.path=paste0('MR_meth_MDD/result/EWAS_MDDprs_Shen/noMHC/ewas_BothWaves_noMHC_5e_08.metal.out1.tbl')
+    ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
+      mutate(p.adj = p.adjust(P.value,method='bonferroni')) 
+    colnames(ewasResults)[1]='CpG'
+    # Add annotations
+    ewasResults=merge(ewasResults,ref.tomerge,by.x='CpG',by.y='ID',all.x=T)
+    # Reformat data for printing
+    qman.dat=ewasResults
+    qman.dat$CHR=gsub('chr','',qman.dat$CHR)
+    qman.dat$CHR=as.numeric(qman.dat$CHR)
+    qman.dat=filter(qman.dat,!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value))
+   fig.GSewas.5e_08.noMHC = m_plot(dat=qman.dat,
+          chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+          add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,20),
+          outputpath=here::here('MR_meth_MDD/Figs/GS_EWAS_pplot_5e_08_noMHC.png'))
+   fig.GSewas.5e_08.noMHC
+```
+
+
+### Number of significant CpGs associated with PRS
+
+```{r numer of sig CpGs for all PRS, echo=FALSE,warning=F,message=FALSE,fig.width=6,fig.height=5}
+
+ls.pt=c('5e_08','0.000001','0.0001','0.001','0.01','0.05','0.1','0.5','1')
+
+for (pt in ls.pt){
+    ewasResults=get(paste0('fig.dat.GS.pT.',pt))
+    
+    ewasResults$p.fdr=p.adjust(ewasResults$P.value,method='fdr')
+    ewasResults$p.bonferroni=p.adjust(ewasResults$P.value,method='bonferroni')
+                 
+    tmp.count=data.frame(N5e_08=sum(ewasResults$P.value<5e-8,na.rm=T),
+                         N5_e06=sum(ewasResults$P.value<5e-6,na.rm=T),
+                         Nfdr=sum(ewasResults$p.fdr<0.05,na.rm=T),
+                         Nbonferroni=sum(ewasResults$p.bonferroni<0.05,na.rm=T))
+    if(pt==ls.pt[1]){sig.count=tmp.count}else{sig.count=rbind(sig.count,tmp.count)}
+
+}
+sig.count$MDDprs=factor(ls.pt,levels=rev(ls.pt))
+
+graph.dat=reshape2::melt(sig.count,id.vars='MDDprs')
+graph.dat$variable=gsub('N5e_08','p<5e-08',graph.dat$variable)
+graph.dat$variable=gsub('N5e_06','p<5e-06',graph.dat$variable)
+graph.dat$variable=gsub('Nfdr','pFDR<0.05',graph.dat$variable)
+graph.dat$variable=gsub('Nbonferroni','pBonferroni<0.05',graph.dat$variable)
+colnames(graph.dat)=c('MDDprs','Type','No')
+
+fig=ggplot(data=graph.dat, aes(x=MDDprs, y=No, group=Type)) +
+  geom_line(aes(color=Type))+
+  geom_point(aes(color=Type))+
+  theme(axis.text.x = element_text(angle = 90),
+  text = element_text(size=10))+
+  xlab('MDDprs pT')+
+  ylab('Number of significant CpGs')+
+  labs(group = "Threshold for significance")
+
+fig
+
+ggsave(plot = fig,filename = here::here('MR_meth_MDD/Figs/No_sig_CpG_GS.png'),
+       width = 12, height = 9, 
+       units = 'cm', dpi = 300)
+
+```
+
+  
+### CpGs to nearest genome-wide significant locus
+
+```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=8,fig.height=5}
+### Data prep
+# MDD.gwas.hits = fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice') %>%
+#   filter(.,P<5e-8) 
+# MDD.gwas.hits = MDD.gwas.hits[!grepl('hap',MDD.gwas.hits$CHR),] %>%
+#   mutate(CHR=as.numeric(CHR))
+# 
+# ewas.pTwgsig = fig.dat.pT.5e_08 %>% 
+#   mutate(p.adj = p.adjust(P.value,method='bonferroni')) 
+# 
+# dis_nearest_gwashit <- function(tmp.gwas,tmp.targetloc){
+#   target.chr=as.numeric(tmp.targetloc['CHR'])
+#   target.bp=as.numeric(tmp.targetloc['MAPINFO'])
+#   
+#   tmp.block.gwas = filter(tmp.gwas,CHR==target.chr)
+#   if (nrow(tmp.block.gwas)==0){bp.distance=NA}else{
+#   bp.distance = min(abs(tmp.block.gwas$BP-target.bp),na.rm=T)    
+#   }
+# }
+# 
+# tmp.distance.toadd = pbapply(ewas.pTwgsig, MARGIN = 1,
+#                            FUN=dis_nearest_gwashit,tmp.gwas=MDD.gwas.hits) %>%
+#   unlist
+# 
+# ewas.pTwgsig$distance_to_nearest_gwashit = tmp.distance.toadd
+
+# save(ewas.pTwgsig,file='result/EWAS_MDDprs_fromKathryn/ewas.distance.RData')
+load(here::here('MR_meth_MDD/result/EWAS_MDDprs_fromKathryn/ewas.distance.RData'))
+
+ewas.pTwgsig = ewas.pTwgsig %>%
+  mutate(EWAS.sig = ifelse(p.adj<0.05,'yes','no'))
+ 
+fig.distance_to_nearest_gwasHit = 
+  ggplot(ewas.pTwgsig, aes(x=EWAS.sig, y=distance_to_nearest_gwashit, fill=EWAS.sig)) +
+  geom_violin() +
+  theme(
+    legend.position="none",
+    plot.title = element_text(size=11)
+  )+
+  ylim(0,1e+6)+
+  xlab('Significant CpG in EWAS') +
+  ylab('Distance to the nearest GWAS loci (p<5e-8)')
+
+# Print 
+fig.distance_to_nearest_gwasHit
+# Save
+ggsave(file=here::here('MR_meth_MDD/Figs/MainText/Distance_to_nearest_gwasHit.png'),
+       plot=fig.distance_to_nearest_gwasHit,
+       dpi = 300, width = 6, height = 4, units = 'in')
+
+# Calculate 95% CI
+CI95.sig = 
+  quantile(ewas.pTwgsig$distance_to_nearest_gwashit[ewas.pTwgsig$EWAS.sig=='yes'],
+           c(0.025,0.975),na.rm=T)
+CI95.nonsig = 
+  quantile(ewas.pTwgsig$distance_to_nearest_gwashit[ewas.pTwgsig$EWAS.sig=='no'],
+           c(0.025,0.975),na.rm=T)
+
+
+```
+
+95% CI for distance to the nearest MDD risk locus:
+
+-   Significant CpG:  `r CI95.sig[1]`-`r CI95.sig[2]`
+-   Non-significant CpG: `r CI95.nonsig[1]`-`r CI95.nonsig[2]`
+
+### Gene annotation
+
+```{r,echo=F,warning=F,message=F}
+## All CpG
+# Most frequently identified genes
+ewas.sig = fig.dat.GS.pT.5e_08 %>%
+  filter(.,p.adj<0.05)
+
+## No MHC region
+```
+
+
+### Pathway analysis{.tabset}
+
+```{r load pathway data,warning=FALSE,message=FALSE}
+GO.result = read.table(here::here('MR_meth_MDD/result/EWAS_MDDprs_fromKathryn/meta-pgrs-mdd/mdd_SNPCH_prs_5e_08/mdd_SNPCH_prs_5e_08.GO.txt'),header=T,stringsAsFactors=F)
+KEGG.result = read.table(here::here('MR_meth_MDD/result/EWAS_MDDprs_fromKathryn/meta-pgrs-mdd/mdd_SNPCH_prs_5e_08/mdd_SNPCH_prs_5e_08.KEGG.txt'),header=T,stringsAsFactors=F)
+
+GO.result.sig=GO.result[order(GO.result$FDR,decreasing=F),] %>%
+  filter(.,FDR<0.05)
+KEGG.result.sig=KEGG.result[order(KEGG.result$FDR,decreasing=F),] %>%
+  filter(.,FDR<0.05)
+
+# pathway analysis for non-MHC probes
+pathway.dat=fig.dat.GS.pT.5e_08 %>%
+      mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR==6,'Yes','No')) %>%
+      filter(.,is.MHC == 'No')
+GO.result.sig_noMHC <- 
+  gometh(sig.cpg=pathway.dat$CpG[pathway.dat$p.adj<0.05], 
+         all.cpg=pathway.dat$CpG, collection="GO",
+              array.type = "EPIC") %>%
+  .[order(.$P.DE,decreasing=F),] 
+
+KEGG.result.sig_noMHC <- 
+  gometh(sig.cpg=pathway.dat$CpG[pathway.dat$p.adj<0.05], 
+         all.cpg=pathway.dat$CpG, collection="KEGG",
+              array.type = "EPIC") %>%
+  .[order(.$FDR,decreasing=F),] 
+
+```
+
+#### GO results - all CpG
+
+```{r, echo=F,warning=FALSE,message=FALSE}
+GO.result.sig[1:20,] %>%
+  kbl() %>%
+  kable_material(c("striped", "hover"))
+```
+
+#### KEGG results - all CpG
+
+```{r, echo=F,warning=FALSE,message=FALSE}
+KEGG.result.sig[1:20,] %>%
+  kbl() %>%
+  kable_material(c("striped", "hover"))
+```
+
+#### GO results - no MHC
+
+```{r, echo=F,warning=FALSE,message=FALSE}
+GO.result.sig_noMHC[1:20,] %>%
+  kbl() %>%
+  kable_material(c("striped", "hover"))
+```
+
+#### KEGG results - no MHC
+
+```{r, echo=F,warning=FALSE,message=FALSE}
+KEGG.result.sig_noMHC[1:20,] %>%
+  kbl() %>%
+  kable_material(c("striped", "hover"))
+```
+
+### Summary of EWAS for MDD PRS pT = 5e-8
+
+```{r,warning=FALSE,message=FALSE,fig.width=8,fig.height=5}
+# 1. No. of significant CpGs in the MHC region
+ewas.pTwgsig = ewas.pTwgsig %>%
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR==6,'Yes','No'))
+no.MHC.sig = table(ewas.pTwgsig$is.MHC[ewas.pTwgsig$p.adj<0.05])
+no.MHC.sig
+
+# 2. Top 10 CpGs
+top.10.sig = ewas.pTwgsig %>%
+  filter(.,p.adj<0.05) %>%
+  .[order(.$P.value,decreasing = F),] 
+top.10.sig[1:10,] %>%
+    kbl() %>%
+  kable_material(c("striped", "hover"))
+top10.max.p=max(top.10.sig$p.adj[1:10])
+
+# 3. significant CpGs outside of the MHC region
+top.10.sig.noMHC = ewas.pTwgsig %>%
+  filter(.,p.adj<0.05) %>%
+  filter(.,is.MHC=='No') %>%
+  .[order(.$P.value,decreasing = F),] 
+summary(top.10.sig.noMHC$p.adj)
+
+# 4. Top 10 non-MHC CpGs
+top.10.sig.noMHC[1:10,] %>%
+    kbl() %>%
+  kable_material(c("striped", "hover"))
+top.10.sig.noMHC.sCHR=top.10.sig.noMHC[1:10,] %>%
+  .[order(.$CHR),]
+top10.noMHC.max.p=max(top.10.sig.noMHC$p.adj[1:10])
+
+```
+
+
+------------------------------------------------------------------------
+  
+------------------------------------------------------------------------
+
+## EWAS replication in LBC & ALSPAC
+
+### Methods
+
+#### Subjects
+
+-   From LBC: ***N = 1330***
+-   From ALSPAC: ***N = 791***
+    
+#### Data
+
+LBC:
+
+-   DNA methylation: Processed by Riccardo. 450k array. M-values.
+
+-   Genetic: HRCv1.1 imputed data 
+
+-   LD reference: 1000G CEU sample, phase 3, hg19 genome build
+
+ALSPAC:
+
+-   DNA methylation: Processed by Riccardo. 450k array. M-values.
+
+-   Genetic: HRCv1.1 imputed data 
+
+-   LD reference: 1000G CEU sample, phase 3, hg19 genome build
+
+
+#### Covariates
+
+Smoking status, age, sex, 20 methylation PCs, and cell proportions.
+  
+#### Pipeline
+
+LBC: 
+
+From Mark, [wiki](https://www.wiki.ed.ac.uk/pages/viewpage.action?spaceKey=Psychiatry&title=STRADL+EWAS+pipeline).
+
+Local copy (adapted to LBC data): /exports/igmm/eddie/GenScotDepression/shen/Tools/ewas_pipeline/
+
+ALSPAC:
+
+Run by Doretta
+
+### Results
+
+#### Manhattan Plot
+
+```{r Load meta replication ewas results,echo=FALSE,message=FALSE,fig.width=13,fig.height=7}
+
+ewasResults.repli=read.delim(here::here('MR_meth_MDD/result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_5e.08.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
+  select(CpG=MarkerName,Effect,SE=StdErr,P.Value=P.value,Direction) %>%
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T)
+
+fig.dat = ewasResults.repli %>%
+  mutate(CHR=gsub('chr','',.$CHR)) %>%
+  filter(!is.na(CHR),CHR!='X',CHR!='Y') %>%
+  mutate(CHR=as.numeric(CHR))
+
+m_plot(dat=fig.dat,chr="CHR", bp="MAPINFO", snp="CpG", p="P.Value",tophits.bpwindow=250000,
+       outputpath=here::here('MR_meth_MDD/Figs/MainText/REP_EWAS_pplot_5e_08.png'),
+       add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,130))
+
+```
+
+#### Correlation of beta for significant CpGs found in GS
+
+```{r,echo=FALSE,warning=FALSE,fig.width=7,fig.height=4.6,fig.align='center'}
+GS.ewas = fig.dat.GS.pT.5e_08
+REP.ewas = ewasResults.repli
+
+GS.sig = mutate(GS.ewas,p.adj=p.adjust(P.value,method='bonferroni')) %>%
+  select(CpG=CpG,GS.beta=Effect,GS.std=StdErr,GS.p=P.value,GS.p.adj=p.adj) %>%
+  mutate(GS.beta_se=GS.beta/GS.std)
+REP.match = REP.ewas[REP.ewas$CpG %in% GS.sig$CpG,] %>%
+  select(CpG,REP.beta=Effect,REP.se=SE,REP.p=P.Value) %>%
+  mutate(REP.beta_se=REP.beta/REP.se)
+
+combined.test = merge(REP.match,GS.sig,by='CpG') %>%
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>%
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR=='chr6','Yes','No')) %>%
+  mutate(is.MHC = factor(is.MHC,levels=c('No','Yes'))) %>%
+  filter(GS.p.adj<0.05)
+combined.test.noMHC = filter(combined.test,is.MHC=='No')
+
+r.beta.all = round(cor.test(combined.test$REP.beta_se,combined.test$GS.beta_se)$estimate,3)
+r.beta.noMHC = round(cor.test(combined.test.noMHC$REP.beta_se,combined.test.noMHC$GS.beta_se)$estimate,3)
+
+fig=
+  ggplot(combined.test, aes(x=GS.beta_se, y=REP.beta_se,color=is.MHC)) + 
+  geom_point(position=position_dodge(width = 0.1), stat="identity", size=2, alpha = 0.5) +
+  theme(
+    axis.line.x = element_line(size=0.5),
+    axis.text=element_text(size=10), axis.title=element_text(size=11),
+    plot.title = element_text(lineheight=1, face="bold", vjust=1, hjust=0.5,size=9),
+    strip.text = element_text(size=8),
+    plot.margin=unit(c(1,1,1,3),'mm')) +
+  geom_smooth(method=lm , color="dark grey", se=TRUE)+
+  ylab('REP Beta/SE')+
+  xlab('GS Beta/SE')+
+  annotate(geom="text",label=paste0('r (all) = ',r.beta.all), x=12, y=-3,hjust = 0)+
+  annotate(geom="text",label=paste0('r (noMHC) = ',r.beta.noMHC), x=12, y=-5.5,hjust = 0) +
+  labs(color = "In MHC region?")
+
+fig
+
+ggsave(file=here::here('MR_meth_MDD/Figs/MainText/Replication_beta_correlation_GS_REP.png'),
+       plot=fig.distance_to_nearest_gwasHit,
+       dpi = 300, width = 6, height = 4, units = 'in')
+```
+
+#### Summry of replication analysis: on CpGs significant in GS (nCpG = 620)
+
+-   Correlation between betas in GS and LBC for all CpGs:  r = `r r.beta.all`
+
+-   Correlation between betas in GS and LBC for CpGs not in MHC region:  r = `r r.beta.noMHC`
+
+-   Betas remained in the same direction in LBC:  `r round(sum(combined.test$LBC.beta/combined.test$GS.beta>0)/nrow(combined.test),3)*100`%
+
+-   CpGs nominally significant in LBC: `r round(sum(combined.test$LBC.p<0.05)/nrow(combined.test),3)*100`%
+
+#### Number of significant CpGs associated with PRS
+
+```{r numer of sig CpGs for all PRS - LBC, echo=FALSE,warning=F,message=FALSE,fig.width=6,fig.height=5}
+ls.pt=c('5e.08','1e.06','0.0001','0.001','0.01','0.05','0.1','0.5','1')
+for (pt in ls.pt){
+    f.path=paste0('MR_meth_MDD/result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_',pt,'.metal.out1.tbl')
+    
+    ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
+      select(CpG=MarkerName,Effect,SE=StdErr,P.Value=P.value,Direction) %>% 
+      merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>%
+      filter(CHR!='X',CHR!='Y',!is.na(CHR),!is.na(CpG),!is.na(MAPINFO),!is.na(P.Value))
+
+    
+    ewasResults$p.fdr=p.adjust(ewasResults$P.Value,method='fdr')
+    ewasResults$p.bonferroni=p.adjust(ewasResults$P.Value,method='bonferroni')
+                 
+    tmp.count=data.frame(N5e_08=sum(ewasResults$P.Value<5e-8,na.rm=T),
+                         N5_e06=sum(ewasResults$P.Value<5e-6,na.rm=T),
+                         Nfdr=sum(ewasResults$p.fdr<0.05,na.rm=T),
+                         Nbonferroni=sum(ewasResults$p.bonferroni<0.05,na.rm=T))
+    if(pt==ls.pt[1]){sig.count=tmp.count}else{sig.count=rbind(sig.count,tmp.count)}
+
+}
+sig.count$MDDprs=factor(ls.pt,levels=rev(ls.pt))
+
+graph.dat=reshape2::melt(sig.count,id.vars='MDDprs')
+graph.dat$variable=gsub('N5e_08','p<5e-08',graph.dat$variable)
+graph.dat$variable=gsub('N5e_06','p<5e-06',graph.dat$variable)
+graph.dat$variable=gsub('Nfdr','pFDR<0.05',graph.dat$variable)
+graph.dat$variable=gsub('Nbonferroni','pBonferroni<0.05',graph.dat$variable)
+colnames(graph.dat)=c('MDDprs','Type','No')
+
+fig=ggplot(data=graph.dat, aes(x=MDDprs, y=No, group=Type)) +
+  geom_line(aes(color=Type))+
+  geom_point(aes(color=Type))+
+  theme(axis.text.x = element_text(angle = 90),
+  text = element_text(size=10))+
+  xlab('MDDprs pT')+
+  ylab('Number of significant CpGs')+
+  labs(group = "Threshold for significance")
+
+fig
+
+ggsave(plot = fig,filename = here::here('MR_meth_MDD/Figs/No_sig_CpG_LBC.png'),
+       width = 12, height = 9, 
+       units = 'cm', dpi = 300)
+
+```
+
+
+------------------------------------------------------------------------
+
+## SNP to CpG mapping
+
+------------------------------------------------------------------------
+
+```{r, echo=FALSE,warning=FALSE,fig.width=10,fig.height=8,fig.align='center'}
+
+load(here::here('MR_meth_MDD/result/EWAS_MDDprs_fromKathryn/cpg_snp_mapping_pNbeta.RData'))
+
+p.mat = p.mat %>% column_to_rownames(var="CpG") 
+
+# Select independent CpGs
+ls.cpg = list.files(here::here('MR_meth_MDD/data/mQTL/mQTL_forMR/')) %>%
+  gsub('mQTL.','',.) %>%
+  gsub('.rds','',.)
+
+# Reorder CpG by CHR
+ls.CpG = ls.CpG %>%
+  mutate(.,CHR=gsub('chr','',CHR)) %>%
+  mutate(.,CHR=as.numeric(CHR)) %>%
+  .[order(.$CHR,decreasing = F),] %>%
+  mutate(ID=as.character(ID)) %>%
+  .[.$ID %in% ls.cpg,]
+
+# Reorder SNP by CHR
+colnames(ls.SNP.102)=c('CHR','BP','RSID')
+ls.SNP.102 = ls.SNP.102 %>%
+  mutate(.,CHR=gsub('chr','',CHR)) %>%
+  mutate(.,CHR=as.numeric(CHR)) %>%
+  .[order(.$CHR,decreasing = F),] %>%
+  mutate(RSID=as.character(RSID)) %>%
+  .[.$CHR %in% ls.CpG$CHR,]
+
+# Reorder p.mat and reduce size
+colnames(p.mat)=strsplit(colnames(p.mat),split = '_') %>% unlist %>% .[grep('^rs',.)]
+p.mat[p.mat==0]=1e-320  # Recover extremely low p-values to system threshold
+p.mat[p.mat>0.05/102]=NA
+p.mat.new = -log10(p.mat) %>%
+  .[ls.CpG$ID,] %>%
+  .[,ls.SNP.102$RSID]
+
+
+ls.indep.cpg = ls.CpG[ls.CpG$ID %in% ls.cpg,]
+p.mat.new=p.mat.new[ls.indep.cpg$ID,]
+
+
+
+# Heatmap
+set.seed(1234)
+png(here::here('MR_meth_MDD/Figs/MainText/SNP_to_CpG_mapping.png'), height = 400, width = 700,res = 300)
+superheat(p.mat.new,
+          # row title
+          row.title = "CpG",
+          row.title.size = 6,
+          # col title
+          column.title = "SNP",
+          column.title.size = 6,
+          # scale the matrix columns
+          scale = F,
+          heat.col.scheme = "red",
+          heat.na.col = "white",
+          # cluster by gears
+          membership.rows = paste('CHR',ls.indep.cpg$CHR),
+          membership.cols = paste('CHR',ls.SNP.102$CHR),
+          # Text
+          bottom.label.text.angle = 90,
+          left.label.text.size = 4,
+          bottom.label.text.size = 4)
+dev.off()
+superheat(p.mat.new,
+          # row title
+          row.title = "CpG",
+          row.title.size = 6,
+          # col title
+          column.title = "SNP",
+          column.title.size = 6,
+          # scale the matrix columns
+          scale = F,
+          heat.col.scheme = "red",
+          heat.na.col = "white",
+          # cluster by gears
+          membership.rows = paste('CHR',ls.indep.cpg$CHR),
+          membership.cols = paste('CHR',ls.SNP.102$CHR),
+          # Text
+          bottom.label.text.angle = 90,
+          left.label.text.size = 4,
+          bottom.label.text.size = 4)
+
+```
+
+```{r, echo=FALSE,warning=FALSE,fig.width=10,fig.height=8,fig.align='center'}
+##### Calculate SNP-CpG distance
+# Define function
+cal_distance <- function(tmp.ids,ref.anno.snp,ref.anno.cpg){
+  snp.id = as.character(tmp.ids['SNP'])
+  cpg.id = as.character(tmp.ids['CpG'])
+  
+  chr.snp = ref.anno.snp$CHR[ref.anno.snp$RSID==snp.id]
+  chr.cpg = ref.anno.cpg$CHR[ref.anno.cpg$ID==cpg.id]
+  bp.snp = ref.anno.snp$BP[ref.anno.snp$RSID==snp.id]
+  bp.cpg = ref.anno.cpg$MAPINFO[ref.anno.cpg$ID==cpg.id]
+  
+  if(chr.snp!=chr.cpg){tmp.distance=-999}else{
+    tmp.distance = abs(bp.snp-bp.cpg)
+  }
+  return(tmp.distance)
+}
+
+# Reload data
+load(here::here('MR_meth_MDD/result/EWAS_MDDprs_fromKathryn/cpg_snp_mapping_pNbeta.RData'))
+
+ls.CpG = ls.CpG %>%
+  mutate(.,CHR=gsub('chr','',CHR)) %>%
+  mutate(.,CHR=as.numeric(CHR)) %>%
+  .[order(.$CHR,decreasing = F),] %>%
+  mutate(ID=as.character(ID))
+
+colnames(ls.SNP.102)=c('CHR','BP','RSID')
+ls.SNP.102 = ls.SNP.102 %>%
+  mutate(.,CHR=gsub('chr','',CHR)) %>%
+  mutate(.,CHR=as.numeric(CHR)) %>%
+  .[order(.$CHR,decreasing = F),] %>%
+  mutate(RSID=as.character(RSID)) %>%
+  mutate(is.MHC = if_else(BP>25000000&BP<35000000&CHR==6,'Yes','No'))
+
+p.mat = p.mat %>% column_to_rownames(var="CpG") 
+colnames(p.mat)=strsplit(colnames(p.mat),split = '_') %>% unlist %>% .[grep('^rs',.)]
+p.mat[p.mat==0]=1e-320  # Recover extremely low p-values to system threshold
+p.mat[p.mat>0.05/102]=NA
+p.mat.new = -log10(p.mat) %>%
+  .[ls.CpG$ID,] %>%
+  .[,ls.SNP.102$RSID]
+
+# Transform matrix to long-format data
+ids.input = expand.grid(dimnames(p.mat),stringsAsFactors = F)
+colnames(ids.input) = c('CpG','SNP')
+# Calc distance
+distance.long = pbapply(ids.input,FUN=cal_distance,MARGIN = 1,
+                      ref.anno.snp=ls.SNP.102,ref.anno.cpg=ls.CpG)
+distance.long = data.frame(ids.input,distance.long)
+# Transform results back to matrix
+distance.mat = matrix(distance.long[,3],ncol=102,byrow = F)
+colnames(distance.mat)=colnames(p.mat)
+rownames(distance.mat)=rownames(p.mat)
+distance.mat[distance.mat==-999]=NA
+
+distance.mat.clean = distance.mat
+distance.mat.clean[is.na(p.mat)]=NA
+
+##### Summarise distance
+# N sig CpG
+# colSums(!is.na(p.mat))[ls.SNP.102$RSID[ls.SNP.102$is.MHC=='Yes']]
+# colSums(!is.na(p.mat))[ls.SNP.102$RSID[ls.SNP.102$is.MHC=='No']]
+
+# Distance
+distance.summary.trans = 
+  colSums(distance.mat.clean>1000000,na.rm =T)[ls.SNP.102$RSID[ls.SNP.102$is.MHC=='No']]/
+  colSums(!is.na(distance.mat.clean))[ls.SNP.102$RSID[ls.SNP.102$is.MHC=='No']]
+distance.summary.trans = distance.summary.trans[!is.na(distance.mat.clean)>0]
+
+```
+
+
+------------------------------------------------------------------------
+
+## Mendelian Randomisation: CpG -> Brain cortical structure (discovery)
+
+------------------------------------------------------------------------
+
+### Methods
+
+#### Datasets
+
+-   Exposure: mQTL data from GoDMC (N = 20,396). Cohorts that overlap with PGC29 were removed.
+
+-   Outcome: Cortical thickness and cortical surface area (UKB, N\~=40k)
+
+    
+#### Instruments
+
+```{r Load info for genetic instruments DNAm to brain,echo=FALSE}
+# Load summary info for GoDMC instruments
+summary.instrument=readRDS(here::here('MR_meth_MDD/data/mQTL/GoDMC.instrument.rds'))
+
+# Load EWAS summary stats
+ewas.summstat.tophitPRS=fread(here::here('MR_meth_MDD/result/EWAS_MDDprs_fromKathryn/meta-pgrs-mdd/mdd_SNPCH_prs_5e_08/mdd_SNPCH_prs_5e_08.metal.out1.tbl'),
+                              header=T,stringsAsFactors=F)
+ewas.summstat.tophitPRS = ewas.summstat.tophitPRS %>%
+  mutate(p.adj=p.adjust(`P-value`,method = 'bonferroni'))
+n.sig.cpg=sum(ewas.summstat.tophitPRS$p.adj<0.05)
+ls.cpg.ewas.sig = filter(ewas.summstat.tophitPRS,p.adj<0.05)
+
+# Find suitable CpGs for MR
+ls.cpg.sig_instru=ls.cpg.ewas.sig[ls.cpg.ewas.sig$MarkerName %in% summary.instrument$cpg[summary.instrument$n.5e_08>10],]
+
+```
+
+-   In the EWAS of MDD PRS (pT = 5e-8), a total of `r n.sig.cpg` CpGs were significant after Bonferroni correction.
+
+-   `r nrow(ls.cpg.sig_instru)` had more than 30 genetic instruments available.
+
+-   `r length(list.files(here::here('MR_meth_MDD/data/mQTL/mQTL_forMR/')))` CpGs left after 'clumping' (window = 3Mb, r=0.1) in the MHC region.
+
+-   Finally, 20 CpGs with \>=5 genetic instruments after data harmonisation entered MR.
+
+
+#### MR methods
+
+-   Analyses: IVW, Weighted-median, MR-Egger
+
+-   Additional test: [MR Steiger directionary test](http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1007081).
+
+-   Package: [TwoSampleMR](https://mrcieu.github.io/TwoSampleMR/)
+
+
+### Results {.tabset}
+
+**25** CpGs tested:
+
+```{r Load MR results DNAm to brain and make figures, echo=FALSE}
+ls.measure = c('TotalSurface','MeanThk','TotalVol','gFA','gMD','gFA_TR','gMD_TR')
+
+# Load results
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GoDMC_MR_DNAm_to_Brain/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
+names(res)=ls.measure
+```
+
+
+#### Network plot: DNAm -> brain measures
+
+```{r DNAm to brain IVW results, warning=FALSE, fig.align = 'center',fig.width=15,fig.height=5}
+
+reorg_fornemat <- function(tmp.res,targetmethod,tmp.trait,pval_col){
+  new.res = tmp.res[[tmp.trait]] %>%
+    filter(.,method==targetmethod) %>%
+     mutate(.,outcome=tmp.trait,p.adj=p.adjust(get(pval_col),method='fdr')) 
+}
+
+ivw.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='Inverse variance weighted',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval)) 
+
+egger.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='MR Egger',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval))
+
+wm.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='Weighted median',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval)) 
+
+ivw.res$outcome = recode(ivw.res$outcome,
+                         GMsa = 'Surface area',
+                         GMthk = 'Cortical thickness',
+                         GMvol = 'Cortical volume',
+                         WMgMD = 'global MD',
+                         WMgFA_TR = 'gFA in\nthalamic radiation',
+                         WMgMD_TR = 'gFA in\nthalamic radiation',
+                         WMFA_ATR = 'FA in anterior\nthalamic radiation',
+                         WMMD_ATR = 'MD in anterior\nthalamic radiation')
+
+egger.res$outcome = recode(egger.res$outcome,
+                         GMsa = 'Surface area',
+                         GMthk = 'Cortical thickness',
+                         GMvol = 'Cortical volume',
+                         WMgMD = 'global MD',
+                         WMgFA_TR = 'gFA in\nthalamic radiation',
+                         WMgMD_TR = 'gFA in\nthalamic radiation',
+                         WMFA_ATR = 'FA in anterior\nthalamic radiation',
+                         WMMD_ATR = 'MD in anterior\nthalamic radiation')
+
+wm.res$outcome = recode(wm.res$outcome,
+                         GMsa = 'Surface area',
+                         GMthk = 'Cortical thickness',
+                         GMvol = 'Cortical volume',
+                         WMgMD = 'global MD',
+                         WMgFA_TR = 'gFA in\nthalamic radiation',
+                         WMgMD_TR = 'gFA in\nthalamic radiation',
+                         WMFA_ATR = 'FA in anterior\nthalamic radiation',
+                         WMMD_ATR = 'MD in anterior\nthalamic radiation')
+
+
+# Prep data for graph 
+
+fig.1=circular_graph_mr(target.res = ivw.res)
+fig.2=circular_graph_mr(target.res = egger.res,target.col='pval')
+fig.3=circular_graph_mr(target.res = wm.res)
+
+fig.total = ggarrange(fig.1,fig.2,fig.3,ncol=3,
+                      labels = c('IVW','MR Egger','Weighted-median'),common.legend = T)
+
+ggsave(fig.total,device = 'png',height=15,width = 40,units = 'cm',dpi=300,
+       filename = here::here('MR_meth_MDD/Figs/MR_DNAm_to_brain/MR_res.png'))
+fig.total
+
+```
+
+#### Table: DNAm -> brain measures
+
+```{r, warning=F}
+# Restore pcorr for MR Egger
+
+mr.res.p = data.frame(exposure=ivw.res$exposure,outcome=ivw.res$outcome,
+                      ivw.padj=ivw.res$p.adj,ivw.p=ivw.res$pval,
+                      mregger.padj=egger.res$p.adj,mregger.p=egger.res$pval,
+                      wm.padj=wm.res$p.adj,wm.p=wm.res$pval) %>%
+  mutate(sig_over2 = if_else(rowSums(select(.,ends_with('.padj'))<0.05)>=2,1,0))
+mr.res.beta = data.frame(exposure=ivw.res$exposure,outcome=ivw.res$outcome,
+                         ivw.beta=ivw.res$b,
+                      mregger.beta=egger.res$b,wm.beta=wm.res$b) %>%
+  mutate(is.sign.consis = if_else(ivw.beta/mregger.beta>0&ivw.beta/wm.beta>0,1,0))
+
+mr.summary=left_join(mr.res.p,mr.res.beta,by=c('exposure','outcome')) %>%
+  mutate(is.valid = if_else(.$is.sign.consis==1&.$sig_over2==1,1,0)) %>%
+  .[order(.$is.valid,decreasing = T),]
+
+mr.sig = mr.summary %>%
+  filter(.,is.valid==1)
+
+QC.table = ivw.res %>%
+  select(outcome,exposure,`Egger intercept`=egger_intercept,`Egger pval`=pval.1,
+         Q,`Q pval`=Q_pval,Nsnp=nsnp)
+
+mr.sig.output = mr.sig %>%
+  select(-is.valid,-sig_over2,-is.sign.consis) %>%
+  left_join(.,QC.table,by=c('exposure','outcome')) %>%
+  .[order(.$exposure,.$outcome),] %>%
+  select(ends_with('beta'),ends_with('.p'),ends_with('.padj'),
+         everything()) %>%
+  select(exposure,outcome,Nsnp,
+         starts_with('ivw'),starts_with('wm'),starts_with('mregger'),
+         everything()) %>%
+  mutate_if(is.numeric, format, digits=3,nsmall = 0)
+
+rownames(mr.sig.output)=NULL
+
+# Make table
+mr.sig.output %>%
+  kbl(booktabs = TRUE) %>%
+  kable_material(c("striped", "hover")) %>%
+  add_header_above(c(" " = 3, "IVW" = 3, "WM" = 3, "MR-Egger" = 3, 
+                     "QC Egger"=2,"QC Q (heterogeneity)"=2))
+
+ls.discovery = mr.sig.output[,c('exposure','outcome')]
+```
+
+
+
+------------------------------------------------------------------------
+
+## Mendelian Randomisation: CpG -> Brain cortical structure (replication)
+
+------------------------------------------------------------------------
+
+### Methods
+
+#### Datasets
+
+-   Exposure: mQTL data from GS (N ~= 10,000).
+
+-   Outcome: Cortical thickness and cortical surface area (UKB, N\~=40k)
+
+    
+#### Instruments
+
+-   CpGs showed causal effect to any brain structural measure in the discovery analysis.
+
+#### MR methods
+
+-   Analyses: IVW, Weighted-median, MR-Egger
+
+-   Additional test: [MR Steiger directionary test](http://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1007081).
+
+-   Package: [TwoSampleMR](https://mrcieu.github.io/TwoSampleMR/)
+
+
+### Results {.tabset}
+
+**25** CpGs tested:
+
+```{r Load MR results DNAm to brain replication, echo=FALSE}
+ls.measure = c('TotalSurface','MeanThk','TotalVol','gFA','gMD','gFA_TR','gMD_TR')
+
+# Load results
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GS_MR_DNAm_to_Brain/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
+names(res)=ls.measure
+```
+
+
+#### Network plot: DNAm -> brain measures
+
+```{r DNAm to brain replication, warning=FALSE, fig.align = 'center',fig.width=15,fig.height=5}
+
+reorg_fornemat <- function(tmp.res,targetmethod,tmp.trait,pval_col){
+  new.res = tmp.res[[tmp.trait]] %>%
+    filter(.,method==targetmethod) %>%
+     mutate(.,outcome=tmp.trait,p.adj=p.adjust(get(pval_col),method='fdr')) 
+}
+
+ivw.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='Inverse variance weighted',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval)) 
+
+egger.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='MR Egger',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval))
+
+wm.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='Weighted median',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval)) 
+
+ivw.res$outcome = recode(ivw.res$outcome,
+                         GMsa = 'Surface area',
+                         GMthk = 'Cortical thickness',
+                         GMvol = 'Cortical volume',
+                         WMgMD = 'global MD',
+                         WMgFA_TR = 'gFA in\nthalamic radiation',
+                         WMgMD_TR = 'gFA in\nthalamic radiation',
+                         WMFA_ATR = 'FA in anterior\nthalamic radiation',
+                         WMMD_ATR = 'MD in anterior\nthalamic radiation')
+
+egger.res$outcome = recode(egger.res$outcome,
+                         GMsa = 'Surface area',
+                         GMthk = 'Cortical thickness',
+                         GMvol = 'Cortical volume',
+                         WMgMD = 'global MD',
+                         WMgFA_TR = 'gFA in\nthalamic radiation',
+                         WMgMD_TR = 'gFA in\nthalamic radiation',
+                         WMFA_ATR = 'FA in anterior\nthalamic radiation',
+                         WMMD_ATR = 'MD in anterior\nthalamic radiation')
+
+wm.res$outcome = recode(wm.res$outcome,
+                         GMsa = 'Surface area',
+                         GMthk = 'Cortical thickness',
+                         GMvol = 'Cortical volume',
+                         WMgMD = 'global MD',
+                         WMgFA_TR = 'gFA in\nthalamic radiation',
+                         WMgMD_TR = 'gFA in\nthalamic radiation',
+                         WMFA_ATR = 'FA in anterior\nthalamic radiation',
+                         WMMD_ATR = 'MD in anterior\nthalamic radiation')
+
+
+# Prep data for graph 
+
+fig.1=circular_graph_mr(target.res = ivw.res)
+fig.2=circular_graph_mr(target.res = egger.res,target.col='pval')
+fig.3=circular_graph_mr(target.res = wm.res)
+
+fig.total = ggarrange(fig.1,fig.2,fig.3,ncol=3,
+                      labels = c('IVW','MR Egger','Weighted-median'),common.legend = T)
+
+ggsave(fig.total,device = 'png',height=15,width = 40,units = 'cm',dpi=300,
+       filename = here::here('MR_meth_MDD/Figs/MR_DNAm_to_brain/MR_res.png'))
+fig.total
+
+```
+
+#### Table: DNAm -> brain measures
+
+```{r, warning=F}
+# Restore pcorr for MR Egger
+
+mr.res.p = data.frame(exposure=ivw.res$exposure,outcome=ivw.res$outcome,
+                      ivw.padj=ivw.res$p.adj,ivw.p=ivw.res$pval,
+                      mregger.padj=egger.res$p.adj,mregger.p=egger.res$pval,
+                      wm.padj=wm.res$p.adj,wm.p=wm.res$pval) %>%
+  mutate(sig_over2 = if_else(rowSums(select(.,ends_with('.padj'))<0.05)>=2,1,0))
+mr.res.beta = data.frame(exposure=ivw.res$exposure,outcome=ivw.res$outcome,
+                         ivw.beta=ivw.res$b,
+                      mregger.beta=egger.res$b,wm.beta=wm.res$b) %>%
+  mutate(is.sign.consis = if_else(ivw.beta/mregger.beta>0&ivw.beta/wm.beta>0,1,0))
+
+
+mr.summary=left_join(mr.res.p,mr.res.beta,by=c('exposure','outcome')) %>%
+  mutate(is.valid = if_else(.$is.sign.consis==1&.$sig_over2==1,1,0)) %>%
+  .[order(.$is.valid,decreasing = T),]
+
+mr.sig = mr.summary %>%
+  filter(.,is.valid==1)
+
+QC.table = ivw.res %>%
+  select(outcome,exposure,`Egger intercept`=egger_intercept,`Egger pval`=pval.1,
+         Q,`Q pval`=Q_pval,Nsnp=nsnp)
+
+mr.sig.output = mr.sig %>%
+  select(-is.valid,-sig_over2,-is.sign.consis) %>%
+  left_join(.,QC.table,by=c('exposure','outcome')) %>%
+  left_join(ls.discovery,.,by=c('exposure','outcome')) %>%
+  .[order(.$exposure,.$outcome),] %>%
+  select(ends_with('beta'),ends_with('.p'),ends_with('.padj'),
+         everything()) %>%
+  select(exposure,outcome,Nsnp,
+         starts_with('ivw'),starts_with('wm'),starts_with('mregger'),
+         everything()) %>%
+  mutate_if(is.numeric, format, digits=3,nsmall = 0)
+
+colnames(mr.sig.output) = colnames(mr.sig.output) %>%
+  gsub('ivw.','',.) %>%
+  gsub('wm.','',.) %>%
+  gsub('mregger.','',.)
+
+rownames(mr.sig.output)=NULL
+
+# Make table
+mr.sig.output %>%
+  kbl(booktabs = TRUE) %>%
+  kable_material(c("striped", "hover")) %>%
+  add_header_above(c(" " = 3, "IVW" = 3, "WM" = 3, "MR-Egger" = 3, 
+                     "QC Egger"=2,"QC Q (heterogeneity)"=2))
+
+
+```
+
+
+
+### p plot for MR: discovery, replication and bidirectional MR
+
+```{r, warning=F,fig.width=5,fig.height=13,fig.pos='center'}
+p.plot.mr = function(tmp.res,tmp.facetcol='exposure',tmp.ycol='outcome',tmp.title){
+dat.fig = base::Reduce(function(x,y) rbind(x,y),tmp.res) %>%
+  right_join(.,mr.sig.output[,c('exposure','outcome')],var=c('exposure','outcome')) %>%
+  dplyr::rename(Beta=b,SE=se,Method=method) %>%
+  .[order(.$pval,decreasing = T),] %>%
+  mutate(ord=1:nrow(.)) 
+
+fig.p =
+  ggplot(dat.fig, aes(x=reorder(get(tmp.ycol),ord), y=-log10(pval), color=Method)) +
+  geom_point(position=position_dodge(width = 0.1), stat="identity", size=2) +
+  facet_grid(rows = vars(get(tmp.facetcol)))+
+  theme(
+    axis.line.x = element_line(size=0.5),
+    axis.text=element_text(size=10), axis.title=element_text(size=11),
+    plot.title = element_text(lineheight=1, face="bold", vjust=1, hjust=0.5,size=9),
+    strip.text = element_text(size=8),
+    plot.margin=unit(c(1,1,1,3),'mm')) +
+  scale_x_discrete(position='top')+
+  geom_hline(yintercept=0,color = "black", size=0.3)+
+  geom_hline(yintercept=-log10(0.05),color = "red",linetype='dashed', size=0.3)+
+  coord_flip()+
+  ylab('P-value for MR')+
+  xlab('CpG') +
+  ylim(0,40)+
+  ggtitle(tmp.title)
+
+ return(fig.p)
+}
+
+# Discovery analysis
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GoDMC_MR_DNAm_to_Brain/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
+names(res)=ls.measure
+fig.p.discovery.mr = p.plot.mr(res,tmp.title='DNAm (GoDMC) to Brain')
+
+# Replication analysis
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GS_MR_DNAm_to_Brain/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
+names(res)=ls.measure
+fig.p.replication.mr = p.plot.mr(res,tmp.title='DNAm (GS) to Brain')
+
+# Reversed direction MR
+res = as.list(list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GS_MR_Brain_to_DNAm/',pattern='^Summary',full.names = T)) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>%
+  lapply(.,dplyr::rename,outcome=exposure,exposure=outcome)
+names(res)=list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GS_MR_Brain_to_DNAm/',pattern='^Summary') %>%
+  gsub('Summary_Brain_to_','',.) %>%
+  gsub('.csv','',.)
+fig.p.reverse.mr = p.plot.mr(res,tmp.title='Brain to DNAm (GS)')
+
+fig.total = ggarrange(fig.p.discovery.mr,fig.p.replication.mr,fig.p.reverse.mr,ncol=3,
+                      common.legend = T)
+
+ggsave(fig.total,device = 'png',height=19,width = 48,units = 'cm',dpi=300,
+       filename = here::here('MR_meth_MDD/Figs/MR_res_pplot.png'))
+fig.total
+
+```

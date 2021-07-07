@@ -1,0 +1,104 @@
+---
+title: "Supplementary Information"
+subtitle: "Methylomew-wide association analysis of polygenic risk scores for depression"
+author: "Shen X. et al."
+
+output: 
+  word_document:
+   reference_docx: ref_style.docx
+bibliography: bibliography.bib
+csl: nature.csl
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#    reference_docx: ref_style.docx
+library(knitr)
+library(ggplot2)
+library(qqman)
+library(png)
+library(ggpubr)
+library(ggrepel)
+library(pbapply)
+library(tidyverse)
+library(kableExtra)
+library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)   # Data management
+
+source(here::here('MR_meth_MDD/FUNs/manhattan_plot_XShen.R')) # EWAS manhattan plot
+```
+
+\newpage
+
+## Methods
+
+### Covarying confounders in the methylome-wide association study (MWAS)
+
+#### Generation Scotland: **Scottish Family Health Study (GS)**
+
+Technical confounders were pre-corrected. This was achived by residualising m-values against genetic relationship matrix (GRM), batch and estimated cell proportions. GRM was generated using Plink2.0[@yang2011] and was corrected in wave 1 only, as participants were unrelated in wave 2. Other covariates were fitted in the MWAS regression model, which include: age, sex, pack years, ever smoked tobacco and the first 20 principal components of the methylation data.
+
+Ever smoked tobacco was an ordinal variable. Participants were asked to choose from one of the following responses: 'Yes, currently smoke' (= 3), 'Yes, but stopped within the past 12 months' (= 2), 'Yes, but stopped for more than 12 months ago' (= 1) and 'No, never smoked' (= 0). This variable was set as factor in all analyses using R.
+
+Principal components of the methylation data was derived using the 'FactoMineR' R package[@FactoMineR2008]. This step was conducted on the m-values pre-corrected for technical confounders.
+
+#### Lothian Birth Cohort (LBC) 1921 and LBC 1936
+
+All participants were unrelated within each cohort itself and between the two cohorts. All covariates were fitted in the MWAS regression model, which include: estimated cell proportions, batch, age, sex, ever smoked tobacco and the first 20 principal components of the methylation data.
+
+Ever smoked tobacco variable was ordinal and thus was set as factor in all analyses. Responses include: 'Current smoker' (= 2), 'Previous smoker' (= 1) and 'Never smoked' (= 0).
+
+Principal components of the methylation data was derived using the same method as GS.
+
+#### Avon Longitudinal Study of Parents and Children (ALSPAC)
+
+MWAS was conducted on parents and youth respectively. For each of the MWAS, only unrelated participants were included in the analyses. Procedures for selecting unrelated sample can be found in[@Caramaschi2020]. Covariates that were fitted in the MWAS analysis include: estimated cell proportions, batch, age, sex, ever smoked tobacco and the first 15 variables derived from surrogate variable analysis.
+
+Ever smoked tabacco was asked around the time of blood draw for DNAm processing. Participants were asked to choose from either smoked (= 1) or not smoked (= 0).
+
+### Meta-analysis on MWAS results
+
+Meta-analysis was conducted using METAL[@Willer2010].
+
+For each individual analyses in the discovery and replication MWAS, meta-analysis was conducted to obtain an overall summary statistics of MWAS results. In the discovery analysis, MWAS on wave 1 and wave 2 GS data was conducted separately and then meta-analysed. In the replication analysis, MWAS was conducted on the two LBC cohorts together and ALSPAC adults. Summary statistics for replication analyses were then meta-analysed.
+
+A final meta-analysis on the discovery and replication MWAS (LBC cohorts and ALSPAC adults) was conducted and presented in the Supplementary Information.
+
+As there was extensive control for relatedness for MWAS in all cohorts, genomic control correction was not included in the analyses.
+
+### Statistics for methylation quantitative trait loci (mQTL)
+
+#### **Genetics of DNA Methylation Consortium** (GoDMC)
+
+Meta-analysis of mQTL analyses was conducted using the same pipeline as described elsewhere[@min2020]. For the present study, GS, LBC 1921, LBC 1936, GSK & MPIP, Munich Antidepressant Response Signature study (MARS) and Brisbane Systems Genetics Study were removed from the mQTL meta-analysis as they were also included in the MDD GWAS by Howard *et al.* [@howard2019]. Details for the cohorts can be found at the GoDMC website (<http://www.godmc.org.uk/cohorts.html>). As a result, a total of \~20,000 participants were left in the meta-analysis, with no overlapping participants with GS and no overlapping cohort with the MDD GWAS.
+
+#### GS
+
+Analysis of mQTL was conducted on DNAm data in GS for wave 1 and wave 2 separately. The OmicS-data-based Complex trait Analysis package was used for deriving mQTL summary statistics (<https://cnsgenomics.com/software/osca/>)[@zhang2019]. DNAm data and covariates were kept consistent with the MWAS. Genetic data used for the mQTL analysis was also used for calculating polygenic risk scores for depression. Finally, meta-analysis between wave 1 and wave 2 was conducted on the mQTL summary statistics for each CpG probe.
+
+\newpage
+
+## References
+
+::: {#refs}
+:::
+
+##### Supplementary Table 6. Results for discovery MR of DNAm to depression.
+
+ 
+
+```{r,warning=F,echo=F}
+round_if <- function(x,tmp.digit=3){
+  new.x = format(x,scientific=T,digits=3)
+  new.x[abs(x)>0.001]=as.character(round(x,tmp.digit)[abs(x)>0.001])
+  new.x[new.x==0]='<1e-324'
+  return(new.x)
+}
+Nsnp_forPRS = fread(here::here('MR_meth_MDD/data/GS_genetic_meth/Nsnp_forPRS.txt')) %>% mutate_if(is.numeric, round_if)
+
+ft.table.s1 <- flextable(Nsnp_forPRS) %>% 
+   compose(part = "header", i = 1, j = 1,
+         value = c(
+                   as_paragraph('N',as_sub('SNP'))
+                                  ))
+ft.table.s1
+```
