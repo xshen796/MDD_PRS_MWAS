@@ -1,0 +1,65 @@
+---
+title: "EWAS of MDD PRS - Main Results (Genome Medicine round 2)"
+author: "X Shen"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)                                           # For md
+library(rmarkdown)                                       # For md
+library(dplyr)                                           # Data management
+library(ggplot2)                                         # Graph
+library(ggrepel)                                         # Graph
+library(ggpubr)                                          # Graph
+library(patchwork)                                       # Graph
+library(igraph)                                          # Circular connectivity graph
+library(ggraph)                                          # Circular connectivity graph
+library(here)                                            # Data loading
+library(data.table)                                      # Data loading
+library(tidyr)                                           # Data management
+library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)   # Data management
+library(tibble)                                          # Data management
+library(hrbrthemes)                                      # Graph
+library(superheat)                                       # Graph
+library(kableExtra)                                      # Table
+library(missMethyl)                                      # Extra pathway analysis
+library(pbapply)                                         # Process control
+
+# My own functions
+source(here::here('FUNs/manhattan_plot_compare_XS.R')) # EWAS manhattan plot
+source(here::here('FUNs/circular_graph_mr.R'))    # circular connectivity graph
+
+# Render from MR_meth_MDD folder
+```
+  
+  
+```{r compare related and unrelated participants for GS}
+anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
+ref.tomerge <- anno %>% as.data.frame %>%
+  dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
+         Islands_Name,Relation_to_Island)
+
+ewas_res.unrelated=read.delim(here::here('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_unrelated_pT_0.00000005.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
+  mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
+  dplyr::rename(CpG=MarkerName) %>% 
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
+  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value))
+
+ewas_res.related=read.delim(here::here('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
+  mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
+  dplyr::rename(CpG=MarkerName) %>% 
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
+  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value))
+ls.CpG.related.sig = ewas_res.related %>% filter(p.adj<0.05) %>% .$CpG
+
+tmp.fig = m_plot(dat=ewas_res.unrelated,
+                    chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    man_annot=ls.CpG.related.sig,
+                    add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,120))
+
+```
+

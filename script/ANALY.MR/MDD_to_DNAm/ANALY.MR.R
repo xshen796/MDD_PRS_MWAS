@@ -6,6 +6,7 @@ library(MRPRESSO)
 library(ggplot2)
 library(optparse)
 library(ggpubr)
+library(harrypotter)
 options(bitmapType='cairo') # Specific to Eddie - to enable writing figures
 
 # Load arguments ----------------------------------------------------------
@@ -125,15 +126,15 @@ for (f in 1:length(ls.exposure)){
          ## visualise
          mr_report(dat,output_path=ofig.path)
          
-         fig.scatter = mr_scatter_plot(MR, dat)
-         fig.forest = mr_forest_plot(res_single)
-         fig.loo = mr_leaveoneout_plot(res_loo)
-         fig.funnel = mr_funnel_plot(res_single)
+         fig.scatter = mr_scatter_plot(MR, dat) %>% .[[1]]+scale_colour_hp_d(option = "ronweasley2", name = "Cut")
+         fig.forest = mr_forest_plot(res_single) %>% .[[1]]+scale_colour_hp_d(option = "ronweasley2", name = "Cut")
+         fig.loo = mr_leaveoneout_plot(res_loo) %>% .[[1]]
+         fig.funnel = mr_funnel_plot(res_single) %>% .[[1]]
          
-         fig.total = ggarrange(fig.scatter[[1]],fig.funnel[[1]],fig.forest[[1]],fig.loo[[1]],ncol = 2,nrow=2,
+         fig.total = ggarrange(fig.scatter,fig.funnel,fig.forest,fig.loo,ncol = 2,nrow=2,
                                labels = c('Scatter plot','Funnel plot','Forest plot','Leave-one-out plot'),
                                widths = c(1,1),heights = c(1,1.5),align = 'v')
-         fig.scatter = fig.scatter[[1]]
+         fig.scatter = fig.scatter
          ggsave(fig.total, file=paste0(ofig.path,'/',traitA,'_',traitB,"_plot.png"), width=10, height=15,dpi=300)
 	 save(fig.scatter,file=paste0(ofig.path,'/',traitA,'_',traitB,"_scatterplot.RData"))
          system(paste('echo',traitA,'against',traitB,'  analysis  done >> XS.log'))

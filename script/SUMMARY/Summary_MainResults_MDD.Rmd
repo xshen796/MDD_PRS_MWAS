@@ -3,15 +3,34 @@ title: "EWAS of MDD PRS - Main Results"
 author: "X Shen"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
-  html_document:
-    theme: cerulean
-    code_folding: hide
-    toc: true
-    toc_depth: 2
+  html_document
 ---
 
 ```{r setup, include=FALSE}
-  # circular connectivity graph
+library(knitr)                                           # For md
+library(rmarkdown)                                       # For md
+library(dplyr)                                           # Data management
+library(ggplot2)                                         # Graph
+library(ggrepel)                                         # Graph
+library(ggpubr)                                          # Graph
+library(patchwork)                                       # Graph
+library(igraph)                                          # Circular connectivity graph
+library(ggraph)                                          # Circular connectivity graph
+library(here)                                            # Data loading
+library(data.table)                                      # Data loading
+library(tidyr)                                           # Data management
+library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)   # Data management
+library(tibble)                                          # Data management
+library(hrbrthemes)                                      # Graph
+library(superheat)                                       # Graph
+library(kableExtra)                                      # Table
+library(missMethyl)                                      # Extra pathway analysis
+library(pbapply)                                         # Process control
+
+# My own functions
+source(here::here('FUNs/manhattan_plot_XShen.R')) # EWAS manhattan plot
+source(here::here('FUNs/circular_graph_mr.R'))    # circular connectivity graph
+
 # Render from MR_meth_MDD folder
 ```
   
@@ -63,7 +82,7 @@ ref.tomerge <- anno %>% as.data.frame %>%
 ls.pt=c('0.00000005','0.000001','0.0001','0.001','0.01','0.05','0.1','0.5','1')
 for (pt in ls.pt){
     # Load data
-    f.path=paste0('MR_meth_MDD/result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_',pt,'.metal.out1.tbl')
+    f.path=paste0('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_',pt,'.metal.out1.tbl')
     ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
       mutate(p.adj = p.adjust(P.value,method='bonferroni')) 
     colnames(ewasResults)[1]='CpG'
@@ -78,7 +97,7 @@ for (pt in ls.pt){
     expre=paste0('fig.dat.GS.pT.',pt,'=qman.dat')
     eval(parse(text=expre))
     # Make manhattan plot (save as tiff files and store in R environment)
-    tmp.path = paste0('MR_meth_MDD/Figs/GS_EWAS_pplot_',pt,'.png')
+    tmp.path = paste0('Figs/GS_EWAS_pplot_',pt,'.png')
     tmp.fig = m_plot(dat=qman.dat,
                     chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
                     add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,120),
@@ -96,13 +115,13 @@ rm(list=ls(pattern='^//.'))
 fig.5e_8=m_plot(dat=fig.dat.GS.pT.0.00000005,
                     chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
                     add_category_name=F,fig_size=c(29,16),tophits_annot=T,y_lim=c(0,120),
-                    outputpath=here::here('MR_meth_MDD/Figs/GS_EWAS_pplot_0.00000005.png'))
+                    outputpath=here::here('Figs/GS_EWAS_pplot_0.00000005.png'))
 ```
 
 #### PRS pT=5e-8 no MHC region
 
 ```{r,echo=FALSE,warning=FALSE,message=FALSE,fig.width=13,fig.height=7}
-    f.path=paste0('MR_meth_MDD/result/EWAS_MDDprs_Shen/noMHC_and_gwsig/ewas_BothWaves_noMHC_5e_08.metal.out1.tbl')
+    f.path=paste0('result/EWAS_MDDprs_Shen/noMHC_and_gwsig/ewas_BothWaves_noMHC_5e_08.metal.out1.tbl')
     ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
       mutate(p.adj = p.adjust(P.value,method='bonferroni')) 
     colnames(ewasResults)[1]='CpG'
@@ -116,7 +135,7 @@ fig.5e_8=m_plot(dat=fig.dat.GS.pT.0.00000005,
    fig.GSewas.5e_08.noMHC = m_plot(dat=qman.dat,
           chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
           add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,20),
-          outputpath=here::here('MR_meth_MDD/Figs/GS_EWAS_pplot_5e_08_noMHC.png'))
+          outputpath=here::here('Figs/GS_EWAS_pplot_5e_08_noMHC.png'))
    fig.GSewas.5e_08.noMHC
 ```
 
@@ -160,14 +179,14 @@ fig=ggplot(data=graph.dat, aes(x=MDDprs, y=No, group=Type)) +
 
 fig
 
-ggsave(plot = fig,filename = here::here('MR_meth_MDD/Figs/No_sig_CpG_GS.png'),
+ggsave(plot = fig,filename = here::here('Figs/No_sig_CpG_GS.png'),
        width = 12, height = 9, 
        units = 'cm', dpi = 300)
 
 fig1.inpaper = ggarrange(fig,fig.5e_8,ncol = 2,vjust = T,labels = c('a.','b.'),
                          widths = c(1,3.5))
 
-ggsave(plot = fig,filename = here::here('MR_meth_MDD/Figs/Fig1.png'),
+ggsave(plot = fig,filename = here::here('Figs/Fig1.png'),
        width = 12, height = 9, 
        units = 'cm', dpi = 300)
 
@@ -203,7 +222,7 @@ ggsave(plot = fig,filename = here::here('MR_meth_MDD/Figs/Fig1.png'),
 # ewas.pTwgsig$distance_to_nearest_gwashit = tmp.distance.toadd
 
 # save(ewas.pTwgsig,file='result/EWAS_MDDprs_fromKathryn/ewas.distance.RData')
-load(here::here('MR_meth_MDD/result/EWAS_MDDprs_fromKathryn/ewas.distance.RData'))
+load(here::here('result/EWAS_MDDprs_fromKathryn/ewas.distance.RData'))
 
 ewas.pTwgsig = ewas.pTwgsig %>%
   mutate(EWAS.sig = ifelse(p.adj<0.05,'yes','no'))
@@ -222,7 +241,7 @@ fig.distance_to_nearest_gwasHit =
 # Print 
 fig.distance_to_nearest_gwasHit
 # Save
-ggsave(file=here::here('MR_meth_MDD/Figs/MainText/Distance_to_nearest_gwasHit.png'),
+ggsave(file=here::here('Figs/MainText/Distance_to_nearest_gwasHit.png'),
        plot=fig.distance_to_nearest_gwasHit,
        dpi = 300, width = 6, height = 4, units = 'in')
 
@@ -295,7 +314,7 @@ KEGG.result.sig_noMHC <-
 GO.result.sig[1:10,] %>%
   kbl() %>%
   kable_material(c("striped", "hover"))
-write.table(GO.result.sig[1:10,],file=here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/GO_KEGG/GOterms.txt'),quote=F,sep='\t',col.names = T,row.names = T)
+write.table(GO.result.sig[1:10,],file=here::here('result/EWAS_MDDprs_Shen/GO_KEGG/GOterms.txt'),quote=F,sep='\t',col.names = T,row.names = T)
 ```
 
 #### KEGG results - all CpG
@@ -304,7 +323,7 @@ write.table(GO.result.sig[1:10,],file=here::here('MR_meth_MDD/result/EWAS_MDDprs
 KEGG.result.sig[1:10,] %>%
   kbl() %>%
   kable_material(c("striped", "hover"))
-write.table(KEGG.result.sig[1:10,],file=here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/GO_KEGG/KEGG.txt'),quote=F,sep='\t',col.names = T,row.names = T)
+write.table(KEGG.result.sig[1:10,],file=here::here('result/EWAS_MDDprs_Shen/GO_KEGG/KEGG.txt'),quote=F,sep='\t',col.names = T,row.names = T)
 ```
 
 #### GO results - no MHC
@@ -313,7 +332,7 @@ write.table(KEGG.result.sig[1:10,],file=here::here('MR_meth_MDD/result/EWAS_MDDp
 GO.result.sig_noMHC[1:20,] %>%
   kbl() %>%
   kable_material(c("striped", "hover"))
-write.table(GO.result.sig_noMHC[1:10,],file=here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/GO_KEGG/GOterm_noMHC.txt'),quote=F,sep='\t',col.names = T,row.names = T)
+write.table(GO.result.sig_noMHC[1:10,],file=here::here('result/EWAS_MDDprs_Shen/GO_KEGG/GOterm_noMHC.txt'),quote=F,sep='\t',col.names = T,row.names = T)
 ```
 
 #### KEGG results - no MHC
@@ -322,7 +341,7 @@ write.table(GO.result.sig_noMHC[1:10,],file=here::here('MR_meth_MDD/result/EWAS_
 KEGG.result.sig_noMHC[1:20,] %>%
   kbl() %>%
   kable_material(c("striped", "hover"))
-write.table(KEGG.result.sig_noMHC[1:10,],file=here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/GO_KEGG/KEGG_noMHC.txt'),quote=F,sep='\t',col.names = T,row.names = T)
+write.table(KEGG.result.sig_noMHC[1:10,],file=here::here('result/EWAS_MDDprs_Shen/GO_KEGG/KEGG_noMHC.txt'),quote=F,sep='\t',col.names = T,row.names = T)
 ```
 
 ### Summary of EWAS for MDD PRS pT = 5e-8
@@ -343,7 +362,7 @@ top.10.sig[1:10,] %>%
   kable_material(c("striped", "hover"))
 top10.max.p=max(top.10.sig$p.adj[1:10])
 
-write.table(top.10.sig[1:10,],file=here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/top_CpG_withMHC.txt'),quote=F,col.names = T,row.names = F,sep='\t')
+write.table(top.10.sig[1:10,],file=here::here('result/EWAS_MDDprs_Shen/top_CpG_withMHC.txt'),quote=F,col.names = T,row.names = F,sep='\t')
 
 # 3. significant CpGs outside of the MHC region
 top.10.sig.noMHC = ewas.pTwgsig %>%
@@ -360,7 +379,7 @@ top.10.sig.noMHC.sCHR=top.10.sig.noMHC[1:10,] %>%
   .[order(.$CHR),]
 top10.noMHC.max.p=max(top.10.sig.noMHC$p.adj[1:10])
 
-write.table(top.10.sig.noMHC[1:10,],file=here::here('MR_meth_MDD/result/EWAS_MDDprs_Shen/top_CpG_noMHC.txt'),quote=F,col.names = T,row.names = F,sep='\t')
+write.table(top.10.sig.noMHC[1:10,],file=here::here('result/EWAS_MDDprs_Shen/top_CpG_noMHC.txt'),quote=F,col.names = T,row.names = F,sep='\t')
 
 ```
 
@@ -419,7 +438,7 @@ Run by Doretta
 
 ```{r Load meta replication ewas results,echo=FALSE,message=FALSE,fig.width=13,fig.height=7}
 
-ewasResults.repli=read.delim(here::here('MR_meth_MDD/result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_5e.08.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
+ewasResults.repli=read.delim(here::here('result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_5e.08.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
   select(CpG=MarkerName,Effect,SE=StdErr,P.Value=P.value,Direction) %>%
   merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T)
 
@@ -429,7 +448,7 @@ fig.dat = ewasResults.repli %>%
   mutate(CHR=as.numeric(CHR))
 
 fig.rep.pplot=m_plot(dat=fig.dat,chr="CHR", bp="MAPINFO", snp="CpG", p="P.Value",tophits.bpwindow=250000,
-       outputpath=here::here('MR_meth_MDD/Figs/MainText/REP_EWAS_pplot_5e_08.png'),
+       outputpath=here::here('Figs/MainText/REP_EWAS_pplot_5e_08.png'),
        add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,130))
 
 ```
@@ -476,7 +495,7 @@ fig=
 fig
 fig.corr.rep=fig
 
-ggsave(file=here::here('MR_meth_MDD/Figs/MainText/Replication_beta_correlation_GS_REP.png'),
+ggsave(file=here::here('Figs/MainText/Replication_beta_correlation_GS_REP.png'),
        plot=fig,
        dpi = 300, width = 6, height = 4, units = 'in')
 ```
@@ -496,7 +515,7 @@ ggsave(file=here::here('MR_meth_MDD/Figs/MainText/Replication_beta_correlation_G
 ```{r numer of sig CpGs for all PRS - LBC, echo=FALSE,warning=F,message=FALSE,fig.width=6,fig.height=5}
 ls.pt=c('5e.08','1e.06','0.0001','0.001','0.01','0.05','0.1','0.5','1')
 for (pt in ls.pt){
-    f.path=paste0('MR_meth_MDD/result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_',pt,'.metal.out1.tbl')
+    f.path=paste0('result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_',pt,'.metal.out1.tbl')
     
     ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
       select(CpG=MarkerName,Effect,SE=StdErr,P.Value=P.value,Direction) %>% 
@@ -540,16 +559,16 @@ fig=ggplot(data=graph.dat, aes(x=MDDprs, y=No, group=Type)) +
 fig
 fig.rep.nsig=fig
 
-ggsave(plot = fig,filename = here::here('MR_meth_MDD/Figs/No_sig_CpG_LBC.png'),
+ggsave(plot = fig,filename = here::here('Figs/No_sig_CpG_LBC.png'),
        width = 12, height = 9, 
        units = 'cm', dpi = 300)
 
 fig3.inpaper = ggarrange(fig.rep.pplot,
-                         ggarrange(fig.corr.rep,fig.rep.nsig,ncol=2,
+                         ggarrange(fig.rep.nsig,fig.corr.rep,ncol=2,
                                    labels=c('b','c'),align ='v'),
                          nrow = 2,labels = 'a',heights = c(1,0.7))
 
-ggsave(plot = fig3.inpaper,filename = here::here('MR_meth_MDD/Figs/Fig3.png'),
+ggsave(plot = fig3.inpaper,filename = here::here('Figs/Fig3.png'),
        width = 30, height = 25, 
        units = 'cm', dpi = 300)
 
@@ -567,7 +586,7 @@ ggsave(plot = fig3.inpaper,filename = here::here('MR_meth_MDD/Figs/Fig3.png'),
 
 ```{r adolescent replication,echo=FALSE,message=FALSE,fig.width=13,fig.height=7}
 
-ewasResults.repli=read.delim(here::here('MR_meth_MDD/result/EWAS_MDDprs_ALSPAC/MDD3_k_5e08_std_sex,age,child_smoke,pc1,pc2,pc3,pc4,pc5,pc6,pc7,pc8,pc9,pc10_houseman_2021-02-12.csv'),sep='\t',header=T,stringsAsFactors=F) %>%
+ewasResults.repli=read.delim(here::here('result/EWAS_MDDprs_ALSPAC/MDD3_k_5e08_std_sex,age,child_smoke,pc1,pc2,pc3,pc4,pc5,pc6,pc7,pc8,pc9,pc10_houseman_2021-02-12.csv'),sep='\t',header=T,stringsAsFactors=F) %>%
   select(CpG=probeID,Effect=BETA,SE,P.Value=P_VAL) %>%
   merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T)
 
@@ -577,7 +596,7 @@ fig.dat = ewasResults.repli %>%
   mutate(CHR=as.numeric(CHR))
 
 fig.rep.adolescent.pplot=m_plot(dat=fig.dat,chr="CHR", bp="MAPINFO", snp="CpG", p="P.Value",tophits.bpwindow=250000,
-       outputpath=here::here('MR_meth_MDD/Figs/MainText/REPadolescent_EWAS_pplot_5e_08.png'),
+       outputpath=here::here('Figs/MainText/REPadolescent_EWAS_pplot_5e_08.png'),
        add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,130))
 
 ```
@@ -624,7 +643,7 @@ fig=
 fig
 fig.corr.rep=fig
 
-ggsave(file=here::here('MR_meth_MDD/Figs/MainText/Replication_beta_correlation_GS_REP.png'),
+ggsave(file=here::here('Figs/MainText/Replication_beta_correlation_GS_REP.png'),
        plot=fig,
        dpi = 300, width = 6, height = 4, units = 'in')
 ```
@@ -639,7 +658,7 @@ ggsave(file=here::here('MR_meth_MDD/Figs/MainText/Replication_beta_correlation_G
 
 ```{r, echo=FALSE,warning=FALSE,fig.width=10,fig.height=8,fig.align='center'}
 
-all.res = fread(here::here('MR_meth_MDD/result/EWAS_loo/variant_MWAS_Res.tsv'))
+all.res = fread(here::here('result/EWAS_loo/variant_MWAS_Res.tsv'))
 p.mat = all.res %>% 
   select(CpG,ends_with('.p')) %>% 
   column_to_rownames(var="CpG") 
@@ -649,7 +668,7 @@ ls.snp = colnames(all.res) %>% .[grep('.p$',.)] %>% gsub('.p','',.) %>% .[!. %in
 snp.ref = fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/ucsc_annotation/hg19/snp151Common_chr_bp_rs.txt',stringsAsFactors=F) %>%
       .[.$V3 %in% ls.snp,]
 
-ewasResult=read.delim('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl')
+ewasResult=read.delim('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl')
 anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
 ref.tomerge <- anno %>% as.data.frame %>%
       dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
@@ -724,7 +743,7 @@ p.mat.new = -log10(p.mat) %>%
 
 # Heatmap
 set.seed(1234)
-png(here::here('MR_meth_MDD/Figs/MainText/SNP_to_CpG_mapping.png'), height = 2600, width = 3800,res = 300)
+png(here::here('Figs/MainText/SNP_to_CpG_mapping.png'), height = 2600, width = 3800,res = 300)
 superheat(t(p.mat.new),
           # change the size of the labels
           left.label.size = 0.1,
@@ -819,7 +838,7 @@ cal_distance <- function(tmp.ids,ref.anno.snp,ref.anno.cpg){
 }
 
 # Reload data
-load(here::here('MR_meth_MDD/result/EWAS_MDDprs_fromKathryn/cpg_snp_mapping_pNbeta.RData'))
+load(here::here('result/EWAS_MDDprs_fromKathryn/cpg_snp_mapping_pNbeta.RData'))
 
 ls.CpG = ls.CpG %>%
   mutate(.,CHR=gsub('chr','',CHR)) %>%
@@ -892,10 +911,10 @@ distance.summary.trans = distance.summary.trans[!is.na(distance.mat.clean)>0]
 
 ```{r Load info for genetic instruments DNAm to brain,echo=FALSE}
 # Load summary info for GoDMC instruments
-summary.instrument=readRDS(here::here('MR_meth_MDD/data/mQTL/GoDMC.instrument.rds'))
+summary.instrument=readRDS(here::here('data/mQTL/GoDMC.instrument.rds'))
 
 # Load EWAS summary stats
-ewas.summstat.tophitPRS=fread(here::here('MR_meth_MDD/result/EWAS_MDDprs_fromKathryn/meta-pgrs-mdd/mdd_SNPCH_prs_5e_08/mdd_SNPCH_prs_5e_08.metal.out1.tbl'),
+ewas.summstat.tophitPRS=fread(here::here('result/EWAS_MDDprs_fromKathryn/meta-pgrs-mdd/mdd_SNPCH_prs_5e_08/mdd_SNPCH_prs_5e_08.metal.out1.tbl'),
                               header=T,stringsAsFactors=F)
 ewas.summstat.tophitPRS = ewas.summstat.tophitPRS %>%
   mutate(p.adj=p.adjust(`P-value`,method = 'bonferroni'))
@@ -911,7 +930,7 @@ ls.cpg.sig_instru=ls.cpg.ewas.sig[ls.cpg.ewas.sig$MarkerName %in% summary.instru
 
 -   `r nrow(ls.cpg.sig_instru)` had more than 30 genetic instruments available.
 
--   `r length(list.files(here::here('MR_meth_MDD/data/mQTL/mQTL_forMR/')))` CpGs left after 'clumping' (window = 3Mb, r=0.1) in the MHC region.
+-   `r length(list.files(here::here('data/mQTL/mQTL_forMR/')))` CpGs left after 'clumping' (window = 3Mb, r=0.1) in the MHC region.
 
 -   Finally, 20 CpGs with \>=5 genetic instruments after data harmonisation entered MR.
 
@@ -933,7 +952,7 @@ ls.cpg.sig_instru=ls.cpg.ewas.sig[ls.cpg.ewas.sig$MarkerName %in% summary.instru
 ls.measure = c('MDD')
 
 # Load results
-res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
   lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
 names(res)=ls.measure
 ```
@@ -978,7 +997,7 @@ fig.total = ggarrange(fig.1,fig.2,fig.3,ncol=3,
                       labels = c('IVW','MR Egger','Weighted-median'),common.legend = T)
 
 ggsave(fig.total,device = 'png',height=15,width = 40,units = 'cm',dpi=300,
-       filename = here::here('MR_meth_MDD/Figs/MR_DNAm_to_brain/MR_res.png'))
+       filename = here::here('Figs/MR_DNAm_to_brain/MR_res.png'))
 fig.total
 
 ```
@@ -1023,7 +1042,7 @@ mr.sig.output = mr.sig %>%
 rownames(mr.sig.output)=NULL
 
 mr.sig.output.tosave = mr.sig.output %>% select(-sig_over3)
-saveRDS(mr.sig.output.tosave,file=here::here('MR_meth_MDD/result/GoDMC_MR_DNAm_to_MDD/mr_SigOutput.rds'))
+saveRDS(mr.sig.output.tosave,file=here::here('result/GoDMC_MR_DNAm_to_MDD/mr_SigOutput.rds'))
 
 # Make table
 mr.sig.output %>%
@@ -1073,7 +1092,7 @@ ls.discovery = mr.sig.output[,c('exposure','outcome')]
 ls.measure = c('MDD')
 
 # Load results
-res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
   lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
 names(res)=ls.measure
 ```
@@ -1117,7 +1136,7 @@ fig.total = ggarrange(fig.1,fig.2,fig.3,ncol=3,
                       labels = c('IVW','MR Egger','Weighted-median'),common.legend = T)
 
 ggsave(fig.total,device = 'png',height=15,width = 40,units = 'cm',dpi=300,
-       filename = here::here('MR_meth_MDD/Figs/MR_DNAm_to_brain/MR_res.png'))
+       filename = here::here('Figs/MR_DNAm_to_brain/MR_res.png'))
 fig.total
 
 ```
@@ -1169,7 +1188,7 @@ colnames(mr.sig.output) = colnames(mr.sig.output) %>%
 
 rownames(mr.sig.output)=NULL
 
-saveRDS(mr.sig.output,file=here::here('MR_meth_MDD/result/GS_MR_DNAm_to_MDD/mr_SigOutput.rds'))
+saveRDS(mr.sig.output,file=here::here('result/GS_MR_DNAm_to_MDD/mr_SigOutput.rds'))
 
 # Make table
 mr.sig.output %>%
@@ -1186,12 +1205,12 @@ mr.sig.output %>%
 **25** CpGs tested:
 
 ```{r Load MR results DNAm to brain replication, echo=FALSE}
-ls.measure = list.files(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GS_MR_MDD_to_DNAm/'),pattern = 'Summary') %>% 
+ls.measure = list.files(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GS_MR_MDD_to_DNAm/'),pattern = 'Summary') %>% 
   gsub('Summary_MDD_to_','',.) %>% 
   gsub('.csv','',.)
 
 # Load results
-res = list.files(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GS_MR_MDD_to_DNAm/'),pattern = 'Summary',full.names = T) %>% 
+res = list.files(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GS_MR_MDD_to_DNAm/'),pattern = 'Summary',full.names = T) %>% 
   lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
 names(res)=ls.measure
 ```
@@ -1237,7 +1256,7 @@ fig.total = ggarrange(fig.1,fig.2,fig.3,ncol=3,
                       labels = c('IVW','MR Egger','Weighted-median'),common.legend = T)
 
 ggsave(fig.total,device = 'png',height=15,width = 40,units = 'cm',dpi=300,
-       filename = here::here('MR_meth_MDD/Figs/MR_DNAm_to_brain/MR_res.png'))
+       filename = here::here('Figs/MR_DNAm_to_brain/MR_res.png'))
 fig.total
 
 ```
@@ -1289,7 +1308,7 @@ mr.sig.output = mr.sig %>%
 
 rownames(mr.sig.output)=NULL
 mr.sig.output.tosave=mr.sig.output[,!colnames(mr.sig.output) %in% c('sig_over3','outcome.y')]
-saveRDS(mr.sig.output.tosave,file=here::here('MR_meth_MDD/result/GS_MR_MDD_to_DNAm/mr_SigOutput.rds'))
+saveRDS(mr.sig.output.tosave,file=here::here('result/GS_MR_MDD_to_DNAm/mr_SigOutput.rds'))
 
 # Make table
 mr.sig.output %>%
@@ -1354,7 +1373,7 @@ if(rm.y==T){
 }
 
 # Discovery analysis
-res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
   lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
 names(res)='MDD'
 mr.sig.output = res[[1]] %>%#
@@ -1365,16 +1384,16 @@ mr.sig.output = res[[1]] %>%#
 fig.p.discovery.mr = p.plot.mr(res,tmp.title='DNAm (GoDMC) to MDD',rm.y = F)
 
 # Replication analysis
-res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
   lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
 names(res)='MDD'
 fig.p.replication.mr = p.plot.mr(res,tmp.title='DNAm (GS) to MDD',rm.y = T)
 
 # Reversed direction MR
-res = as.list(list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GS_MR_MDD_to_DNAm/',pattern='^Summary',full.names = T)) %>% 
+res = as.list(list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GS_MR_MDD_to_DNAm/',pattern='^Summary',full.names = T)) %>% 
   lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>%
   lapply(.,dplyr::rename,outcome=exposure,exposure=outcome)
-names(res)=list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GS_MR_Brain_to_DNAm/',pattern='^Summary') %>%
+names(res)=list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GS_MR_Brain_to_DNAm/',pattern='^Summary') %>%
   gsub('Summary_Brain_to_','',.) %>%
   gsub('.csv','',.)
 fig.p.reverse.mr = p.plot.mr(res,tmp.title='MDD to DNAm (GS)',rm.y = T)
@@ -1384,7 +1403,7 @@ fig.total = ggarrange(fig.p.discovery.mr,legend = 'bottom',
                       common.legend = T)
 
 ggsave(fig.total,device = 'png',height=9,width = 24,units = 'cm',dpi=300,
-       filename = here::here('MR_meth_MDD/Figs/MR_res_pplot.png'))
+       filename = here::here('Figs/MR_res_pplot.png'))
 fig.total
 
 ```

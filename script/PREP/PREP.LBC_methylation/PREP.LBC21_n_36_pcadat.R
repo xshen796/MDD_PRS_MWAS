@@ -26,9 +26,9 @@ library(pbapply)
 #setwd('/exports/eddie/scratch/xshen33/LBC21_n_36_w1_DNAm_bychr')
 
 # Load data
-sentrix.id=readRDS('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/LBC_phenotype/sentrix.rds') %>%
+sentrix.id=readRDS('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/LBC_phenotype/sentrix.rds') %>%
   .[,c(1,4)]
-covariates=readRDS('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/LBC_phenotype/ewas_covar.rds') %>%
+covariates=readRDS('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/LBC_phenotype/ewas_covar.rds') %>%
   .[,1:(ncol(.)-1)]
 
 # Define functions

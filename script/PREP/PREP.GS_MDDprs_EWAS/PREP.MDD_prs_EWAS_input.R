@@ -1,4 +1,4 @@
-setwd("/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/")
+setwd("/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/")
 library(dplyr)
 library(pbapply)
 library(data.table)
@@ -23,6 +23,13 @@ write.table(prs,file='data/GS_phenotype/MDDprs_MWAS_input.txt',col.names=T,row.n
 
 ls.prs = colnames(prs) %>% .[!. %in% 'id']
 write.table(ls.prs,file='data/GS_phenotype/ls_MDDprs.txt',col.names=F,row.names=F,sep='\n',quote=F)  
+
+# unrelated, p+T method:
+prs = fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/gs_genetic/MDD_prs_GS/unrelated/Meta_predict_GS.S1.profile') %>% 
+  as.data.frame %>% 
+  select(id=IID,pT_0.00000005=SCORE)
+
+write.table(prs,file='data/GS_phenotype/MDDprs_MWAS_input_unrelated.txt',col.names=T,row.names=F,sep=',',quote=F)  
 
 
 # Create covariate file  ---------------------------------------------------------------------------------

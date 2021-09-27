@@ -80,7 +80,7 @@ setwd('/exports/eddie/scratch/xshen33/mQTL/mQTL_result/')
 
 # Metal scripts
 metal.template= 
-  read.table('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/mQTL/metal_input_template',
+  read.table('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/mQTL/metal_input_template',
              sep='\n',blank.lines.skip = F)
 
 ls.txt = list.files(path='.') 
