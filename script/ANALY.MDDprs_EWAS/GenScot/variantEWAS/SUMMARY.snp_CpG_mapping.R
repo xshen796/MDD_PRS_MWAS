@@ -5,10 +5,10 @@ library(tidyverse)
 library(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
 library(here)
 library(pbapply)
-source(here::here('MR_meth_MDD/script/FUNs_meth/clump_bychr.R')) 
+source(here::here('script/FUNs_meth/clump_bychr.R')) 
 
 
-setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD')
+setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS')
 
 # Load result matrix ------------------------------------------------------
 
@@ -17,10 +17,10 @@ p.mat = all.res %>% column_to_rownames(var="CpG")
 
 # position info for CpG sites and SNPs
 ls.snp = colnames(all.res) %>% .[grep('.p$',.)] %>% gsub('.p','',.) %>% .[!. %in% 'CpG']
-snp.ref = fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/ucsc_annotation/hg19/snp151Common_chr_bp_rs.txt',stringsAsFactors=F) %>%
+snp.ref = fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/ucsc_annotation/hg19/snp151Common_chr_bp_rs.txt.gz',stringsAsFactors=F) %>%
   .[.$V3 %in% ls.snp,]
 
-ewasResult=read.delim('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl')
+ewasResult=read.delim('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl')
 anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b4.hg19)
 ref.tomerge <- anno %>% as.data.frame %>%
   dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
@@ -83,7 +83,7 @@ cpg.input.p[cpg.input.p>0.05/nrow(ewasResult)]=NA
 # Reorder p.mat and reduce size
 colnames(p.mat)=colnames(p.mat) %>% gsub('.p','',.)
 p.mat[p.mat==0]=1e-320  # Recover extremely low p-values to system threshold
-p.mat[p.mat>0.05/96]=NA
+p.mat[p.mat>0.05/length(ls.cpg.tokeep)/nrow(ls.SNP.102)]=NA
 p.mat.new = -log10(p.mat) %>%
   .[ls.CpG$ID,] %>%
   .[,ls.SNP.102$RSID]
@@ -106,7 +106,7 @@ calc_trans <- function(tmp.snp.name,ref.snp,ref.cpg,tmp.mat){
   # Summarise distal effects
   tmp.res = tmp.res %>% 
     mutate(trans.chr=ifelse(CHR!=target.chr,1,0)) %>% 
-    mutate(trans.bp=ifelse(between(MAPINFO,target.bp-1000000,target.bp+1000000),0,1)) %>% 
+    mutate(trans.bp=ifelse(CHR==target.chr&between(MAPINFO,target.bp-1000000,target.bp+1000000),0,1)) %>% 
     mutate(local=ifelse(CHR!=target.chr,0,
                         ifelse(between(MAPINFO,target.bp-1000000,target.bp+1000000),1,0)))
   trans.summstats = filter(tmp.res,trans.chr==1) 
@@ -123,14 +123,14 @@ summ.trans_n = ls.SNP.102$RSID %>% as.list %>%
   pblapply(.,calc_trans,ref.snp=ls.SNP.102,ref.cpg=ls.CpG,tmp.mat=t(p.mat.new)) %>% 
   bind_rows %>% 
   data.frame(.,ls.SNP.102) %>% 
-  .[order(.$n.trans_chr_loci,decreasing = T),] 
+  .[order(.$n.trans_chr_chrn,decreasing = T),] 
 
-write.table(summ.trans_n,file='result/Trans_summary.txt',col.names = T,row.names = F,quote = F,sep = '\t')
+write_tsv(summ.trans_n,file='result/Trans_summary.txt.gz',col_names = T)
 
 
 # Save another version for FUMA -------------------------------------------
 
-mddgwas.summstats=fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice')
+mddgwas.summstats=fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice.gz')
 
 mddgwas.summstats = mddgwas.summstats %>% 
   .[.$SNP %in% summ.trans_n$RSID[summ.trans_n$n.trans_chr_chrn>0],]

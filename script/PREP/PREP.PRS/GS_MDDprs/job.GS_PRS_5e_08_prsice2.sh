@@ -16,13 +16,13 @@ prsice_R_file='/exports/igmm/eddie/GenScotDepression/shen/Tools/PRSice/PRSice.R'
 prsice_binary_file='/exports/igmm/eddie/GenScotDepression/shen/Tools/PRSice/PRSice_linux'
 
 # space/tab deliminated summary statistics in plain text
-gwas_summstats='/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice' 
+gwas_summstats='/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice.gz' 
 
 # prefix of the bed,fam,bim files
 plink_files='/exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA_nodupvar'
 
 # Phenotype for MDD diagnosis: space/tab deliminated file. Columns: FID, IID, phenotype (e.g. MDD_diagnosis)
-phenotype_file='/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/GS_loo_PRS/dummy.MDD.GS'
+phenotype_file='/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/GS_loo_PRS/dummy.MDD.GS'
 pheno_name='dummy_MDD'
 
 # prefix for the output files
@@ -39,11 +39,11 @@ Rscript $prsice_R_file \
     --stat BETA \
     --binary-target T \
     --allow-inter \
+    --extract /exports/eddie/scratch/xshen33/GS_PRS_loo/PRS_5e_08/MDDprs_5e_08.valid \
     --pheno $phenotype_file \
     --pheno-col $pheno_name \
     --no-clump \
     --bar-levels 0.00000005 \
-    --extract PRSice.valid \
     --fastscore \
     --print-snp \
     --all-score \

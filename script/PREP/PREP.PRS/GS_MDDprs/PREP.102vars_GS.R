@@ -2,15 +2,15 @@ library(data.table)
 library(dplyr)
 library(pbapply)
 library(LDlinkR)
-setwd('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/')
+setwd('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/')
 
 # Load data -------------------------------------------------------------------------------------------------------
 
-paper.102=fread('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/GS_genetic_meth/ls.102SNP.GS.txt',header=T)
+paper.102=fread('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/GS_genetic_meth/ls.102SNP.GS.txt',header=T)
 clumped.GS.summstats=fread('/exports/eddie/scratch/xshen33/GS_PRS_loo/PRS_5e_08/MDDprs_5e_08.snp') %>%
       filter(P<5e-8)
 GS.SNP = fread('/exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA.bim')
-clumped.GS.summstats=fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice') %>% 
+clumped.GS.summstats=fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice.gz') %>% 
   .[.$SNP %in% GS.SNP$V2,] %>% 
   filter(P<5e-8)
 
@@ -24,19 +24,19 @@ clumped.GS.summstats = clumped.GS.summstats %>%
 
 old.snp.ambig = fread('/exports/eddie/scratch/xshen33/GS_PRS_loo/data/ambig_snp.txt',header=F) %>% .$V1
 
-ls.f.allsnp = list.files('/exports/eddie/scratch/xshen33/GS_PRS_loo/PRS/',pattern = '.log') %>% 
-  gsub('loo_PRS','ls.SNP',.) %>% 
+ls.f.allsnp = list.files('/exports/eddie/scratch/xshen33/GS_PRS_loo/PRS/',pattern = '.log') %>%
+  gsub('loo_PRS','ls.SNP',.) %>%
   gsub('.log','.txt',.)
-ls.f.validsnp = list.files('/exports/eddie/scratch/xshen33/GS_PRS_loo/PRS/',pattern = '.all_score') %>% 
-  gsub('loo_PRS','ls.SNP',.) %>% 
+ls.f.validsnp = list.files('/exports/eddie/scratch/xshen33/GS_PRS_loo/PRS/',pattern = '.all_score') %>%
+  gsub('loo_PRS','ls.SNP',.) %>%
   gsub('.all_score','.txt',.)
 
 ls.f.rerun = ls.f.allsnp %>% .[!. %in% ls.f.validsnp]
 
-ls.snp.ambig = ls.f.rerun %>% paste0('/exports/eddie/scratch/xshen33/GS_PRS_loo/data/ls_SNP/',.) %>% as.list %>% 
-  pblapply(.,fread,header=F) %>% 
-  bind_rows %>% 
-  .$V1 %>% 
+ls.snp.ambig = ls.f.rerun %>% paste0('/exports/eddie/scratch/xshen33/GS_PRS_loo/data/ls_SNP/',.) %>% as.list %>%
+  pblapply(.,fread,header=F) %>%
+  bind_rows %>%
+  .$V1 %>%
   c(.,old.snp.ambig)
 
 write.table(ls.snp.ambig,file='/exports/eddie/scratch/xshen33/GS_PRS_loo/data/ambig_snp.txt',sep='\n',row.names = F,col.names = F,quote=F)
@@ -54,7 +54,7 @@ find_proxy <- function(tmp.rs,tmp.summstats,omit.ls=''){
 }
 
 k = as.list(paper.102$MarkerName) %>%
-pblapply(.,find_proxy,tmp.summstats=clumped.GS.summstats,omit.ls=ls.snp.ambig) %>%
+pblapply(.,find_proxy,tmp.summstats=clumped.GS.summstats) %>%
 bind_rows %>% 
   mutate(paperSNP=paper.102$MarkerName)
 

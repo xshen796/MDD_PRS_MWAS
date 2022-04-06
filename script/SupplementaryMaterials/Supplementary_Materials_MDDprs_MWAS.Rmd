@@ -135,7 +135,20 @@ ref.tomerge <- anno %>% as.data.frame %>%
   dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
          Islands_Name,Relation_to_Island) %>%
   filter(CHR!='chrX',CHR!='chrY') %>% 
-  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric)
+
+clean_gene <- function(x.genes.scan){
+  if(x.genes.scan!=""){
+    x.genes.scan = x.genes.scan  %>% 
+      strsplit(.,split=';') %>% unlist %>% unique
+    output.gene.epic = x.genes.scan %>% paste0(.,collapse='; ')
+  }else{
+    output.gene.epic = ""
+  }
+}
+
+ref.tomerge = ref.tomerge %>% 
+  mutate(ucsc_gene = ucsc_gene %>% as.list %>% pblapply(clean_gene) %>% unlist)
 
 discovery.summstats = list.files(here::here('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/'),
                                  recursive = T,pattern = 'ewas_meta',full.names = T) %>% 
@@ -683,7 +696,8 @@ ft.table.s10
 sig.discovery = summstats.5e_08$MDDprs_ewas_meta %>%
   mutate(p.adj=p.adjust(P.value,method='bonferroni')) %>% 
   filter(p.adj<0.05) %>% 
-  select(CpG=MarkerName,Beta=Effect,SE=StdErr,P=P.value,Direction,p.adj) 
+  select(CpG=MarkerName,Beta=Effect,SE=StdErr,P=P.value,Direction,p.adj) %>% 
+  left_join(.,ref.tomerge,by=('CpG'='ID'))
 
 repli.adult = summstats.5e_08$EWAS_MDDprs_meta_LBC_ALSPAC %>% 
   mutate(p.adj=p.adjust(P.value,method='bonferroni')) %>% 
@@ -730,6 +744,8 @@ check_MDD_range<-function(tmp.summstats,ref.dat){
   block.ref = filter(ref.dat,chr==tmp.target.chr)
   
   tmp.check = apply(ref.dat,FUN = check_range_byline, MARGIN=1,tmp.bp=tmp.target.bp) %>% sum
+  output = ifelse(tmp.check>0,'Yes','No')
+  return(output)
 }
 
 k.riskrange=purrr::transpose(sig.res.MWAS) %>% 

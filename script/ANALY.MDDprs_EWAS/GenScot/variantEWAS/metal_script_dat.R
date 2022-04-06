@@ -20,7 +20,7 @@ ls.f %>% as.list %>%
 # Load and create metal scripts -------------------------------------------
 
 metal.ref = 
-  read.table('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/script/ANALY.MDDprs_EWAS/GenScot/variantEWAS/summstats_metal_template',
+  read.table('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/script/ANALY.MDDprs_EWAS/GenScot/variantEWAS/summstats_metal_template',
              sep = '\n',stringsAsFactors = F,header = F,blank.lines.skip = F)
 
 mk_metal <- function(ref.file,tmp.input,filename.1,filename.2,outputname){

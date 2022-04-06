@@ -39,7 +39,7 @@ setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth
 
 # Find CpGs for MR --------------------------------------------------------
 # Basic settings
-setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/')
+setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/')
 
 # Define a function for clumping
 clump_bychr <- function(dat,chr.no,tophits.bpwindow=250000,ref.cpgCorr){
@@ -83,10 +83,10 @@ clump_bychr <- function(dat,chr.no,tophits.bpwindow=250000,ref.cpgCorr){
 summary.instrument=readRDS('data/mQTL/GoDMC.instrument.rds')
 
 # Load EWAS summary stats
-ewas.summstat.tophitPRS=fread('result/EWAS_MDDprs_fromKathryn/meta-pgrs-mdd/mdd_SNPCH_prs_5e_08/mdd_SNPCH_prs_5e_08.metal.out1.tbl',
+ewas.summstat.tophitPRS=fread('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl',
                               header=T,stringsAsFactors=F)
 ewas.summstat.tophitPRS = ewas.summstat.tophitPRS %>%
-  mutate(p.adj=p.adjust(`P-value`,method = 'bonferroni'))
+  mutate(p.adj=p.adjust(`P.value`,method = 'bonferroni'))
 ls.cpg.ewas.sig = filter(ewas.summstat.tophitPRS,p.adj<0.05)
 
 # In MHC region?
@@ -108,7 +108,8 @@ target.rows = merge(ls.cpg.ewas.sig,anno.tomerge,by.x='MarkerName',by.y='Name') 
   data.frame %>%
   dplyr::rename(cpg = MarkerName, p = .$`P-value` , BP = pos) %>%
   dplyr::rename(p = P.value) %>%
-  filter(.,is.MHC=='Yes')
+  filter(.,is.MHC=='Yes') %>% 
+  .[.$cpg %in% rownames(ref.cpg_cormat),]
   
 ## Load CpG correlation data for clumping
 ref.cpg_cormat = readRDS('data/Meth_Cor_Mat/cormat_MDDprs_tophits_CpG.rds')
@@ -124,7 +125,7 @@ cpg.forMR.MHC = as.list(unique(target.rows$chr)) %>%
 cpg.forMR.MHC = cpg.forMR.MHC %>% 
   merge(.,summary.instrument[,c('cpg','n.5e_08')],by='cpg',all.x=T) %>%
   select(-chr,-BP,-sigblock.no) %>%
-  dplyr::rename(`P-value`=p)
+  dplyr::rename(`P.value`=p)
 # All non-MHC CpGs
 cpg.forMR.all = merge(ls.cpg.sig_instru,summary.instrument[,c('cpg','n.5e_08')],by.x='MarkerName',by.y='cpg',all.x=T) %>%
   dplyr::rename(cpg=MarkerName) %>%
@@ -155,7 +156,7 @@ save_mqtl_forMR <- function(masterdat,dir.tosave,target.cpg){
   saveRDS(output,file = paste0(dir.tosave,'/mQTL.',target.cpg,'.rds'))
 }
 
-rs.chr_bp=fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/ucsc_annotation/hg19/snp151Common_chr_bp_rs.txt',
+rs.chr_bp=fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/ucsc_annotation/hg19/snp151Common_chr_bp_rs.txt.gz',
                 header=F,sep=' ',stringsAsFactors=F)
 rs.chr_bp$gp.oldName = paste0(rs.chr_bp$V1,':',rs.chr_bp$V2)
 mqtl.dir='/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/GoDMC/mQTL_meta_nopgc/bychr'
@@ -184,26 +185,58 @@ saveRDS(multivarMR.SNP,file='data/mQTL/mQTL_forMR/SNP_for_multivarMR.rds')
 
 # Process exposure data ---------------------------------------------------
 
+correct_by_method <- function(tmp.res,target.method){
+  res.block = tmp.res %>% filter(method==target.method) %>% 
+    dplyr::rename(egger_se=se.1,egger_pval=pval.1) %>% 
+    mutate(adj.pval = p.adjust(pval,method='fdr'),
+           adj.egger_pval = p.adjust(egger_pval,method='fdr'),
+           adj.Q_pval = p.adjust(Q_pval,method='fdr'))
+  return(res.block)
+}
+
 # CpGs to include
-res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
   lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>%
   .[[1]]
 
-ls.cpg.multivarMR = res %>%
-  group_by(exposure) %>%
-  count(pval<0.05) %>%
-  filter(`pval < 0.05`==T) %>%
-  filter(n>=2)
+ls.mr_methods=res %>% {unique(.$method)} %>% as.list
 
-write.table(ls.cpg.multivarMR$exposure,
+res = res %>% 
+  lapply(X = ls.mr_methods, FUN = correct_by_method, tmp.res=.) %>% 
+  bind_rows %>% 
+  .[order(.$exposure),]
+
+count_valid <- function(tmp.res,target.cpg){
+  res.block = tmp.res %>% filter(exposure==target.cpg)
+  p.ivw = res.block %>% filter(method=='Inverse variance weighted') %>% {.$adj.pval}
+  p.wm = res.block %>% filter(method=='Weighted median') %>% {.$adj.pval}
+  p.mr_egger = res.block %>% filter(method=='MR Egger') %>% {.$adj.pval}
+  
+  is.valid = ifelse(p.ivw<0.05,1,0)+
+    ifelse(p.wm<0.05,1,0)+
+    ifelse(max(res.block$adj.egger_pval)>0.05,1,
+           ifelse(p.mr_egger<0.05,1,0))
+  is.valid = is.valid==3
+  output = data.frame(cpg=target.cpg,is.valid=is.valid)
+  
+  return(output)
+}
+
+ls.cpg.multivarMR = unique(res$exposure) %>% as.list %>% 
+  pblapply(count_valid,tmp.res=res) %>% 
+  bind_rows %>% 
+  filter(is.valid==T) %>% 
+  {.$cpg}
+
+write.table(ls.cpg.multivarMR,
             file='script/ANALY.MR/DNAm_to_MDD/ANALY_multivar/ls.cpg.multivar_MR.txt',
             sep = '\n',quote=F,col.names=F,row.names=F)
 
 # SNPs to include
 # Run exposure preparation for single-variant MR first
-exposure.path = '/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/MR_InterFiles/exposure_stats/'
+exposure.path = '/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/MR_InterFiles/exposure_stats/'
 exposure.dat = list.files(path = exposure.path, pattern = '.exposure_dat',full.names=T) %>%
-  .[grep(paste0(ls.cpg.multivarMR$exposure,collapse = '|'),.)] %>%
+  .[grep(paste0(ls.cpg.multivarMR,collapse = '|'),.)] %>%
   as.list %>%
   lapply(.,FUN = fread,header=T) %>%
   bind_rows

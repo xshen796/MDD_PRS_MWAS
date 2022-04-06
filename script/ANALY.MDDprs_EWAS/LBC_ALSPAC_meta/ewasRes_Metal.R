@@ -2,12 +2,12 @@ library(data.table)
 library(dplyr)
 library(pbapply)
 
-setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/')
+setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/')
 
 # Reformat ALSPAC results ---------------------------------------------------------------------------------------------
 
 reformat_alspac_res <- function(tmp.pt){
-      f.path=paste0('MR_meth_MDD/result/EWAS_MDDprs_ALSPAC/MDD3_m_',tmp.pt,
+      f.path=paste0('result/EWAS_MDDprs_ALSPAC/MDD3_m_',tmp.pt,
                     '_std_age,ante_ever_smoke,mpc1,mpc2,mpc3,mpc4,mpc5,mpc6,mpc7,mpc8,mpc9,mpc10_houseman_2021-02-12.Rdata')
       load(here::here(f.path))
       ewasResults=ewas_res 
@@ -34,7 +34,7 @@ pblapply(as.list(names(res.new)), function(x) write.table( data.frame(res.new[[x
 # Reformat LBC results --------------------------------------------------------------------------------------------
 
 reformat_lbc_res <- function(tmp.pt){
-      f.path=paste0('MR_meth_MDD/result/EWAS_MDDprs_LBC/MDDprs_Pt_',tmp.pt,
+      f.path=paste0('result/EWAS_MDDprs_LBC/MDDprs_Pt_',tmp.pt,
                     '_ewas.toptable.txt')
       ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) 
       
@@ -60,7 +60,7 @@ pblapply(as.list(names(res.new)), function(x) write.table( data.frame(res.new[[x
 setwd('/exports/eddie/scratch/xshen33/MDDprs_EWAS')
 
 metal.ref = 
-      read.table('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/script/ANALY.MDDprs_EWAS/LBC_ALSPAC_meta/summstats_metal_template',
+      read.table('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/script/ANALY.MDDprs_EWAS/LBC_ALSPAC_meta/summstats_metal_template',
                  sep = '\n',stringsAsFactors = F,header = F,blank.lines.skip = F)
 
 mk_metal <- function(ref.file,tmp.input,filename.1,filename.2,outputname){

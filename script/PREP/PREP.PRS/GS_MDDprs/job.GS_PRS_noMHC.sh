@@ -2,9 +2,6 @@
 #$ -N GS_PRS
 #$ -cwd
 #$ -m beas
-#$ -M xueyi.shen@ed.ac.uk
-#$ -o logs
-#$ -e logs
 #$ -l h_vmem=32G
 #$ -l h_rt=24:00:00
 . /etc/profile.d/modules.sh
@@ -16,13 +13,13 @@ prsice_R_file='/exports/igmm/eddie/GenScotDepression/shen/Tools/PRSice/PRSice.R'
 prsice_binary_file='/exports/igmm/eddie/GenScotDepression/shen/Tools/PRSice/PRSice_linux'
 
 # space/tab deliminated summary statistics in plain text
-gwas_summstats='/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.noMHC.forPRSice' 
+gwas_summstats='/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.noMHC.forPRSice.gz' 
 
 # prefix of the bed,fam,bim files
 plink_files='/exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA'
 
 # Phenotype for MDD diagnosis: space/tab deliminated file. Columns: FID, IID, phenotype (e.g. MDD_diagnosis)
-phenotype_file='/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/GS_loo_PRS/dummy.MDD.GS'
+phenotype_file='/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/GS_loo_PRS/dummy.MDD.GS'
 pheno_name='dummy_MDD'
 
 # prefix for the output files

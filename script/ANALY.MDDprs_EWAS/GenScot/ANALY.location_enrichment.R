@@ -1,12 +1,10 @@
-setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/')
+setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/')
 
 library(dplyr)
 library(tibble)
-
-
 library(tidyverse)
-
-
+library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)   # Data management
+library(readr)
 
 # Load data ---------------------------------------------------------------
 anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
@@ -14,7 +12,7 @@ ref.tomerge <- anno %>% as.data.frame %>%
   dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
                 Islands_Name,Relation_to_Island)
 pt='0.00000005'
-f.path=paste0('MR_meth_MDD/result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_',pt,'.metal.out1.tbl')
+f.path=paste0('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_',pt,'.metal.out1.tbl')
 ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
   mutate(p.adj = p.adjust(P.value,method='bonferroni')) 
 colnames(ewasResults)[1]='CpG'
@@ -53,7 +51,7 @@ c_bytype <- function(tmp.relation,input.dat){
     colSums
   new.dat=rbind(new.dat,other.rows)
   res=chisq.test(new.dat) 
-  output=c(res$statistic,groot$parameter,res$p.value) %>% data.frame
+  output=c(res$statistic,res$parameter,res$p.value) %>% data.frame
   return(output)
 }
 
@@ -67,6 +65,6 @@ rownames(all.res)=NULL
 table.inpaper = data.frame(location.matrix.percentage %>% 
                              rownames_to_column(var='Relation_to_Island'),
                            all.res)
-write.table(table.inpaper,file=here::here('MR_meth_MDD/result/location_mat.txt'),quote = F,row.names = T,col.names = T,sep = '\t')
+write.table(table.inpaper,file=here::here('result/location_mat.txt'),quote = F,row.names = T,col.names = T,sep = '\t')
 
 

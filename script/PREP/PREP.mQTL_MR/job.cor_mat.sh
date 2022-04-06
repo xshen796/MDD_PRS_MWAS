@@ -7,8 +7,5 @@
 . /etc/profile.d/modules.sh
 source ~/.bash_profile
 
-module load igmm/apps/R/3.5.1
 
-cd /gpfs/igmmfs01/eddie/GenScotDepression/shen/SData/STRADL/personal_folder/DNAm_projects/MR_meth_MDD/script/PREP/
-
-Rscript PREP.cor_mat_CpG.R $1
+Rscript /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/script/PREP/PREP.mQTL_MR/PREP.cor_mat_CpG.R

@@ -9,8 +9,8 @@ ref.tomerge <- anno %>% as.data.frame %>%
   dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
          Islands_Name,Relation_to_Island)
 
-ls.CrossReactive.CpG = fread(here::here('MR_meth_MDD/data/CpG_exclude/cross_hybridising_EPIC_GS.csv'),stringsAsFactors=F,header=F)
-ls.polymorphic.CpG = fread(here::here('MR_meth_MDD/data/CpG_exclude/Polymorphic_CpG_EPIC_GS.csv'),stringsAsFactors=F,header=T) %>%
+ls.CrossReactive.CpG = fread(here::here('data/CpG_exclude/cross_hybridising_EPIC_GS.csv'),stringsAsFactors=F,header=F)
+ls.polymorphic.CpG = fread(here::here('data/CpG_exclude/Polymorphic_CpG_EPIC_GS.csv'),stringsAsFactors=F,header=T) %>%
     filter(EUR_AF>0.05,EUR_AF<0.95)
 
 ls.CpG_exclude = c(ls.CrossReactive.CpG$V1,ls.polymorphic.CpG$IlmnID) %>%

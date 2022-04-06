@@ -1,7 +1,7 @@
 
 # Basic settings ----------------------------------------------------------
 
-setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/')
+setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/')
 
 library(dplyr)
 library(data.table)
@@ -54,20 +54,24 @@ LBC.meth.tech.covar = rbind(LBC21.tech,LBC36.tech) %>%
 PC.tokeep = 
   PC[(PC$V1 %in% LBC.pheno.covar$ID) |(PC$V1 %in% LBC.meth.tech.covar$ID),] %>%
   .[,c(1,3:22)] 
-colnames(PC.tokeep)=c('ID',paste0('PC',1:20))
+colnames(PC.tokeep)=c('ID',paste0('C',1:20))
+PC.tokeep = PC.tokeep %>%
+  select(ID,paste0('C',1:10))
 
 
 # Harmonise IDs (keep methylation study ID)
 
 input.covar = merge(LBC.meth.tech.covar,LBC.pheno.covar,by='ID') %>%
   select( -matches("^Basename$|WAVE")) %>%
-  mutate(cohort=as.factor(cohort),smoking=as.factor(smoking),ID=as.character(ID),sex=as.factor(sex))
-colnames(input.covar)[1]='id'
+  mutate(cohort=as.factor(cohort),smoking=as.factor(smoking),ID=as.character(ID),sex=as.factor(sex)) %>%
+  left_join(.,PC.tokeep,by='ID') %>%
+  dplyr::rename(id=ID)
 
-input.PC = merge(PC.tokeep,LBC_w1_cellcount,by='ID') %>%
-  select(Basename, matches('^PC'))
-input.PC$Basename=paste0('X',input.PC$Basename)
-colnames(input.PC)[1]='Sample_Sentrix_ID'
+
+#input.PC = merge(PC.tokeep,LBC_w1_cellcount,by='ID') %>%
+#  select(Basename, matches('^PC'))
+#input.PC$Basename=paste0('X',input.PC$Basename)
+#colnames(input.PC)[1]='Sample_Sentrix_ID'
 
 saveRDS(input.covar,file='data/LBC_phenotype/ewas_covar.rds')
 saveRDS(input.PC,file='data/LBC_phenotype/ewas_gPC1_20.rds')
@@ -107,9 +111,9 @@ saveRDS(linkage.file,file='data/LBC_phenotype/sentrix.rds')
 # Prep ewas command -------------------------------------------------------
 ls.pheno = colnames(LBC.PRS)[2:ncol(LBC.PRS)]
 
-cmmd=paste0('lbc_ewas --pdata /gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/LBC_phenotype/LBC_MDDprs.csv --pheno ',
+cmmd=paste0('lbc_ewas --pdata /gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/LBC_phenotype/LBC_MDDprs.csv --pheno ',
             ls.pheno,
-            ' --out /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/EWAS_MDDprs_LBC/MDDprs_', ls.pheno,'_ewas')
+            ' --out /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/EWAS_MDDprs_LBC/MDDprs_', ls.pheno,'_ewas')
 
 write.table(cmmd,file='script/ANALY.MDDprs_EWAS/LBC/ewas_cmmd.sh',
             sep='\n\n',row.names=F,quote = F,col.names = F)

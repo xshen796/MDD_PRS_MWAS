@@ -50,8 +50,8 @@ dir.create(file.path(ofig.path), showWarnings = FALSE)
   res <- mv_multiple(dat,plots = T)
   
   res$result %>% as.data.frame %>%
-  write_tsv(.,path=otable.path,
-            col_names = T,quote_escape = F)
+  write_tsv(.,file=otable.path,
+            col_names = T)
   
   names(res$plots) = res$result$exposure
   names(res$plots) %>% as.list %>% 

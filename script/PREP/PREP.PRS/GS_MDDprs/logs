@@ -1,0 +1,223 @@
+PRSice 2.3.3 (2020-08-05) 
+https://github.com/choishingwan/PRSice
+(C) 2016-2020 Shing Wan (Sam) Choi and Paul F. O'Reilly
+GNU General Public License v3
+If you use PRSice in any published work, please cite:
+Choi SW, O'Reilly PF.
+PRSice-2: Polygenic Risk Score Software for Biobank-Scale Data.
+GigaScience 8, no. 7 (July 1, 2019)
+2021-10-08 22:53:28
+/exports/igmm/eddie/GenScotDepression/shen/Tools/PRSice/PRSice_linux \
+    --a1 A1 \
+    --a2 A2 \
+    --all-score  \
+    --allow-inter  \
+    --bar-levels 5e-08,1 \
+    --base /exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice.gz \
+    --beta  \
+    --binary-target T \
+    --bp BP \
+    --chr CHR \
+    --extract PRSice.valid \
+    --fastscore  \
+    --no-clump  \
+    --nonfounders  \
+    --num-auto 22 \
+    --out /exports/eddie/scratch/xshen33/GS_PRS_loo/PRS_5e_08/MDDprs_5e_08 \
+    --pheno /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/GS_loo_PRS/dummy.MDD.GS \
+    --pheno-col dummy_MDD \
+    --print-snp  \
+    --pvalue P \
+    --seed 236440401 \
+    --snp SNP \
+    --stat BETA \
+    --target /exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA_nodupvar \
+    --thread 5
+
+[1;33mWarning: Intermediate not required. Will not generate 
+         intermediate file [0m
+
+Initializing Genotype file: 
+/exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA_nodupvar 
+(bed) 
+
+Start processing 
+23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice 
+================================================== 
+
+[1;31mError: Cannot open file: PRSice.valid [0m
+
+Error: 
+Execution halted
+PRSice 2.3.3 (2020-08-05) 
+https://github.com/choishingwan/PRSice
+(C) 2016-2020 Shing Wan (Sam) Choi and Paul F. O'Reilly
+GNU General Public License v3
+If you use PRSice in any published work, please cite:
+Choi SW, O'Reilly PF.
+PRSice-2: Polygenic Risk Score Software for Biobank-Scale Data.
+GigaScience 8, no. 7 (July 1, 2019)
+2021-10-09 08:23:20
+/exports/igmm/eddie/GenScotDepression/shen/Tools/PRSice/PRSice_linux \
+    --a1 A1 \
+    --a2 A2 \
+    --all-score  \
+    --allow-inter  \
+    --bar-levels 5e-08,1 \
+    --base /exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice.gz \
+    --beta  \
+    --binary-target T \
+    --bp BP \
+    --chr CHR \
+    --extract /exports/eddie/scratch/xshen33/GS_PRS_loo/PRS_5e_08/MDDprs_5e_08.valid \
+    --fastscore  \
+    --no-clump  \
+    --nonfounders  \
+    --num-auto 22 \
+    --out /exports/eddie/scratch/xshen33/GS_PRS_loo/PRS_5e_08/MDDprs_5e_08 \
+    --pheno /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/GS_loo_PRS/dummy.MDD.GS \
+    --pheno-col dummy_MDD \
+    --print-snp  \
+    --pvalue P \
+    --seed 2246549939 \
+    --snp SNP \
+    --stat BETA \
+    --target /exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA_nodupvar \
+    --thread 5
+
+[1;33mWarning: Intermediate not required. Will not generate 
+         intermediate file [0m
+
+Initializing Genotype file: 
+/exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA_nodupvar 
+(bed) 
+
+Start processing 
+23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice 
+================================================== 
+
+SNP extraction/exclusion list contains 5 columns, will 
+assume first column contains the SNP ID 
+
+Base file: 
+/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice.gz 
+GZ file detected. Header of file is: 
+
+SNP	A1	A2	Freq1	FreqSE	MinFreq	MaxFreq	BETA	SE	P	Direction	CHR	BP 
+
+Reading 100.00%
+8123891 variant(s) observed in base file, with: 
+2171888 variant(s) excluded based on user input 
+5952003 total variant(s) included from base file 
+
+Loading Genotype info from target 
+================================================== 
+
+20032 people (8175 male(s), 11732 female(s)) observed 
+12921 founder(s) included 
+
+3168802 variant(s) not found in previous data 
+53 variant(s) with mismatch information 
+5464433 variant(s) included 
+
+Phenotype file: 
+/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/GS_loo_PRS/dummy.MDD.GS 
+Column Name of Sample ID: FID+IID 
+Note: If the phenotype file does not contain a header, the 
+column name will be displayed as the Sample ID which is 
+expected. 
+
+There are a total of 1 phenotype to process 
+
+Processing the 1 th phenotype 
+
+dummy_MDD is a binary phenotype 
+9983 control(s) 
+10049 case(s) 
+
+
+Start Processing
+Processing 0.00%Processing 50.00%Processing 100.00%Processing 100.00%
+There are 1 region(s) with p-value between 0.1 and 1e-5 
+([1;31mmay not be significant[0m). 
+
+Begin plotting
+Current Rscript version = 2.3.3
+Plotting Bar Plot
+PRSice 2.3.3 (2020-08-05) 
+https://github.com/choishingwan/PRSice
+(C) 2016-2020 Shing Wan (Sam) Choi and Paul F. O'Reilly
+GNU General Public License v3
+If you use PRSice in any published work, please cite:
+Choi SW, O'Reilly PF.
+PRSice-2: Polygenic Risk Score Software for Biobank-Scale Data.
+GigaScience 8, no. 7 (July 1, 2019)
+2021-10-11 09:47:33
+/exports/igmm/eddie/GenScotDepression/shen/Tools/PRSice/PRSice_linux \
+    --a1 A1 \
+    --a2 A2 \
+    --all-score  \
+    --allow-inter  \
+    --bar-levels 5e-08,1e-05,0.0001,0.001,0.005,0.01,0.05,0.1,0.5,1 \
+    --base /exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.noMHC.forPRSice.gz \
+    --beta  \
+    --binary-target T \
+    --bp BP \
+    --chr CHR \
+    --clump-kb 500kb \
+    --clump-p 1.000000 \
+    --clump-r2 0.100000 \
+    --extract /exports/eddie/scratch/xshen33/GS_PRS_loo/PRS_5e_08/MDDprs_5e_08.valid \
+    --fastscore  \
+    --num-auto 22 \
+    --out /exports/eddie/scratch/xshen33/GS_PRS_loo/PRS_allpT/MDDprs_noMHC \
+    --pheno /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/GS_loo_PRS/dummy.MDD.GS \
+    --pheno-col dummy_MDD \
+    --print-snp  \
+    --pvalue P \
+    --seed 2599629822 \
+    --snp SNP \
+    --stat BETA \
+    --target /exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA \
+    --thread 3
+
+[1;33mWarning: Intermediate not required. Will not generate 
+         intermediate file [0m
+
+Initializing Genotype file: 
+/exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA 
+(bed) 
+
+Start processing 
+23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.noMHC.forPRSice 
+================================================== 
+
+SNP extraction/exclusion list contains 5 columns, will 
+assume first column contains the SNP ID 
+
+Base file: 
+/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.noMHC.forPRSice.gz 
+GZ file detected. Header of file is: 
+
+SNP	A1	A2	Freq1	FreqSE	MinFreq	MaxFreq	BETA	SE	P	Direction	CHR	BP 
+
+Reading 100.00%
+7058075 variant(s) observed in base file, with: 
+1119184 variant(s) excluded based on user input 
+5938891 total variant(s) included from base file 
+
+Loading Genotype info from target 
+================================================== 
+
+20032 people (8175 male(s), 11732 female(s)) observed 
+12921 founder(s) included 
+
+3180614 variant(s) not found in previous data 
+53 variant(s) with mismatch information 
+5452621 variant(s) included 
+
+[1;31mError: Cannot open file: 
+       /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/GS_loo_PRS/dummy.MDD.GS [0m
+
+Error: 
+Execution halted

@@ -13,7 +13,7 @@ Rscript PREP.exposure.R --mqtl /exports/igmm/eddie/GenScotDepression/shen/Active
 # Run MR   ------------------------------------------------------------------------------------
 
 while read targetfile; do
-    result_tag=`echo $targetfile | sed "s/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice/MDD/"`
+    result_tag=`echo $targetfile | sed "s/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice.gz/MDD/"`
     result_tag=`echo $result_tag | sed "s/\\/exports\\/igmm\\/eddie\\/GenScotDepression\\/shen\\/bakup.dat\\/summstats\\///"`     
     
     rm -r /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/MR_InterFiles/outcome_stats/

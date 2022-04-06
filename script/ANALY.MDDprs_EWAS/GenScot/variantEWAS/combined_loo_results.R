@@ -9,8 +9,8 @@ setwd('/exports/eddie/scratch/xshen33/GS_PRS_loo/MetaWaves_EWAS')
 
 # Reorganise MWAS summstats ---------------------------------------------------------------------------------------
 
-ls.CrossReactive.CpG = fread(here::here('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/CpG_exclude/cross_hybridising_EPIC_GS.csv'),stringsAsFactors=F,header=F)
-ls.polymorphic.CpG = fread(here::here('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/CpG_exclude/Polymorphic_CpG_EPIC_GS.csv'),stringsAsFactors=F,header=T) %>%
+ls.CrossReactive.CpG = fread(here::here('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/CpG_exclude/cross_hybridising_EPIC_GS.csv'),stringsAsFactors=F,header=F)
+ls.polymorphic.CpG = fread(here::here('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/CpG_exclude/Polymorphic_CpG_EPIC_GS.csv'),stringsAsFactors=F,header=T) %>%
     filter(EUR_AF>0.05,EUR_AF<0.95)
 
 ls.CpG_exclude = c(ls.CrossReactive.CpG$V1,ls.polymorphic.CpG$IlmnID) %>%
@@ -42,15 +42,15 @@ all.res = all.res %>%
 # Write to HPC 
 
 write_tsv(all.res,
-          '/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/EWAS_loo/variant_MWAS_Res.tsv',
+          '/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/EWAS_loo/variant_MWAS_Res.tsv',
           quote_escape='none')
 
 
 
 # Draw heatmap ----------------------------------------------------------------------------------------------------
 
-setwd('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD')
-all.res=fread('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/EWAS_loo/variant_MWAS_Res.tsv')
+setwd('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS')
+all.res=fread('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/EWAS_loo/variant_MWAS_Res.tsv')
 
 # position info for CpG sites and SNPs
 ls.snp = colnames(all.res) %>% .[grep('.p$',.)] %>% gsub('.p','',.) %>% .[!. %in% 'CpG']
@@ -58,7 +58,7 @@ snp.ref = fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/ucsc_annot
       .[.$V3 %in% ls.snp,]
 
 #load('result/EWAS_MDDprs_fromKathryn/cpg_snp_mapping_pNbeta.RData')
-ewasResult=read.delim('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl')
+ewasResult=read.delim('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl')
 anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
 ref.tomerge <- anno %>% as.data.frame %>%
       dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,

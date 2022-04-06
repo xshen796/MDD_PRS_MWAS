@@ -26,7 +26,7 @@ dir.create(file.path(output.path), showWarnings = FALSE)
 
 # Process exposure data ---------------------------------------------------
 ls.exposure='MDD'
-ls.exposure.filename = list.files(path = exposure.path, pattern = '.forPRSice$',full.names=T) 
+ls.exposure.filename = list.files(path = exposure.path, pattern = '.forPRSice',full.names=T) 
 
 for (f in 1:length(ls.exposure)){
       

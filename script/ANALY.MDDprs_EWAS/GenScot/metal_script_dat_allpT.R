@@ -9,7 +9,7 @@ setwd('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_
 reformat_summstats <- function(tmp.file){
   summstats=fread(paste0('../MWAS_by_wave/',tmp.file),header=T) %>% 
     select(ID,beta,P.Value,se)
-  write_tsv(summstats,path = paste0('./',gsub('toptable.txt','forMetal.txt',tmp.file)))
+  write_tsv(summstats,file = paste0('./',gsub('toptable.txt','forMetal.txt',tmp.file)))
 }
 
 ls.f = list.files('../MWAS_by_wave',pattern = 'toptable')

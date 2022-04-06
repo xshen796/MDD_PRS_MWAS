@@ -30,6 +30,7 @@ library(pbapply)                                         # Process control
 # My own functions
 source(here::here('FUNs/manhattan_plot_XShen.R')) # EWAS manhattan plot
 source(here::here('FUNs/circular_graph_mr.R'))    # circular connectivity graph
+source(here::here('script/FUNs_meth/clump_bychr.R')) 
 
 # Render from MR_meth_MDD folder
 ```
@@ -281,14 +282,12 @@ ewas.sig = fig.dat.GS.pT.5e_08 %>%
 GO.result.sig=gometh(sig.cpg=fig.dat.GS.pT.5e_08$CpG[fig.dat.GS.pT.5e_08$p.adj<0.05], 
          all.cpg=fig.dat.GS.pT.5e_08$CpG, collection="GO",
               array.type = "EPIC") %>%
-  .[order(.$P.DE,decreasing=F),] %>% 
-  filter(.,FDR<0.05)
+  .[order(.$P.DE,decreasing=F),] 
   
 KEGG.result.sig=gometh(sig.cpg=fig.dat.GS.pT.5e_08$CpG[fig.dat.GS.pT.5e_08$p.adj<0.05], 
          all.cpg=fig.dat.GS.pT.5e_08$CpG, collection="KEGG",
               array.type = "EPIC") %>%
-  .[order(.$P.DE,decreasing=F),] %>% 
-  filter(.,FDR<0.05)
+  .[order(.$P.DE,decreasing=F),] 
 
 # pathway analysis for non-MHC probes
 pathway.dat=fig.dat.GS.pT.5e_08 %>%
@@ -665,7 +664,7 @@ p.mat = all.res %>%
 
 # position info for CpG sites and SNPs
 ls.snp = colnames(all.res) %>% .[grep('.p$',.)] %>% gsub('.p','',.) %>% .[!. %in% 'CpG']
-snp.ref = fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/ucsc_annotation/hg19/snp151Common_chr_bp_rs.txt',stringsAsFactors=F) %>%
+snp.ref = fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/ucsc_annotation/hg19/snp151Common_chr_bp_rs.txt.gz',stringsAsFactors=F) %>%
       .[.$V3 %in% ls.snp,]
 
 ewasResult=read.delim('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl')
@@ -691,7 +690,8 @@ ewasResult = ewasResult %>%
   left_join(.,ref.tomerge,by=c('MarkerName'='ID')) %>% 
   select(ID=MarkerName,CHR,MAPINFO,P.value) %>%
   mutate(.,CHR=gsub('chr','',CHR)) %>%
-  mutate(.,CHR=as.numeric(CHR)) 
+  mutate(.,CHR=as.numeric(CHR)) %>% 
+  filter(!is.na(CHR))
 ls.CpG = ewasResult %>%
   .[order(.$CHR,.$MAPINFO,decreasing = F),] %>%
   mutate(ID=as.character(ID)) %>%
@@ -727,7 +727,7 @@ input.p = ls.SNP.102 %>% transpose() %>%
  unlist 
 input.p[input.p>0.05/nrow(ewasResult)]=NA
 
-cpg.input.p = ls.CpG %>% transpose() %>%
+cpg.input.p = ls.CpG %>% dplyr::rename(BP=MAPINFO) %>% transpose() %>%
  pblapply(.,find_pval,tmp.ewas_res=ewasResult) %>%
  unlist 
 cpg.input.p[cpg.input.p>0.05/nrow(ewasResult)]=NA
@@ -735,7 +735,7 @@ cpg.input.p[cpg.input.p>0.05/nrow(ewasResult)]=NA
 # Reorder p.mat and reduce size
 colnames(p.mat)=colnames(p.mat) %>% gsub('.p','',.)
 p.mat[p.mat==0]=1e-320  # Recover extremely low p-values to system threshold
-p.mat[p.mat>0.05/96]=NA
+p.mat[p.mat>0.05/length(ls.cpg.tokeep)/nrow(ls.SNP.102)]=NA
 p.mat.new = -log10(p.mat) %>%
   .[ls.CpG$ID,] %>%
   .[,ls.SNP.102$RSID]
@@ -743,7 +743,7 @@ p.mat.new = -log10(p.mat) %>%
 
 # Heatmap
 set.seed(1234)
-png(here::here('Figs/MainText/SNP_to_CpG_mapping.png'), height = 2600, width = 3800,res = 300)
+png(here::here('Figs/MainText/SNP_to_CpG_mapping_R2.png'), height = 2600, width = 3800,res = 300)
 superheat(t(p.mat.new),
           # change the size of the labels
           left.label.size = 0.1,
@@ -952,7 +952,7 @@ ls.cpg.sig_instru=ls.cpg.ewas.sig[ls.cpg.ewas.sig$MarkerName %in% summary.instru
 ls.measure = c('MDD')
 
 # Load results
-res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
   lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
 names(res)=ls.measure
 ```

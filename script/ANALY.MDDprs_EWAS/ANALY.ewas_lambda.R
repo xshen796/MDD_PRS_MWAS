@@ -1,5 +1,5 @@
 
-setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/')
+setwd('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/')
 
 library(dplyr)
 library(stringr)
@@ -8,21 +8,21 @@ library(pbapply)
 
 # Generation Scotland -----------------------------------------------------
 
-discovery.summstats = list.files('result/EWAS_MDDprs_Shen/archiv/MDDprs_ewas_meta/',
-                                 recursive = T,pattern = '_meta_RosieData.toptable.txt1.tbl',full.names = T) %>% 
-    .[!grepl('.info$',.)] %>% 
+discovery.summstats = list.files('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/',
+                                 recursive = F,pattern = 'metal.out1.tbl',full.names = T) %>% 
+    .[!grepl('.info$|unrelated',.)] %>% 
     as.list %>% 
     pblapply(.,read.delim,sep='\t',header=T,stringsAsFactors=F) %>% 
     pblapply(.,rename,CpG=MarkerName) 
 
 
-names(discovery.summstats) = list.files('result/EWAS_MDDprs_Shen/archiv/MDDprs_ewas_meta/',
-                                        recursive = T,pattern = '_meta_RosieData.toptable.txt1.tbl',full.names = T) %>% 
-    .[!grepl('.info$',.)] %>% 
+names(discovery.summstats) = list.files('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/',
+                                        recursive = F,pattern = 'metal.out1.tbl',full.names = T) %>% 
+    .[!grepl('.info$|unrelated',.)] %>% 
     strsplit(.,'/') %>% 
     lapply(.,function(x) tail(x,1)) %>% 
     unlist %>% as.vector %>% 
-    gsub('mddprs_pT','',.) %>% gsub('_meta_RosieData.toptable.txt1.tbl','',.)
+    gsub('ewas_meta_pT_','',.) %>% gsub('.metal.out1.tbl','',.)
 
 # calculate lambda
 discovery.lambda = discovery.summstats %>% 
@@ -36,7 +36,7 @@ discovery.lambda = discovery.summstats %>%
 # Replication (adults) ----------------------------------------------------
 
 replication.summstats = list.files('result/EWAS_MDDprs_meta_LBC_ALSPAC/',
-                                 recursive = T,pattern = 'REPmeta',full.names = T) %>% 
+                                 recursive = F,pattern = 'REPmeta',full.names = T) %>% 
     .[!grepl('.info$',.)] %>% 
     as.list %>% 
     pblapply(.,read.delim,sep='\t',header=T,stringsAsFactors=F) %>% 
@@ -44,12 +44,13 @@ replication.summstats = list.files('result/EWAS_MDDprs_meta_LBC_ALSPAC/',
 
 
 names(replication.summstats) = list.files('result/EWAS_MDDprs_meta_LBC_ALSPAC/',
-                                        recursive = T,pattern = 'REPmeta',full.names = T) %>% 
+                                        recursive = F,pattern = 'REPmeta',full.names = T) %>% 
     .[!grepl('.info$',.)] %>% 
     strsplit(.,'/') %>% 
     lapply(.,function(x) tail(x,1)) %>% 
     unlist %>% as.vector %>% 
-    gsub('REPmeta_EWAS_MDDprs_pT_','',.) %>% gsub('.metal.out1.tbl','',.)
+    gsub('REPmeta_EWAS_MDDprs_pT_','',.) %>% gsub('.metal.out1.tbl','',.) %>% 
+    gsub('e.','e-',.,fixed = T) 
 
 # calculate lambda
 replication.lambda = replication.summstats %>% 
@@ -70,7 +71,7 @@ load_youthdat <- function(tmp.fname){
 
 youth.summstats = list.files('result/EWAS_MDDprs_ALSPAC/',
                                    recursive = T,pattern = 'MDD3_k_',full.names = T) %>% 
-    .[!grepl('.info$|MDD3_k_102',.)] %>% 
+    .[!grepl('.info$|MDD3_k_102|.csv',.)] %>% 
     as.list %>% 
     pblapply(.,load_youthdat) %>% 
     pblapply(.,rename,CpG=probeID) 
@@ -78,11 +79,12 @@ youth.summstats = list.files('result/EWAS_MDDprs_ALSPAC/',
 
 names(youth.summstats) = list.files('result/EWAS_MDDprs_ALSPAC/',
                                           recursive = T,pattern = 'MDD3_k_',full.names = T) %>% 
-    .[!grepl('.info$|MDD3_k_102',.)] %>% 
+    .[!grepl('.info$|MDD3_k_102|.csv',.)] %>% 
     strsplit(.,'/') %>% 
     lapply(.,function(x) tail(x,1)) %>% 
     unlist %>% as.vector %>% 
-    gsub('MDD3_k_','',.) %>% gsub('_std_sex,age,child_smoke,pc1,pc2,pc3,pc4,pc5,pc6,pc7,pc8,pc9,pc10_houseman_2021-02-12.Rdata','',.)
+    gsub('MDD3_k_','',.) %>% gsub('_std_sex,age,child_smoke,pc1,pc2,pc3,pc4,pc5,pc6,pc7,pc8,pc9,pc10_houseman_2021-02-12.Rdata','',.) %>% 
+    gsub('e','e-',.,fixed = T)
 
 # calculate lambda
 youth.lambda = youth.summstats %>% 
@@ -90,7 +92,7 @@ youth.lambda = youth.summstats %>%
     pblapply(.,function(x) median(x$chisq)/qchisq(0.5,1)) %>% 
     bind_rows %>% 
     t %>% as.data.frame %>% rownames_to_column('pT') %>% 
-    mutate(pT=gsub('e','e-',pT)) %>% mutate(pT=as.numeric(pT)) %>% rename(ALSPACyouth.lambda=V1)
+    mutate(pT=as.numeric(pT)) %>% rename(ALSPACyouth.lambda=V1)
 
 
 # Summarise lambda results ------------------------------------------------

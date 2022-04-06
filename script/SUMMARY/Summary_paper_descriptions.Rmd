@@ -1,0 +1,516 @@
+---
+title: "EWAS of MDD PRS - statistics in paper (Genome Medicine round 2)"
+author: "X Shen"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)                                           # For md
+library(rmarkdown)                                       # For md
+library(dplyr)                                           # Data management
+library(ggplot2)                                         # Graph
+library(ggrepel)                                         # Graph
+library(ggpubr)                                          # Graph
+library(here)                                            # Data loading
+library(data.table)                                      # Data loading
+library(tidyr)                                           # Data management
+library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)   # Data management
+library(tibble)                                          # Data management
+library(hrbrthemes)                                      # Graph
+library(kableExtra)                                      # Table
+library(missMethyl)                                      # Extra pathway analysis
+library(pbapply)                                         # Process control
+library(readr)
+
+
+# Render from MR_meth_MDD folder
+```
+
+
+## Abstract
+
+```{r Abstract, echo=F,warning=F,message=F}
+anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
+ref.tomerge <- anno %>% as.data.frame %>%
+  dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
+         Islands_Name,Relation_to_Island)
+
+read_ewasRes = function(fname){
+  tmp.res=read.delim(here::here(fname),sep='\t',header=T,stringsAsFactors=F) %>%
+  mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
+  dplyr::rename(CpG=MarkerName) %>% 
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
+  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value)) %>% 
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR==6,'Yes','No')) 
+  return(tmp.res)
+}
+
+# Load GS and replication (adult) data
+ewas_res.5e_08 = read_ewasRes('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl')
+ewas_res.rep.5e_08 = read_ewasRes('result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_5e.08.metal.out1.tbl')
+
+GS.ewas = ewas_res.5e_08
+REP.ewas = ewas_res.rep.5e_08
+
+GS.sig = mutate(GS.ewas,p.adj=p.adjust(P.value,method='bonferroni')) %>%
+  select(CpG=CpG,GS.beta=Effect,GS.std=StdErr,GS.p=P.value,GS.p.adj=p.adj) %>%
+  mutate(GS.beta_se=GS.beta/GS.std)
+REP.match = REP.ewas[REP.ewas$CpG %in% GS.sig$CpG,] %>%
+  select(CpG,REP.beta=Effect,REP.se=StdErr,REP.p=P.value,REP.p.adj=p.adj) %>%
+  mutate(REP.beta_se=REP.beta/REP.se)
+
+combined.test.adult = merge(REP.match,GS.sig,by='CpG') %>%
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>%
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR=='chr6','Yes','No')) %>%
+  mutate(is.MHC = factor(is.MHC,levels=c('No','Yes'))) %>%
+  filter(GS.p.adj<0.05)
+combined.test.adult.noMHC = filter(combined.test.adult,is.MHC=='No')
+
+r.beta.all.adult = round(cor.test(combined.test.adult$REP.beta,combined.test.adult$GS.beta)$estimate,3)
+r.beta.noMHC.adult = round(cor.test(combined.test.adult.noMHC$REP.beta,combined.test.adult.noMHC$GS.beta)$estimate,3)
+
+# Load adolescent replication sample
+ewas_res.adolescentRep.5e_8 = read.delim(here::here('result/EWAS_MDDprs_ALSPAC/MDD3_k_5e08_std_sex,age,child_smoke,pc1,pc2,pc3,pc4,pc5,pc6,pc7,pc8,pc9,pc10_houseman_2021-02-12.csv'),
+     sep='\t',header=T,stringsAsFactors=F) %>%
+  select(CpG=probeID,Effect=BETA,SE,P.value=P_VAL) %>%
+      mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
+  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value))
+
+GS.ewas = ewas_res.5e_08
+REP.ewas = ewas_res.adolescentRep.5e_8
+
+GS.sig = mutate(GS.ewas,p.adj=p.adjust(P.value,method='bonferroni')) %>%
+  select(CpG=CpG,GS.beta=Effect,GS.std=StdErr,GS.p=P.value,GS.p.adj=p.adj) %>%
+  mutate(GS.beta_se=GS.beta/GS.std)
+REP.match = REP.ewas[REP.ewas$CpG %in% GS.sig$CpG,] %>%
+  select(CpG,REP.beta=Effect,REP.se=SE,REP.p=P.value,REP.p.adj=p.adj) %>%
+  mutate(REP.beta_se=REP.beta/REP.se)
+
+combined.test.adolescent = merge(REP.match,GS.sig,by='CpG') %>%
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>%
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR=='chr6','Yes','No')) %>%
+  mutate(is.MHC = factor(is.MHC,levels=c('No','Yes'))) %>%
+  filter(GS.p.adj<0.05)
+combined.test.adolescent.noMHC = filter(combined.test.adolescent,is.MHC=='No')
+
+r.beta.all.adolescent = round(cor.test(combined.test.adolescent$REP.beta,combined.test.adolescent$GS.beta)$estimate,3)
+r.beta.noMHC.adolescent = round(cor.test(combined.test.adolescent.noMHC$REP.beta,combined.test.adolescent.noMHC$GS.beta)$estimate,3)
+
+```
+
+Total number of CpGs significant is `r sum(ewas_res.5e_08$p.adj<0.05)` (highest pBonferroni = `r ewas_res.5e_08 %>% filter(p.adj<0.05) %>% {max(.$p.adj)}`, highest p-value = `r ewas_res.5e_08 %>% filter(p.adj<0.05) %>% {max(.$P.value)}`). Beta in GS is highly correlated with the adult replication sample (r = `r round(r.beta.all.adult,3)`) and the adolescent replication (r = `r round(r.beta.all.adolescent,3)`). 
+
+```{r, echo=F,warning=F,message=F}
+summary.trans = read_tsv(here::here('result/Trans_summary.txt.gz'))
+```
+
+There were `r summary.trans %>% {sum(is.na(.$n.trans_bp))/length(.$n.trans_bp)} %>% {round(.*100,1)}`% independent genetic risk loci showed cis and trans effect to CpGs.
+
+```{r, echo=F,warning=F,message=F}
+
+correct_by_method <- function(tmp.res,target.method){
+  res.block = tmp.res %>% filter(method==target.method) %>% 
+    dplyr::rename(egger_se=se.1,egger_pval=pval.1) %>% 
+    mutate(adj.pval = p.adjust(pval,method='fdr'),
+           adj.egger_pval = p.adjust(egger_pval,method='fdr'),
+           adj.Q_pval = p.adjust(Q_pval,method='fdr'))
+  return(res.block)
+}
+
+res.godmc.dnam_mdd = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>% 
+  bind_rows
+
+ls.mr_methods=res.godmc.dnam_mdd %>% {unique(.$method)} %>% as.list
+
+res.godmc.dnam_mdd = res.godmc.dnam_mdd %>% 
+  lapply(X = ls.mr_methods, FUN = correct_by_method, tmp.res=.) %>% 
+  bind_rows %>% 
+  .[order(.$exposure),]
+
+
+res.gs.dnam_mdd = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>% 
+  bind_rows %>% 
+  lapply(X = ls.mr_methods, FUN = correct_by_method, tmp.res=.) %>% 
+  bind_rows %>% 
+  .[order(.$exposure),]
+
+
+res.gs.mdd_dnam = as.list(list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GS_MR_MDD_to_DNAm/',pattern='^Summary',full.names = T)) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>%
+  lapply(.,dplyr::rename,outcome=exposure,exposure=outcome) %>% 
+  bind_rows %>% 
+  lapply(X = ls.mr_methods, FUN = correct_by_method, tmp.res=.) %>% 
+  bind_rows %>% 
+  .[order(.$exposure),]
+
+pfdr.dnam_mdd = rbind(res.godmc.dnam_mdd,res.gs.dnam_mdd) %>% 
+  filter(adj.egger_pval>0.05) %>% 
+  filter(adj.pval<0.05) %>% {.$adj.pval}
+
+pfdr.mdd_dnam = res.gs.mdd_dnam %>% 
+  filter(adj.egger_pval>0.05) %>% 
+  filter(adj.pval<0.05) %>% {.$adj.pval}
+
+```
+
+Finally, the MR analysis showed that there's a stronger evidene for the effect from DNAm to MDD (pfdr ranged from `r max(pfdr.dnam_mdd)` to `r min(pfdr.dnam_mdd)`) than from MDD to DNAm (pfdr ranged from `r max(pfdr.mdd_dnam)` to `r min(pfdr.mdd_dnam)`)
+
+
+## Results
+
+```{r,echo=F,message=F,warning=F}
+
+ls.pt=c('0.00000005','0.000001','0.0001','0.001','0.01','0.05','0.1','0.5','1')
+
+for (pt in ls.pt){
+    f.path=paste0('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_',pt,'.metal.out1.tbl')
+    ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
+      mutate(p.adj = p.adjust(P.value,method='bonferroni')) 
+    
+    ewasResults$p.fdr=p.adjust(ewasResults$P.value,method='fdr')
+    ewasResults$p.bonferroni=p.adjust(ewasResults$P.value,method='bonferroni')
+                 
+    tmp.count=data.frame(N5e_08=sum(ewasResults$P.value<5e-8,na.rm=T),
+                         N5e_06=sum(ewasResults$P.value<5e-6,na.rm=T),
+                         Nfdr=sum(ewasResults$p.fdr<0.05,na.rm=T),
+                         Nbonferroni=sum(ewasResults$p.bonferroni<0.05,na.rm=T))
+    if(pt==ls.pt[1]){sig.count=tmp.count}else{sig.count=rbind(sig.count,tmp.count)}
+
+}
+
+ls.pt = c('5e-8','1e-6','1e-4','0.001','0.01','0.05','0.1','0.5','1')
+
+res.prediction_dnam = sig.count %>% 
+  mutate(pT=factor(ls.pt,levels=rev(ls.pt)))
+
+lambda = read_tsv(here::here('result/lambda_MWAS_discovery_repAdult_repYouth.txt'))
+
+```
+
+
+There were `r sum(ewas_res.5e_08$p.adj<0.05)` CpG probes significantly associated with depression-PRS with p-threshold (pT) at 5×10-8 (p<`r ewas_res.5e_08 %>% filter(p.adj<0.05) %>% {max(.$P.value)} %>% format(., scientific = T, big.mark = ",")` to reach significance after Bonferroni correction). ... For pT of 1×10-6, 29 CpGs were associated with depression-PRS, respectively (Supplementary Figures 1). No significant associations were found for PRS using p-value thresholds greater than or equal to 1×10-6. Quantile-quantile plot and statistics for genomic inflation factors (ranged from `r lambda %>% min(.$GS.lambda)` to `r lambda %>% max(.$GS.lambda)`).
+
+
+The most significant associations of DNAm with depression-PRS were found in the major histocompatibility complex (MHC) region (25-35 Mb on Chromosome 6, Figure 2), with `r sum(ewas_res.5e_08$p.adj<0.05&ewas_res.5e_08$is.MHC=='Yes')`/`r sum(ewas_res.5e_08$p.adj<0.05)` (`r ewas_res.5e_08 %>% filter(p.adj<0.05) %>% {table(.$is.MHC)} %>% {.['Yes']/sum(.)*100} %>% round(.,digit=1)`%) of significant associations within this region (pBonferroni ranged from `r ewas_res.5e_08 %>% filter(p.adj<0.05,is.MHC=='Yes') %>% {max(.$p.adj)} %>% round(.,digit=3)` to `r ewas_res.5e_08 %>% filter(p.adj<0.05,is.MHC=='Yes') %>% {min(.$p.adj)} %>% format(., scientific = T, big.mark = ",")`). The top ten probes that showed the greatest associations are listed in Supplementary Table 5 (all pBonferroni<`r ewas_res.5e_08 %>% filter(p.adj<0.05) %>% .[order(.$P.value,decreasing=F),] %>% head(n=10) %>% {max(.$p.adj)} %>% format(., scientific = T, big.mark = ",")`). After pruning (r<0.1 for at least two nearest probes, window = 3Mb), the single top CpG probe was identified within the MHC region: cg14345882 (all pBonferroni<7.28×10-11). UCSC gene database annotation shows genes that are nearest to the significant probes in the MHC region are, for example, TRIM27, HIST1H2AI and BTN3A2. 
+
+
+```{r}
+ewas_res.noMHCprs.5e_08 = read_ewasRes(here::here('result/EWAS_MDDprs_Shen/noMHC_and_gwsig/ewas_BothWave_noMHC_5e_081.tbl'))
+ewas_res.102snp.5e_08 = read_ewasRes(here::here('result/EWAS_MDDprs_Shen/noMHC_and_gwsig/ewas_BothWave_gwsig1.tbl'))
+```
+
+The number of significant associations found within the MHC region for the PRS calculated using independent genetic risk variants reduced from `r sum(ewas_res.5e_08$p.adj<0.05)` to `r sum(ewas_res.102snp.5e_08$p.adj<0.05)`, at the MDD-GWAS PRS p-value threshold of 5×10-8. No CpGs within the MHC region were found to be significantly associated with the PRS generated from variants mapping without the MHC region. See Supplementary Figure 3.
+
+Outside of the MHC region, `r sum(ewas_res.5e_08$p.adj<0.05&ewas_res.5e_08$is.MHC=='No')` probes showed significant associations with depression-PRS estimated across the genome at pT of 5×10-8 (pBonferroni ranged from `r ewas_res.5e_08 %>% filter(p.adj<0.05,is.MHC=='No') %>% {max(.$p.adj)} %>% round(.,digit=3)` to `r ewas_res.5e_08 %>% filter(p.adj<0.05,is.MHC=='No') %>% {min(.$p.adj)} %>% format(., scientific = T, big.mark = ",")`). The top ten probes are listed in Supplementary Table 5. Genes mapping near to the top probes were associated with histone deacetylase, DNA binding and transcriptional processes (such as MAD1L1, TCF4, RERE and ZSCAN31), and neuronal plasticity and growth (for example, NEGR1).
+
+```{r,echo=F,warning=F,message=F}
+
+# Compare between waves
+ewas_res.w1.5e_08 = read_tsv(here::here('result/EWAS_MDDprs_Shen/MWAS_by_wave/ewas_w1_pT_0.00000005.toptable.txt')) %>% select(CpG=ID,beta.w1=beta,p.w1=P.Value)
+ewas_res.w3.5e_08 = read_tsv(here::here('result/EWAS_MDDprs_Shen/MWAS_by_wave/ewas_w3_pT_0.00000005.toptable.txt'))%>% select(CpG=ID,beta.w3=beta,p.w3=P.Value)
+
+compare_gs_waves = ewas_res.w1.5e_08 %>% .[.$CpG %in% ewas_res.5e_08$CpG[ewas_res.5e_08$p.adj<0.05],] %>% 
+  left_join(.,ewas_res.w3.5e_08,by='CpG')
+
+# Distance to the nearest hits
+
+# MDD.gwas.hits = fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/summstats/23andme_PGCNoGS_UKB_Aug8_FinalGCldsc_3cohort1.meta.forPRSice.gz') %>%
+#   filter(.,P<5e-8)
+# MDD.gwas.hits = MDD.gwas.hits[!grepl('hap',MDD.gwas.hits$CHR),] %>%
+#   mutate(CHR=as.numeric(CHR))
+# 
+# dis_nearest_gwashit <- function(tmp.gwas,tmp.targetloc){
+#   target.chr=as.numeric(tmp.targetloc['CHR'])
+#   target.bp=as.numeric(tmp.targetloc['MAPINFO'])
+# 
+#   tmp.block.gwas = filter(tmp.gwas,CHR==target.chr)
+#   if (nrow(tmp.block.gwas)==0){bp.distance=NA}else{
+#   bp.distance = min(abs(tmp.block.gwas$BP-target.bp),na.rm=T)
+#   }
+# }
+# 
+# tmp.distance.toadd = pbapply(ewas_res.5e_08, MARGIN = 1,
+#                            FUN=dis_nearest_gwashit,tmp.gwas=MDD.gwas.hits) %>%
+#   unlist
+# 
+# ewas_res.5e_08.descriptive = ewas_res.5e_08 %>%
+#   mutate(distance_to_nearest_gwashit = tmp.distance.toadd)
+# 
+# save(ewas_res.5e_08.descriptive,file=here::here('result/ewas.distance.RData'))
+load(here::here('result/ewas.distance.RData'))
+
+```
+
+
+The effect sizes for the significant CpG probes showed high correlations between the two data sets (r=0.90), and direction for all significant associations was consistent between sets. For these significant probes, the distance to the nearest depression risk locus was significantly lower than those that were not significant (significant versus not significant: standardised Cohen’s d=0.920, p<1×10-32). There were 21.2% of all significant CpGs located outside of 1Mb boundaries of genetic risk loci for depression and outside of the region consisted of SNPs in LD (R2>0.1) with the genetic risk loci (see Supplementary Data 1).
+
+
+## Replication
+
+We looked at a subset of CpG probes that were significant in the discovery MWAS analysis and found that the standardised effect sizes were correlated between the discovery and replication meta-MWAS of LBC1921, LBC1936 and ALSPAC adults, with (Nprobe=`r nrow(combined.test.adult)`, r=`r r.beta.all.adult`) or without the probes located in the MHC region (Nprobe=`r nrow(combined.test.adult.noMHC)`, r=`r r.beta.noMHC.adult`). There were `r sum(combined.test.adult$GS.beta/combined.test.adult$REP.beta>0)/nrow(combined.test.adult)*100 %>% round(.,digit=1)`% associations found in the discovery MWAS remained in the same direction and `r combined.test.adult %>% mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni')) %>% {sum(.$REP.p<0.05)/nrow(.)*100} %>% round(.,digit=3)`% and `r combined.test.adult %>% mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni')) %>% {sum(.$REP.p.adj<0.05)/nrow(.)*100} %>% round(.,digit=3)`% remained significant before and after Bonferroni-correction within the replication analysis. See Figure 3. 
+ 
+
+We then looked at the probes within and outside of the MHC region separately. Within the MHC region, effect for the top probe remained in the same direction and was significantly replicated (pBonferroni=`r combined.test.adult %>% mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni')) %>% .[.$CpG %in% 'cg14345882',] %>% {.$REP.p.adj}`). For the probes outside of the MHC region, `r combined.test.adult %>% filter(is.MHC=='No') %>% {sum(.$GS.beta/.$REP.beta>0)/nrow(.)*100} %>% round(.,digit=1)`% of the effects remained in the same direction, `r combined.test.adult %>% mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni')) %>% filter(is.MHC=='No') %>%  {sum(.$REP.p<0.05)/nrow(.)*100} %>% round(.,digit=3)`% were nominally significant and `r combined.test.adult %>% mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni')) %>% filter(is.MHC=='No') %>% {sum(.$REP.p.adj<0.05)/nrow(.)*100} %>% round(.,digit=3)`% were significant after Bonferroni correction.
+
+Standardised effect sizes for the significant CpG probes found in the discovery MWAS were highly correlated with those in the MWAS on adolescents from ALSPAC (all CpG probes: Nprobe=`r nrow(combined.test.adolescent)`, r=`r r.beta.all.adolescent`; no MHC region: Nprobe=`r nrow(combined.test.adolescent.noMHC)`, r=`r r.beta.noMHC.adolescent`). Effect for `r sum(combined.test.adolescent$GS.beta/combined.test.adolescent$REP.beta>0)/nrow(combined.test.adolescent)*100 %>% round(.,digit=1)`% of the probes remained in the same direction, `r combined.test.adolescent %>% mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni')) %>% {sum(.$REP.p<0.05)/nrow(.)*100} %>% round(.,digit=3)`% remained nominally significant and `r combined.test.adolescent %>% mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni')) %>% {sum(.$REP.p.adj<0.05)/nrow(.)*100} %>% round(.,digit=3)`% were significant after Bonferroni correction.
+Within the MHC region, effect for the top independent probes remained in the consistent direction was significant (pBonferroni = `r combined.test.adolescent %>% mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni')) %>% .[.$CpG %in% 'cg14345882',] %>% {.$REP.p.adj}`).  For the probes outside of the MHC region, 
+effects for `r combined.test.adolescent %>% filter(is.MHC=='No') %>% {sum(.$GS.beta/.$REP.beta>0)/nrow(.)*100} %>% round(.,digit=1)`% of the probes remained in the same direction, 
+`r combined.test.adolescent %>% mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni')) %>% filter(is.MHC=='No') %>%  {sum(.$REP.p<0.05)/nrow(.)*100} %>% round(.,digit=3)`% were nominally significant 
+and `r combined.test.adolescent %>% mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni')) %>% filter(is.MHC=='No') %>% {sum(.$REP.p.adj<0.05)/nrow(.)*100} %>% round(.,digit=3)`% were significant after Bonferroni correction.
+
+```{r,echo=F,warning=F,message=F}
+ls.pt=c('5e.08','1e.06','0.0001','0.001','0.01','0.05','0.1','0.5','1')
+for (pt in ls.pt){
+    f.path=paste0('result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_',pt,'.metal.out1.tbl')
+    
+    ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
+      select(CpG=MarkerName,Effect,SE=StdErr,P.Value=P.value,Direction) %>% 
+      merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>%
+      filter(CHR!='X',CHR!='Y',!is.na(CHR),!is.na(CpG),!is.na(MAPINFO),!is.na(P.Value))
+
+    
+    ewasResults$p.fdr=p.adjust(ewasResults$P.Value,method='fdr')
+    ewasResults$p.bonferroni=p.adjust(ewasResults$P.Value,method='bonferroni')
+                 
+    tmp.count=data.frame(N5e_08=sum(ewasResults$P.Value<5e-8,na.rm=T),
+                         N5e_06=sum(ewasResults$P.Value<5e-6,na.rm=T),
+                         Nfdr=sum(ewasResults$p.fdr<0.05,na.rm=T),
+                         Nbonferroni=sum(ewasResults$p.bonferroni<0.05,na.rm=T))
+    if(pt==ls.pt[1]){sig.count=tmp.count}else{sig.count=rbind(sig.count,tmp.count)}
+
+}
+
+ls.pt = c('5e-8','1e-6','1e-4','0.001','0.01','0.05','0.1','0.5','1')
+
+res.rep.prediction_dnam = sig.count %>% 
+  mutate(pT=factor(ls.pt,levels=rev(ls.pt)))
+res.rep.prediction_dnam
+```
+
+
+Meta-analysis of the methylome-wide association analysis of depression-PRS for replication cohorts (LBC1921, LBC1936 and ALSPAC adults) showed that, for depression-PRS of pT at 5×10-8, 1×10-6, 1×10-4 and 0.001, the number of significant CpG probes were 60, 48, 16 and 2, respectively. Similar to the discovery analysis, no significant associations were found for PRS of pT≥0.01. 
+
+
+## Pathway analysis
+
+```{r,message=F,echo=F,warning=F}
+GO.result.sig=gometh(sig.cpg=ewas_res.5e_08$CpG[ewas_res.5e_08$p.adj<0.05], 
+         all.cpg=ewas_res.5e_08$CpG, collection="GO",
+              array.type = "EPIC") %>%
+  .[order(.$P.DE,decreasing=F),] 
+  
+KEGG.result.sig=gometh(sig.cpg=ewas_res.5e_08$CpG[ewas_res.5e_08$p.adj<0.05],
+         all.cpg=ewas_res.5e_08$CpG, collection="KEGG",
+              array.type = "EPIC") %>%
+  .[order(.$P.DE,decreasing=F),]
+
+# pathway analysis for non-MHC probes
+pathway.dat=ewas_res.5e_08 %>%
+      filter(.,is.MHC == 'No')
+GO.result.sig_noMHC <- 
+  gometh(sig.cpg=pathway.dat$CpG[pathway.dat$p.adj<0.05], 
+         all.cpg=pathway.dat$CpG, collection="GO",
+              array.type = "EPIC") %>%
+  .[order(.$P.DE,decreasing=F),] 
+
+KEGG.result.sig_noMHC <-
+  gometh(sig.cpg=pathway.dat$CpG[pathway.dat$p.adj<0.05],
+         all.cpg=pathway.dat$CpG, collection="KEGG",
+              array.type = "EPIC") %>%
+  .[order(.$P.DE,decreasing=F),]
+```
+
+
+There were `r sum(GO.result.sig$P.DE<0.05)` enriched GO terms nominally significant but none was significant after FDR correction (p ranged from `r GO.result.sig %>% filter(P.DE<0.05) %>% {max(.$P.De)}` to `r GO.result.sig %>% filter(P.DE<0.05) %>% {min(.$P.DE)}`). No KEGG pathway reached nominal significance (p>`r KEGG.result.sig %>% {min(.$P.DE)}`) The majority of the nominally significant GO terms were associated with immune response and brain maturation. The top ten GO terms and KEGG pathways are listed in Tables 1-2.
+
+
+## SNP-CpG mapping
+
+```{r,echo=F,message=F,warning=F}
+res.snp_cpg_mapping = read_tsv(here::here('result/EWAS_loo/variant_MWAS_Res.tsv'))
+summary.snp_cpg_mapping = read_tsv(here::here('result/Trans_summary.txt.gz'))
+```
+
+
+There were `r sum(!is.na(summary.snp_cpg_mapping$n.cis))` of the 96 genetic risk variants tested showed significant cis association with CpGs within 1 Mb distance (see Figure 4). There were `r sum(!is.na(summary.snp_cpg_mapping$n.trans_chr_loci)|!is.na(summary.snp_cpg_mapping$n.trans_bp))` genetic risk variants (`r round(sum(!is.na(summary.snp_cpg_mapping$n.trans_chr_loci)|!is.na(summary.snp_cpg_mapping$n.trans_bp))/96*100,digit=1)`% of all variants tested) that showed trans associations outside of their 1Mb window and `r sum(!is.na(summary.snp_cpg_mapping$n.trans_chr_loci))` variants (`r round(sum(!is.na(summary.snp_cpg_mapping$n.trans_chr_loci))/96*100,digit=1)`% of all variants tested) that had trans associations with CpGs located on at least one different chromosome.
+
+
+## Mendelian randomisation
+
+```{r necessary functions, message=F,warning=F,error=F}
+
+correct_by_method <- function(tmp.res,target.method){
+  res.block = tmp.res %>% filter(method==target.method) %>% 
+    dplyr::rename(egger_se=se.1,egger_pval=pval.1) %>% 
+    mutate(adj.pval = p.adjust(pval,method='fdr'),
+           adj.egger_pval = p.adjust(egger_pval,method='fdr'),
+           adj.Q_pval = p.adjust(Q_pval,method='fdr'))
+  return(res.block)
+}
+
+count_valid <- function(tmp.res,target.cpg,all3=F){
+  res.block = tmp.res %>% filter(exposure==target.cpg)
+  p.ivw = res.block %>% filter(method=='Inverse variance weighted') %>% {.$adj.pval}
+  p.wm = res.block %>% filter(method=='Weighted median') %>% {.$adj.pval}
+  p.mr_egger = res.block %>% filter(method=='MR Egger') %>% {.$adj.pval}
+  
+  beta.ivw = res.block %>% filter(method=='Inverse variance weighted') %>% {.$b}
+  beta.wm = res.block %>% filter(method=='Weighted median') %>% {.$b}
+  beta.mr_egger = res.block %>% filter(method=='MR Egger') %>% {.$b}
+  
+  is.valid = ifelse(p.ivw<0.05,1,0)+
+    ifelse(p.wm<0.05,1,0)+
+    ifelse((beta.ivw/beta.wm)>0&(beta.ivw/beta.mr_egger)>0,1,0)
+  if(all3==T){
+    is.valid = is.valid +
+           ifelse(p.mr_egger<0.05,1,0)
+  }else{
+    is.valid = is.valid +
+        ifelse(max(res.block$adj.egger_pval)>0.05,1,
+           ifelse(p.mr_egger<0.05,1,0))
+  }
+  is.valid = is.valid==4
+  output = data.frame(cpg=target.cpg,is.valid=is.valid)
+  
+  return(output)
+}
+
+```
+
+
+### Discovery MR
+
+```{r discovery MR GoDMC, message=F,warning=F,echo=F}
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>%
+  .[[1]]
+
+ls.mr_methods=res %>% {unique(.$method)} %>% as.list
+
+res = res %>% 
+  lapply(X = ls.mr_methods, FUN = correct_by_method, tmp.res=.) %>% 
+  bind_rows %>% 
+  .[order(.$exposure),]
+
+ls.cpg.valid = unique(res$exposure) %>% as.list %>% 
+  pblapply(count_valid,tmp.res=res) %>% 
+  bind_rows %>% 
+  filter(is.valid==T) %>% 
+  {.$cpg} %>% as.character
+
+ls.cpg.valid.3methods = unique(res$exposure) %>% as.list %>% 
+  pblapply(count_valid,tmp.res=res,all3=T) %>% 
+  bind_rows %>% 
+  filter(is.valid==T) %>% 
+  {.$cpg} %>% as.character
+
+```
+
+
+Eight probes: `r ls.cpg.valid[1:(length(ls.cpg.valid)-1)]` and `r tail(ls.cpg.valid,1)`, showed significant causal effect using the IVW and WM methods (absolute βIVW ranged from `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Inverse variance weighted') %>% {.$b} %>% abs %>% min %>% round(.,digit=3)` to `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Inverse variance weighted') %>% {.$b} %>% abs %>% max %>% round(.,digit=3)`, pFDR ranged from `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Inverse variance weighted') %>% {.$adj.pval} %>% max` to `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Inverse variance weighted') %>% {.$adj.pval} %>% min`; βWM ranged from `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$b} %>% abs %>% min %>% round(.,digit=3)` to `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$b} %>% abs %>% max %>% round(.,digit=3)`, pFDR ranged from `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$adj.pval} %>% max` to `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$adj.pval} %>% min`, pFDR for Q-statistics ranged from `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$adj.Q_pval} %>% max` to `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$adj.Q_pval} %>% min`). Effect sizes were consistent for the above probes were consistent between the IVW and WM methods. No significant causal effect on depression was found using the MR-Egger method for these probes (absolute βMR-Egger ranged from `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='MR Egger') %>% {.$b} %>% abs %>% min %>% round(.,digit=3)` to `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='MR Egger') %>% {.$b} %>% abs %>% max %>% round(.,digit=3)`, pFDR ranged from `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='MR Egger') %>% {.$adj.pval} %>% max` to `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='MR Egger') %>% {.$adj.pval} %>% min`). However, the direction of effects remained the same with the IVW and weighted-median methods and the MR-Egger intercept tests showed no evidence of horizontal pleiotropy pFDR ranged from `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$adj.egger_pval} %>% max` to `r res %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$adj.egger_pval} %>% min`).
+
+
+### Replication MR
+
+```{r replication mr GS, message=F,warning=F,error=F,echo=F}
+res.repli.gs = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>% 
+  .[[1]]
+
+ls.mr_methods=res.repli.gs %>% {unique(.$method)} %>% as.list
+
+res.repli.gs = res.repli.gs %>% 
+  lapply(X = ls.mr_methods, FUN = correct_by_method, tmp.res=.) %>% 
+  bind_rows %>% 
+  .[order(.$exposure),]
+
+ls.cpg.valid.repli = unique(res.repli.gs$exposure) %>% as.list %>% 
+  pblapply(count_valid,tmp.res=res.repli.gs) %>% 
+  bind_rows %>% 
+  filter(is.valid==T) %>% 
+  {.$cpg} %>% as.character
+
+ls.cpg.valid.3methods.repli = unique(res.repli.gs$exposure) %>% as.list %>% 
+  pblapply(count_valid,tmp.res=res.repli.gs,all3=T) %>% 
+  bind_rows %>% 
+  filter(is.valid==T) %>% 
+  {.$cpg} %>% as.character
+
+ls.cpg.replicated.3method = ls.cpg.valid.3methods.repli[ls.cpg.valid.3methods.repli %in% ls.cpg.valid]
+ls.cpg.replicated.2method = ls.cpg.valid.repli[(ls.cpg.valid.repli %in% ls.cpg.valid)&(!ls.cpg.valid.repli %in% ls.cpg.replicated.3method)]
+
+# Check if direction of effects are consistent between discovery and replication MR
+sign.beta.discovery = res %>% .[.$exposure %in% ls.cpg.valid,] %>% 
+  filter(method=='Inverse variance weighted')
+sign.beta.replica = res.repli.gs %>% .[.$exposure %in% ls.cpg.valid,] %>% 
+  filter(method=='Inverse variance weighted')
+
+# Check if direction of effects are consistent across methods
+
+# Correlation of effect sizes
+compare_mr_godmc_gs = left_join(res,res.repli.gs,by=c('exposure'='exposure','method'='method'))
+
+r.mr.replication = compare_mr_godmc_gs %>% 
+  group_by(method) %>%
+  summarize(COR=cor(b.x,b.y))
+
+```
+
+All of the causal effects of DNA methylation to depression found in the discovery MR analysis showed consistent direction (number of effects with inconsistent direction between discovery and replication MR: `r sum((sign.beta.discovery$b/sign.beta.replica$b)<0)`) in the replication analysis and across all three MR methods. For all three MR methods, the effect sizes were highly correlated between discovery and replication analyses (r ranged from `r min(r.mr.replication$COR)` to `r max(r.mr.replication$COR)`). `r sum(ls.cpg.valid.3methods.repli %in% ls.cpg.valid)` out of Eight significant effects found in the discovery MR analysis were significant for all three MR methods in the replication analyses (absolute βIVW ranged from `r res.repli.gs %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Inverse variance weighted') %>% {.$b} %>% abs %>% min %>% round(.,digit=3)` to `r res.repli.gs %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Inverse variance weighted') %>% {.$b} %>% abs %>% max %>% round(.,digit=3)`, pIVW-FDR ranged from `r res.repli.gs %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Inverse variance weighted') %>% {.$adj.pval} %>% max` to `r res.repli.gs %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Inverse variance weighted') %>% {.$adj.pval} %>% min`; absolute βWM ranged from `r res.repli.gs %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$b} %>% abs %>% min %>% round(.,digit=3)` to `r res.repli.gs %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$b} %>% abs %>% max %>% round(.,digit=3)`, pWM-FDR ranged from `r res.repli.gs %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$adj.pval} %>% max` to `r res.repli.gs %>% .[.$exposure %in% ls.cpg.valid,] %>% filter(method=='Weighted median') %>% {.$adj.pval} %>% min`). Three other probes (`r ls.cpg.replicated.2method`) showed significant causal effect at IVW and WM methods (see statistics in Supplementary Table 3). MR-Egger intercepts were not significantly deviated from 0 for all replication MR (pFDR>`r min(res.repli.gs$adj.egger_pval)`), and thus showed no evidence of horizontal pleiotropy. See Supplementary Table 8.
+
+
+### Multivariable MR
+
+```{r mvMR, warning=F, message=F, error=F,echo=F}
+res.mvmr = read_tsv(here::here('result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_MDD_mvMR.txt')) %>% 
+  mutate(p.adj=p.adjust(pval,method='fdr')) %>% 
+  dplyr::left_join(.,ref.tomerge,by=c("exposure"='ID')) %>% 
+  as.data.frame
+
+sig.mvmr = res.mvmr %>% filter(p.adj<0.05)
+```
+
+We next tested for causal associations between DNAm at multiple CpGs from the discovery analysis to MDD. The significant probes were entered into the two-sample MR analysis simultaneously, to identify the set of independent SNPs that showed the strongest and independent casual associations with MDD using the IVW method. Three probes showed causal effects when all CpGs were considered simultaneously. They are cg23275840 on chromosome 4, cg14345882 on chromosome 6 and cg14844989 on chromosome 11 (absolute βIVW ranged from `r sig.mvmr %>% {.$b} %>% abs %>% min` to `r sig.mvmr %>% {.$b} %>% abs %>% max`, pFDR ranged from `r sig.mvmr %>% {.$p.adj} %>% max` to `r sig.mvmr %>% {.$p.adj} %>% min `, see Supplementary Figure 10 and Supplementary Table 9). Genes annotated with these CpG probes are BTN3A2 and CORIN. These genes are involved in signalling receptor binding in the brain and hormonal regulation. 
+
+### MR: MDD -> DNAm
+
+```{r, echo=F,warning=F,message=F,error=F}
+res.rev.gs = list.files(here::here('result/GS_MR_MDD_to_DNAm'),pattern='Summary_MDD',full.names = T) %>% as.list %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>% 
+  bind_rows
+
+ls.mr_methods=res.rev.gs %>% {unique(.$method)} %>% as.list
+
+res.rev.gs = res.rev.gs %>% 
+  lapply(X = ls.mr_methods, FUN = correct_by_method, tmp.res=.) %>% 
+  bind_rows 
+
+ls.cpg.valid.rev = unique(res.rev.gs$exposure) %>% as.list %>% 
+  pblapply(count_valid,tmp.res=res.rev.gs) %>% 
+  bind_rows %>% 
+  filter(is.valid==T) %>% 
+  {.$cpg} %>% as.character
+
+ls.cpg.valid.3methods.rev = unique(res.rev.gs$exposure) %>% as.list %>% 
+  pblapply(count_valid,tmp.res=res.rev.gs,all3=T) %>% 
+  bind_rows %>% 
+  filter(is.valid==T) %>% 
+  {.$cpg} %>% as.character
+
+# CpGs with one significant effect
+ls.cpg.sig.1method = res.rev.gs %>% filter(adj.pval<0.05) %>% {.$outcome}
+ls.cpg.nosig_atall = res.rev.gs %>% .[!.$outcome %in% unique(ls.cpg.sig.1method),]
+
+res.sig.1method = res.rev.gs %>% .[.$outcome %in% ls.cpg.sig.1method,] %>% .[!.$outcome %in% 'cg14345882',]
+res.sig.1method.2 = res.rev.gs %>% .[.$outcome %in% ls.cpg.sig.1method,] %>% .[.$outcome %in% 'cg14345882',]
+
+```
+
+MR provided no consistent evidence of a causal effect of depression liability on DNA methylation. The effects to cg09256413 and cg16996682 were significant for the IVW method (absolute βIVW ranged from `r res.sig.1method %>% filter(method=='Inverse variance weighted') %>% {min(abs(.$b))}` to `r res.sig.1method %>% filter(method=='Inverse variance weighted') %>% {max(abs(.$b))}`,pFDR < 0.028), but the effects were not significant for neither WM nor MR-Egger methods (βWM/MR-Egger`r res.sig.1method %>% filter(method!='Inverse variance weighted') %>% {min(abs(.$b))}` to `r res.sig.1method %>% filter(method!='Inverse variance weighted') %>% {max(abs(.$b))}`,pFDR>0.12). The effect to cg14345882 was significant for both IVW and MR-Egger (`r res.sig.1method.2 %>% filter(method!='Inverse variance weighted') %>% {min(abs(.$b))}` to `r res.sig.1method.2 %>% filter(method!='Inverse variance weighted') %>% {max(abs(.$b))}`,pFDR<8,85x10-5), but the effect was not significant for the WM method (βWM=`r res.sig.1method.2$b`, pFDR = `r res.sig.1method.2$adj.pval`), the direction was opposite to the other two methods, and there was a strong evidence of heterogeneity between probes (p for Q-statistics = `r res.sig.1method.2$adj.Q_pval`). All other effects were not significant after FDR correction (pFDR>`r ls.cpg.nosig_atall$adj.pval %>% min`) See Figure 5, Supplementary Figure 11 and Supplementary Table 10.

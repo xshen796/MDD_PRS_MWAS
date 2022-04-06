@@ -5,6 +5,9 @@ osca_Linux --beqtl-summary mQTL_w2 --query 1 --out mQTL_summstats_w2
 
 ####################################      Query a subset of probes      #####################################
 
+cd /exports/eddie/scratch/xshen33/mQTL/
+mkdir mQTL_byCpG
+
 cp /exports/igmm/eddie/GenScotDepression/shen/bakup.dat/GS_methylation/mQTL/mQTL* /exports/eddie/scratch/xshen33/mQTL/data/
 cd mQTL_byCpG
 

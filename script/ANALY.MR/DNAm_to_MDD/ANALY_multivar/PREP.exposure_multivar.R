@@ -26,6 +26,11 @@ f.cpg=opt$CpGlist
 exposure.path=opt$mqtl
 output.path=opt$interexp
 
+# f.snp='ls.snp.multivar_MR.txt'
+# f.cpg='ls.cpg.multivar_MR.txt'
+# exposure.path='/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/mQTL/mQTL_forMR_GS/'
+# output.path='/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/MR_InterFiles/exposure_stats/'
+
 # Basic settings ----------------------------------------------------------
 
 dir.create(file.path(output.path), showWarnings = FALSE)
@@ -61,11 +66,11 @@ extract_summstats <- function(tmp.input){
 }
 
 # Reformat data
-format_exposure <- function(tmp.input,tmp.SNP.toinclude,tmp.output){
+format_exposure <- function(tmp.input,tmp.SNP.toinclude){
    exposure.fname = as.character(tmp.input['fname'])
    traitA = as.character(tmp.input['exposure.name'])
    
-   exposure_dat <- read_exposure_data(paste0(output.path,'/',traitA,".tops"),sep='\t') %>%
+   exposure_dat <- read_exposure_data(exposure.fname,sep='\t') %>%
       .[.$SNP %in% tmp.SNP.toinclude,]
    
    #exposure_dat <- filter(exposure_dat,eaf.exposure>0.1,eaf.exposure<0.90,abs(beta.exposure)<0.038)
@@ -73,8 +78,6 @@ format_exposure <- function(tmp.input,tmp.SNP.toinclude,tmp.output){
                                    'eaf.exposure','beta.exposure','se.exposure','pval.exposure','samplesize.exposure',
                                    'units.exposure','exposure','mr_keep.exposure','pval_origin.exposure',
                                    'units.exposure_dat','id.exposure','data_source.exposure')]
-   write.table(exposure_dat,file=paste0(tmp.output,'/',traitA,".exposure_dat"),
-               col.names=T,row.names = F,sep="\t",quote=F)
    return(exposure_dat)
 }
 
@@ -95,8 +98,8 @@ names(exposure.dat.stp1) = ls.exposure.input$exposure.name
 
 ls.exposure.input$exposure.name %>% as.list %>% 
    pblapply(.,FUN=function(x) write_tsv(exposure.dat.stp1[[x]],
-                                      path = paste0(output.path,'/',x,'.tops'),
-                                      col_names = T,quote_escape = F))
+                                      file = paste0(output.path,'/',x,'.tops'),
+                                      col_names = T))
 
 # Clump again using the first exposure
 tmp.exposure_dat <- read_exposure_data(paste0(output.path,'/',ls.exposure.input$exposure.name[1],".tops"),
@@ -110,7 +113,7 @@ ls.exposure.input = data.frame(fname=paste0(output.path,'/',ls.exposure,'.tops')
                                stringsAsFactors = F)
 exposure.dat.stp2=ls.exposure.input %>%
    pbapply(.,MARGIN = 1,FUN=format_exposure,
-           tmp.SNP.toinclude=ls.SNP.tokeep,tmp.output=output.path)
+           tmp.SNP.toinclude=ls.SNP.tokeep)
 
 # A summarised exposure data
 summ.exposure.dat = exposure.dat.stp2 %>%

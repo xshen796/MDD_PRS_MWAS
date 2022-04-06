@@ -21,10 +21,11 @@ prs = as.list(ls.f) %>%
       lapply(.,fread,stringsAsFactors=F,header=T) %>%
       lapply(.,select,IID,starts_with('SCORE')) %>%
       Reduce(function(x,y) left_join(x,y,by='IID'),.) %>%
-      mutate_at(vars(matches('SCORE')), ~scale(.))
+      mutate_at(vars(matches('SCORE')), ~scale(.)) %>% 
+   select(-SCORE_0.2)
 
 
-linkage.f = read.csv('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/GS_genetic_meth/gwas_methid_link.csv',
+linkage.f = read.csv('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/GS_genetic_meth/gwas_methid_link.csv',
                      stringsAsFactors=F) %>%
       select(ends_with('id'))
 
@@ -49,7 +50,8 @@ summ.res = fit %>%
       lapply(.,summary) %>%
       lapply(.,function(x) tail(x$coefficients,1)%>%as.data.frame) %>%
       bind_rows %>%
-      mutate(R2=summ.r2$`Tjur's R2`)
+      mutate(R2=summ.r2$`Tjur's R2`) %>% 
+   mutate(score = rownames(.))
 
 
 # Save table ------------------------------------------------------------------------------------------------------

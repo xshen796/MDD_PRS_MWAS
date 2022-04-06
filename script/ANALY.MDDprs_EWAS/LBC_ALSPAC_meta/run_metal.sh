@@ -10,6 +10,6 @@ do
 done
 
 
-mkdir /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/EWAS_MDDprs_meta_LBC_ALSPAC
+mkdir /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/EWAS_MDDprs_meta_LBC_ALSPAC
 
-cp REPmeta* /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/EWAS_MDDprs_meta_LBC_ALSPAC/
+cp REPmeta* /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/EWAS_MDDprs_meta_LBC_ALSPAC/

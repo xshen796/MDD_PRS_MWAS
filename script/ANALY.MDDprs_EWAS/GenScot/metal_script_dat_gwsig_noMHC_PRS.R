@@ -2,17 +2,17 @@ library(dplyr)
 library(data.table)
 library(readr)
 library(pbapply)
-setwd('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/')
+setwd('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/EWAS_MDDprs_Shen/noMHC_and_gwsig/')
 
 # Reformat summstats for METAL --------------------------------------------
 
 reformat_summstats <- function(tmp.file){
-  summstats=fread(paste0('../EWAS/',tmp.file),header=T) %>% 
+  summstats=fread(paste0('./',tmp.file),header=T) %>% 
     select(ID,beta,P.Value,se)
-  write_tsv(summstats,path = paste0('../EWAS/',gsub('toptable.txt','forMetal.txt',tmp.file)))
+  write_tsv(summstats,file = paste0('./',gsub('toptable.txt','forMetal.txt',tmp.file)))
 }
 
-ls.f = list.files('../EWAS',pattern = 'toptable')
+ls.f = list.files('./',pattern = 'toptable')
 
 ls.f %>% as.list %>% 
   pblapply(.,reformat_summstats)
@@ -20,7 +20,7 @@ ls.f %>% as.list %>%
 # Load and create metal scripts -------------------------------------------
 
 metal.ref = 
-  read.table('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/script/ANALY.MDDprs_EWAS/loo_EWAS/summstats_metal_template',
+  read.table('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/script/ANALY.MDDprs_EWAS/GenScot/variantEWAS/summstats_metal_template',
              sep = '\n',stringsAsFactors = F,header = F,blank.lines.skip = F)
 
 mk_metal <- function(ref.file,tmp.input,filename.1,filename.2,outputname){
@@ -39,10 +39,11 @@ mk_metal <- function(ref.file,tmp.input,filename.1,filename.2,outputname){
 
 # Prepare files to process
 
-ls.w1.f = list.files(path = './',pattern = '_wave1',full.names = T) %>%
-  .[grep('RosieData.toptable.txt',.)]
-ls.w3.f = gsub('wave1','wave3',ls.w1.f)
-ls.output.f = gsub('RosieData.toptable.txt','_RosieData',ls.w1.f) %>% gsub('.forMetal.txt','.metal.out',.)
+ls.w1.f = list.files(path = './',pattern = '_w1',full.names = T) %>%
+  .[grep('.forMetal',.)]
+ls.w3.f = gsub('w1','w3',ls.w1.f)
+ls.output.f = gsub('.forMetal.txt','',ls.w1.f) %>% 
+  gsub('_w1','_BothWave',.)
 
 input.ls = data.frame(file1=ls.w1.f,file2=ls.w3.f,outputfile=ls.output.f,stringsAsFactors = F)
 
@@ -51,8 +52,8 @@ metal.script = input.ls %>%
         ref.file=metal.ref)
 
 names(metal.script)= ls.w1.f %>%
-  gsub('mddprs_pT','',.) %>%
-  gsub('_wave1_RosieData.toptable.txt','',.)
+  gsub('.//ewas_w1_','',.) %>%
+  gsub('.forMetal.txt','',.)
 
 lapply(names(metal.script),function(x) write.table(metal.script[[x]],
                                                    file=paste0('MetalScript_',x,'.txt'),

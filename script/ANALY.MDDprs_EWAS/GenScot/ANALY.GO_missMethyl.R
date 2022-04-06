@@ -1,4 +1,4 @@
-setwd('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD')
+setwd('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS')
 library('dplyr')
 library('tibble')
 library('missMethyl')
@@ -14,7 +14,7 @@ ls.pt=c('5e_08','0.000001','0.0001','0.01','0.1','1')
 
 
 for (pt in ls.pt){
-    f.path=paste0('result/EWAS_MDDprs_Shen/archiv/MDDprs_ewas_meta/MDDprs_pT',
+    f.path=paste0('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/MDDprs_pT',
                   pt,'_meta/mddprs_pT',pt,'_meta_RosieData.toptable.txt1.tbl')
     ewasResults=read.delim(f.path,sep='\t',header=T,stringsAsFactors=F)
     colnames(ewasResults)[1]='CpG'

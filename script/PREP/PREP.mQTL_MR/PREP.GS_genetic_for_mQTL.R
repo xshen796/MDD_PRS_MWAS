@@ -40,7 +40,7 @@ ls.cpg = c('cg07519229','cg08116408','cg17925084',
 write.table(ls.cpg,file='data/cpg_ls_sigBrain.txt',
             sep='\n',quote=F,row.names = F,col.names = F)
 
-ls.cpg = list.files('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/mQTL/mQTL_forMR',pattern='^mQTL') %>%
+ls.cpg = list.files('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/mQTL/mQTL_forMR',pattern='^mQTL') %>%
         gsub('mQTL.','',.) %>%
 	gsub('.rds','',.)
 write.table(ls.cpg,file='data/cpg_ls.txt',sep='\n',quote=F,row.names = F,col.names = F)
@@ -55,24 +55,22 @@ system('bash /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR
 
 # Parse mQTL summstats ----------------------------------------------------
 
-source.path = '/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/GS_methylation/mQTL/'
+source.path = '/exports/eddie/scratch/xshen33/mQTL/mQTL_byCpG/'
 target.path = '/exports/eddie/scratch/xshen33/mQTL/mQTL_result/'
 
-extract_qtl_bycpg <- function(path1,path2,fname_summ,tmp.suffix,manual_N){
-  groot = fread(paste0(path1,'/',fname_summ),header=T,stringsAsFactors=F) %>%
+extract_qtl_bycpg <- function(path.out,fname){
+  if (grepl('_w1',fname)){
+    manual_N=4890
+  }else{manual_N=4323}
+  groot = read_tsv(fname) %>%
     mutate(N=manual_N)
-  groot.subset =
-    as.list(unique(groot$Probe)) %>%
-    pblapply(.,FUN=function(x) filter(groot,Probe==x))
-  names(groot.subset)=unique(groot$Probe)
-  as.list(names(groot.subset)) %>%
-    pblapply(., function(x) write_tsv(groot.subset[[x]], 
-                                      file = paste0(path2,x,'_',tmp.suffix,'.txt'), sep='\t',
-                                      quote=F,row.names = F))
+  target.cpg = basename(fname) %>% strsplit(.,split = '_') %>% unlist %>% head(.,n=1)
+  write_tsv(groot, file = paste0(path.out,basename(fname),'_formeta.txt'))
 }
 
-extract_qtl_bycpg(source.path,target.path,'mQTL_summstats_w1','w1',manual_N = 4890)
-extract_qtl_bycpg(source.path,target.path,'mQTL_summstats_w2','w2',manual_N = 4323)
+list.files(source.path,full.names = T) %>% 
+  .[!grepl('.log',.)] %>% as.list %>% 
+  pblapply(.,FUN=extract_qtl_bycpg,path.out = target.path)
 
 
 # Set up metal inputs for meta analysis -----------------------------------
@@ -87,8 +85,8 @@ ls.txt = list.files(path='.')
 ls.input = data.frame(input1 = ls.txt[grep('_w1',ls.txt)],
                       input2 = ls.txt[grep('_w2',ls.txt)],
                       stringsAsFactors = F) %>%
-  mutate(input3 = gsub('_w1.txt','_bothWaves',input1),
-         script.file = gsub('_w1.txt','.MetalInput',input1))
+  mutate(input3 = gsub('_w1_formeta.txt','_bothWaves',input1),
+         script.file = gsub('_w1_formeta.txt','.MetalInput',input1))
 
 make_metal_input <- function(ls.input,tmp.tmplate){
   summstats.1=as.character(ls.input[1])
@@ -116,7 +114,7 @@ system('qsub job.run_metal.sh')
 
 
 # Reformat metal outputs for MR -------------------------------------------
-setwd('/exports/eddie/scratch/xshen33/mQTL/mQTL_meta/')
+setwd('/exports/eddie/scratch/xshen33/mQTL/mQTL_result/')
 ls.meta = list.files('.',patter='.tbl$')
 
 reformat_metal <- function(tmp.fname,target.path){
@@ -132,4 +130,4 @@ reformat_metal <- function(tmp.fname,target.path){
 
 as.list(ls.meta) %>%
   pblapply(.,reformat_metal,
-           target.path='/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/mQTL/mQTL_forMR_GS/')
+           target.path='/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/mQTL/mQTL_forMR_GS/')

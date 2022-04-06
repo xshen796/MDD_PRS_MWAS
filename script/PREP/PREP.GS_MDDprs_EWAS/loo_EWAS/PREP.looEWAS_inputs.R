@@ -28,7 +28,7 @@ all.prs = all.prs %>%
 all.prs[,grep('PRS',colnames(all.prs))]=scale(all.prs[,grep('PRS',colnames(all.prs))])
 
 # Rename PRS based on which SNP was leading
-target.ls = fread('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/GS_genetic_meth/SNP_variantMWAS.txt',header=T)
+target.ls = fread('/exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/GS_genetic_meth/SNP_variantMWAS.txt',header=T)
 target.ls = target.ls %>%
       filter(!is.na(R2)) %>% 
       mutate(looSNP.seq=paste0('PRS_',1:nrow(.))) %>%

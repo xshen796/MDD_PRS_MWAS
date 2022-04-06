@@ -26,40 +26,1071 @@ library(superheat)                                       # Graph
 library(kableExtra)                                      # Table
 library(missMethyl)                                      # Extra pathway analysis
 library(pbapply)                                         # Process control
+library(harrypotter)
 
 # My own functions
 source(here::here('FUNs/manhattan_plot_compare_XS.R')) # EWAS manhattan plot
 source(here::here('FUNs/circular_graph_mr.R'))    # circular connectivity graph
+source(here::here('script/FUNs_meth/clump_bychr.R')) 
 
 # Render from MR_meth_MDD folder
 ```
-  
-  
-```{r compare related and unrelated participants for GS}
+
+### Controlling for ancestry
+
+#### P-value plot
+
+```{r}
 anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
 ref.tomerge <- anno %>% as.data.frame %>%
   dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
          Islands_Name,Relation_to_Island)
+
+ewas_res.noPC=read.delim(here::here('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/no_geneticPC/ewas_meta_pT_0.00000005.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
+  mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
+  dplyr::rename(CpG=MarkerName) %>% 
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
+  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value)) %>% 
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR==6,'Yes','No'))
+
+
+ewas_res.withPC=read.delim(here::here('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
+  mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
+  dplyr::rename(CpG=MarkerName) %>% 
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
+  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value)) %>% 
+  .[.$CpG %in% ewas_res.noPC$CpG,] %>% 
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR==6,'Yes','No')) 
+
+ls.CpG.related.sig = ewas_res.noPC %>% filter(p.adj<0.05) %>% .$CpG
+
+tmp.fig = m_plot(dat=ewas_res.withPC,
+                    chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    man_annot=ls.CpG.related.sig,
+                    add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,30),
+                 outputpath=here::here('Figs/related_vs_unrelated_MWAS.png'))
+fig.manhattan = tmp.fig
+```
+
+#### Box plot for p-values
+```{r}
+dat.box_plot = ewas_res.noPC %>% 
+  filter(p.adj<0.05) %>% 
+  select(CpG,P.value) %>% 
+  left_join(.,ewas_res.withPC[,c('CpG','P.value','is.MHC')],by='CpG') %>% 
+  dplyr::rename(`No PC` = P.value.x, `With PC` = P.value.y) %>% 
+  pivot_longer(.,cols=2:3,names_to='Sample',values_to='p')
+
+fig.box_all = dat.box_plot %>% 
+  ggplot(aes(y = -log10(p), x = as.factor(Sample), 
+           fill = as.factor(Sample)), 
+       data = .) + 
+  geom_boxplot()+
+  scale_fill_viridis(discrete = TRUE, alpha=0.6, name = 'Model') +
+    geom_jitter(aes(colour = is.MHC), size=0.5, alpha=0.6) +
+    theme_bw()+
+    theme(
+      plot.title = element_text(size=11)
+    ) +
+  scale_color_manual(values = c("Yes"="gray50", "No"="red"))+
+    geom_hline(yintercept=-log10(0.05), linetype="dashed", 
+               color = "gray45", size=0.2) +
+    xlab("Model")+
+    ylab('-log10(p)')
+
+
+fig.box_all
+
+```
+
+#### Beta correlation
+```{r}
+dat.correlation = ewas_res.noPC %>% 
+  filter(p.adj<0.05) %>% 
+  select(CpG,`No PC`=Effect) %>% 
+  left_join(.,ewas_res.withPC[,c('CpG','Effect','is.MHC')],by='CpG') %>% 
+  dplyr::rename(`With PC` = Effect) 
+
+r.beta.all = cor(dat.correlation$`No PC`,dat.correlation$`With PC`) %>% round(3)
+dat.correlation.noMHC = dat.correlation %>% filter(is.MHC=='No')
+r.beta.noMHC = cor(dat.correlation.noMHC$`No PC`,dat.correlation.noMHC$`With PC`) %>% round(3)
+
+fig.correlation = dat.correlation %>% 
+  ggplot(aes(y = `With PC`, x = `No PC`, 
+           colour = is.MHC), 
+       data = .) + 
+  geom_point(size=0.5, alpha=0.6)+
+  theme_bw()+
+    theme(
+      plot.title = element_text(size=11)
+    ) +
+  geom_smooth(method=lm , color="dark grey", se=TRUE)+
+  annotate(geom="text",label=paste0('r (all) = ',r.beta.all), x=0.06, y=0,hjust = 0,size=3.5)+
+  annotate(geom="text",label=paste0('r (noMHC) = ',r.beta.noMHC), x=0.06, y=-0.04,hjust = 0,size=3.5) +
+  scale_color_manual(values = c("Yes"="gray50", "No"="red"))+
+    xlab("Beta (Model: No PC)")+
+    ylab('Beta (Model: With PC)')
+fig.correlation
+```
+
+#### All figs together
+```{r}
+fig.all =  
+  ggarrange(fig.box_all,fig.correlation,ncol = 2,labels=c('b','c'),widths=c(1.1,1)) %>% 
+  ggarrange(fig.manhattan,.,nrow=2,labels='a',heights=c(1.8,1))
+ggsave(file=here::here('Figs/With_without_geneticPC_comparison.png'),fig.all,units='in',device = 'png',width = 6,height = 4)
+fig.all
+```
+
+#### Manhattan plots for PC MWAS
+```{r}
+reformat_pc_mwas <- function(x){
+  output = x %>% as.data.frame %>% 
+    dplyr::rename(P.value = `P-value`) %>% 
+    mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
+    dplyr::rename(CpG=MarkerName) %>% 
+    merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
+    mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
+    filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(Effect)) %>% 
+    .[.$CpG %in% ewas_res.noPC$CpG,]
+  return(output)
+}
+ewas_res.onPC=list.files(here::here('result/EWAS_MDDprs_Shen/MWAS_geneticPC'),pattern = 'meta_geneticPC',full.names = T) %>%
+  .[!grepl('.info',.)] %>% 
+  as.list %>% 
+  lapply(.,read_tsv) %>% 
+  lapply(.,reformat_pc_mwas)
+
+figs.ewas.noPC = ewas_res.onPC %>% 
+  lapply(.,m_plot,chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    add_category_name=F,fig_size=c(22,13),
+                    tophits_annot=T,y_lim=c(0,120))
+fig.ewas.noPC.1_8 = figs.ewas.noPC %>% 
+  ggarrange(.,ncol=2,labels = letters[1:8],font.label = list(size=8))
+
+
+```
+
+### New figs for main text after controlling genetic PCs
+
+#### Figure 1
+```{r}
+anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
+ref.tomerge <- anno %>% as.data.frame %>%
+  dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
+         Islands_Name,Relation_to_Island)
+
+ls.pt=c('0.00000005','0.000001','0.0001','0.001','0.01','0.05','0.1','0.5','1')
+
+for (pt in ls.pt){
+    f.path=paste0('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_',pt,'.metal.out1.tbl')
+    ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
+      mutate(p.adj = p.adjust(P.value,method='bonferroni')) 
+    
+    ewasResults$p.fdr=p.adjust(ewasResults$P.value,method='fdr')
+    ewasResults$p.bonferroni=p.adjust(ewasResults$P.value,method='bonferroni')
+                 
+    tmp.count=data.frame(N5e_08=sum(ewasResults$P.value<5e-8,na.rm=T),
+                         N5e_06=sum(ewasResults$P.value<5e-6,na.rm=T),
+                         Nfdr=sum(ewasResults$p.fdr<0.05,na.rm=T),
+                         Nbonferroni=sum(ewasResults$p.bonferroni<0.05,na.rm=T))
+    if(pt==ls.pt[1]){sig.count=tmp.count}else{sig.count=rbind(sig.count,tmp.count)}
+
+}
+
+ls.pt = c('5e-8','1e-6','1e-4','0.001','0.01','0.05','0.1','0.5','1')
+
+res.prediction_dnam = sig.count %>% 
+  mutate(pT=factor(ls.pt,levels=rev(ls.pt))) %>% 
+  reshape2::melt(.,id.vars='pT',value.name = 'No') %>% 
+  mutate(variable=gsub('N5e_08','p<5e-08',variable)) %>% 
+  mutate(variable=gsub('N5e_06','p<5e-06',variable)) %>% 
+  mutate(variable=gsub('Nfdr','p-FDR<0.05',variable)) %>% 
+  mutate(variable=gsub('Nbonferroni','p-Bonferroni<0.05',variable)) %>% 
+  dplyr::rename(Type=`variable`)
+
+fig.prediction_dnam = 
+  ggplot(res.prediction_dnam, aes(x=pT, y=No, group=Type)) +
+  geom_line(aes(color=Type),position = position_dodge(width = 0.1))+
+  geom_point(aes(color=Type))+
+  theme_light() +
+  #scale_colour_discrete(,name='Type')+
+  scale_color_manual(values=c("#5F0032FF", "#2A7B4BFF", "#CE952BFF", "#FF7A33FF"),name='Type')+
+  #scale_colour_hp_d(option = "ronweasley2", name = "Type")+
+  theme(
+     axis.text=element_text(size=6), axis.title=element_text(size=8),
+     legend.title=element_text(size=6),
+    legend.text=element_text(size=6),
+    panel.grid.major.x = element_blank(),
+    panel.border = element_blank(),
+    axis.ticks.x = element_blank(),
+    axis.text.x=element_text(angle = 90)
+  ) +
+  xlab("P-threshold for MDD PRS") +
+  ylab("No. of significant associations")
+
+ggsave(fig.prediction_dnam,filename = here::here('Figs/MainText/Figure1.png'),device = 'png',width = 8,height = 5.5,units = 'cm')
+```
+
+#### Figure 2
+```{r}
+fig.dat.GS.pT.0.00000005 = read.delim(here::here('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl'),
+     sep='\t',header=T,stringsAsFactors=F) %>%
+      mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
+  dplyr::rename(CpG=MarkerName) %>% 
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
+  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value))
+
+fig.5e_8=m_plot(dat=fig.dat.GS.pT.0.00000005,
+                    chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    add_category_name=F,fig_size=c(20,9.5),tophits_annot=T,y_lim=c(0,25),
+                    outputpath=here::here('Figs/MainText/Figure2.png'))
+```
+
+#### Figure 3
+```{r}
+# (a) Manhattan plot
+fig.dat.rep.pT.0.00000005 = read.delim(here::here('result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_5e.08.metal.out1.tbl'),
+     sep='\t',header=T,stringsAsFactors=F) %>%
+      mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
+  dplyr::rename(CpG=MarkerName) %>% 
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
+  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value))
+
+fig.rep.5e_8=m_plot(dat=fig.dat.rep.pT.0.00000005,
+                    chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
+                    add_category_name=F,fig_size=c(20,9.5),tophits_annot=T,y_lim=c(0,70))
+# (b) Correlation plot
+GS.ewas = fig.dat.GS.pT.0.00000005
+REP.ewas = fig.dat.rep.pT.0.00000005
+
+GS.sig = mutate(GS.ewas,p.adj=p.adjust(P.value,method='bonferroni')) %>%
+  select(CpG=CpG,GS.beta=Effect,GS.std=StdErr,GS.p=P.value,GS.p.adj=p.adj) %>%
+  mutate(GS.beta_se=GS.beta/GS.std)
+REP.match = REP.ewas[REP.ewas$CpG %in% GS.sig$CpG,] %>%
+  select(CpG,REP.beta=Effect,REP.se=StdErr,REP.p=P.value) %>%
+  mutate(REP.beta_se=REP.beta/REP.se)
+
+combined.test = merge(REP.match,GS.sig,by='CpG') %>%
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>%
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR=='chr6','Yes','No')) %>%
+  mutate(is.MHC = factor(is.MHC,levels=c('No','Yes'))) %>%
+  filter(GS.p.adj<0.05)
+combined.test.noMHC = filter(combined.test,is.MHC=='No')
+
+r.beta.all = round(cor.test(combined.test$REP.beta,combined.test$GS.beta)$estimate,3)
+r.beta.noMHC = round(cor.test(combined.test.noMHC$REP.beta,combined.test.noMHC$GS.beta)$estimate,3)
+
+fig.rep.correlation=
+  ggplot(combined.test, aes(x=GS.beta, y=REP.beta,color=is.MHC)) + 
+  geom_point(stat="identity", size=2, alpha = 0.5) +
+  theme_light() +
+  scale_colour_hp_d(option = "HermioneGranger", name = "In MHC region?")+
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.border = element_blank(),
+    axis.line.x = element_line(size=0.5),
+    axis.text=element_text(size=6), axis.title=element_text(size=8),
+     legend.title=element_text(size=6),
+    legend.text=element_text(size=6),
+    plot.title = element_text(lineheight=1, face="bold", vjust=1, hjust=0.5,size=8),
+    strip.text = element_text(size=10),
+    plot.margin=unit(c(1,1,1,3),'mm')) +
+  geom_smooth(method=lm , color="dark grey", se=TRUE)+
+  ylab('LBC1921 + LBC1936 +\nALSPAC adults Beta (replication)')+
+  xlab('GS Beta (discovery)')+
+  annotate(geom="text",label=paste0('r (all) = ',r.beta.all), x=-0.01, y=-0.1,hjust = 0,size=3)+
+  annotate(geom="text",label=paste0('r (noMHC) = ',r.beta.noMHC), x=-0.01, y=-0.15,hjust = 0,size=3) +
+  labs(color = "In MHC region?")
+
+# (c) N sig
+ls.pt=c('5e.08','1e.06','0.0001','0.001','0.01','0.05','0.1','0.5','1')
+for (pt in ls.pt){
+    f.path=paste0('result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_',pt,'.metal.out1.tbl')
+    
+    ewasResults=read.delim(here::here(f.path),sep='\t',header=T,stringsAsFactors=F) %>%
+      select(CpG=MarkerName,Effect,SE=StdErr,P.Value=P.value,Direction) %>% 
+      merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>%
+      filter(CHR!='X',CHR!='Y',!is.na(CHR),!is.na(CpG),!is.na(MAPINFO),!is.na(P.Value))
+
+    
+    ewasResults$p.fdr=p.adjust(ewasResults$P.Value,method='fdr')
+    ewasResults$p.bonferroni=p.adjust(ewasResults$P.Value,method='bonferroni')
+                 
+    tmp.count=data.frame(N5e_08=sum(ewasResults$P.Value<5e-8,na.rm=T),
+                         N5e_06=sum(ewasResults$P.Value<5e-6,na.rm=T),
+                         Nfdr=sum(ewasResults$p.fdr<0.05,na.rm=T),
+                         Nbonferroni=sum(ewasResults$p.bonferroni<0.05,na.rm=T))
+    if(pt==ls.pt[1]){sig.count=tmp.count}else{sig.count=rbind(sig.count,tmp.count)}
+
+}
+
+ls.pt = c('5e-8','1e-6','1e-4','0.001','0.01','0.05','0.1','0.5','1')
+
+res.prediction_dnam = sig.count %>% 
+  mutate(pT=factor(ls.pt,levels=rev(ls.pt))) %>% 
+  reshape2::melt(.,id.vars='pT',value.name = 'No') %>% 
+  mutate(variable=gsub('N5e_08','p<5e-08',variable)) %>% 
+  mutate(variable=gsub('N5e_06','p<5e-06',variable)) %>% 
+  mutate(variable=gsub('Nfdr','p-FDR<0.05',variable)) %>% 
+  mutate(variable=gsub('Nbonferroni','p-Bonferroni<0.05',variable)) %>% 
+  dplyr::rename(Type=`variable`)
+
+fig.rep.prediction_dnam = 
+  ggplot(res.prediction_dnam, aes(x=pT, y=No, group=Type)) +
+  geom_line(aes(color=Type),position = position_dodge(width = 0.1))+
+  geom_point(aes(color=Type))+
+  theme_light() +
+  scale_color_manual(values=c("#5F0032FF", "#2A7B4BFF", "#CE952BFF", "#FF7A33FF"),name='Type')+
+  #scale_colour_hp_d(option = "ronweasley2", name = "Type")+
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.border = element_blank(),
+    legend.title=element_text(size=6),
+    legend.text=element_text(size=6),
+    axis.ticks.x = element_blank(),
+    axis.text=element_text(size=6), axis.title=element_text(size=8),
+    axis.text.x=element_text(angle = 90)
+  ) +
+  xlab("P-threshold for MDD PRS") +
+  ylab("No. of significant associations")
+
+fig3 = ggarrange(fig.rep.5e_8+theme(axis.text=element_text(size=6), axis.title=element_text(size=8)),
+                 ggarrange(fig.rep.correlation,fig.rep.prediction_dnam,
+                           ncol = 2,hjust=T,labels = c('b.','c.'),font.label = list(size = 8)),
+                 nrow = 2,vjust = T,labels = c('a.','b.'),heights = c(1,0.7),font.label = list(size = 8))
+
+ggsave(fig3,filename = here::here('Figs/MainText/Figure3.png'),device = 'png',width = 15,height = 11,units = 'cm',dpi=300)
+
+```
+
+#### Figure 4 (heatmap before annotation)
+
+```{r}
+all.res = fread(here::here('result/EWAS_loo/variant_MWAS_Res.tsv'))
+p.mat = all.res %>% 
+  select(CpG,ends_with('.p')) %>% 
+  column_to_rownames(var="CpG") 
+
+# position info for CpG sites and SNPs
+ls.snp = colnames(all.res) %>% .[grep('.p$',.)] %>% gsub('.p','',.) %>% .[!. %in% 'CpG']
+snp.ref = fread('/exports/igmm/eddie/GenScotDepression/shen/bakup.dat/ucsc_annotation/hg19/snp151Common_chr_bp_rs.txt.gz',stringsAsFactors=F) %>%
+      .[.$V3 %in% ls.snp,]
+
+ewasResult=read.delim(here::here('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl'))
+anno <- getAnnotation(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
+ref.tomerge <- anno %>% as.data.frame %>%
+      dplyr::select(ID=Name, CHR=chr, MAPINFO=pos,ucsc_gene=UCSC_RefGene_Name,
+                    Islands_Name,Relation_to_Island)
+res.sig = ewasResult %>% mutate(p.adj=p.adjust(P.value,method='bonferroni')) %>% 
+  filter(p.adjust(P.value,method='bonferroni')<0.05) %>%
+      merge(.,ref.tomerge,by.x='MarkerName',by.y='ID',all.x=T) %>%
+      mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR=='chr6','Yes','No')) %>%
+      filter(.,is.MHC=='No'|P.value==1.78e-117)
+p.mat=all.res %>%
+  select(CpG, ends_with('.p')) %>%
+  column_to_rownames(var='CpG') %>%
+  as.data.frame %>%
+  mutate_all(., function(x) as.numeric(x))
+ls.CpG.filter = rowSums(p.mat[,2:ncol(p.mat)]<0.05/796525)
+ls.cpg.tokeep = rownames(p.mat)[ls.CpG.filter>0]
+
+# Reorder CpG by CHR
+ewasResult = ewasResult %>%
+  left_join(.,ref.tomerge,by=c('MarkerName'='ID')) %>% 
+  select(ID=MarkerName,CHR,MAPINFO,P.value) %>%
+  mutate(.,CHR=gsub('chr','',CHR)) %>%
+  mutate(.,CHR=as.numeric(CHR)) %>% 
+  filter(!is.na(CHR))
+ls.CpG = ewasResult %>%
+  .[order(.$CHR,.$MAPINFO,decreasing = F),] %>%
+  mutate(ID=as.character(ID)) %>%
+  .[.$ID %in% ls.cpg.tokeep,] 
+
+ls.CpG = as.list(unique(ls.CpG$CHR)) %>%
+pblapply(.,FUN=clump_bychr,
+           dat=ls.CpG,tophits.bpwindow=1000000) %>%
+  bind_rows
+
+# Reorder SNP by CHR
+colnames(snp.ref)=c('CHR','BP','RSID')
+ls.SNP.102 = snp.ref %>%
+  mutate(.,CHR=gsub('chr','',CHR)) %>%
+  mutate(.,CHR=as.numeric(CHR)) %>%
+  .[order(.$CHR,.$BP,decreasing = F),] %>%
+  mutate(RSID=as.character(RSID)) %>%
+  .[.$RSID %in% gsub('.p','',colnames(p.mat)),] %>%
+  .[.$CHR %in% unique(ls.CpG$CHR),]
+
+# Lowest p-value for each SNP within 1Mbp
+find_pval <- function(tmp.input,tmp.ewas_res){
+     tmp.loc.chr = tmp.input$CHR
+     tmp.loc.bp = tmp.input$BP
+     block.res = tmp.ewas_res %>% filter(CHR==tmp.loc.chr) %>%
+           filter((MAPINFO<(tmp.loc.bp+1000000))&(MAPINFO>(tmp.loc.bp-1000000)))
+     tmp.p = min(block.res$P.value,na.rm=T)
+     return(tmp.p)
+}
+
+input.p = ls.SNP.102 %>% transpose() %>%
+ pblapply(.,find_pval,tmp.ewas_res=ewasResult) %>%
+ unlist 
+input.p[input.p>0.05/nrow(ewasResult)]=NA
+
+cpg.input.p = ls.CpG %>% transpose() %>%
+ pblapply(.,find_pval,tmp.ewas_res=ewasResult) %>%
+ unlist 
+cpg.input.p[cpg.input.p>0.05/nrow(ewasResult)]=NA
+
+# Reorder p.mat and reduce size
+colnames(p.mat)=colnames(p.mat) %>% gsub('.p','',.)
+p.mat[p.mat==0]=1e-320  # Recover extremely low p-values to system threshold
+p.mat[p.mat>0.05/length(ls.cpg.tokeep)/nrow(ls.SNP.102)]=NA
+p.mat.new = -log10(p.mat) %>%
+  .[ls.CpG$ID,] %>%
+  .[,ls.SNP.102$RSID]
+
+
+# Heatmap
+set.seed(1234)
+png(here::here('Figs/MainText/SNP_to_CpG_mapping_R2.png'), height = 2600, width = 3800,res = 300)
+superheat(t(p.mat.new),
+          # change the size of the labels
+          left.label.size = 0.1,
+          bottom.label.size = 0.1,
+          # row title
+          row.title = "SNP",
+          row.title.size = 6,
+          # col title
+          column.title = "CpG",
+          column.title.size = 6,
+          # scale the matrix columns
+          scale = F,
+          heat.col.scheme = "red",
+          heat.na.col = "white",
+          # cluster by chr
+          membership.cols = ls.CpG$CHR,
+          membership.rows = ls.SNP.102$CHR,
+          # Text
+          bottom.label.text.angle = 90,
+          left.label.text.size = 3,
+          bottom.label.text.size = 3,
+          # change the grid color
+          grid.hline.col = "gray48",
+          grid.vline.col = "gray48",
+          grid.hline.size = 0.2,
+          grid.vline.size = 0.2)
+dev.off()
+
+```
+
+#### Figure 5
+```{r}
+p.plot.mr = function(tmp.res,tmp.facetcol='exposure',tmp.ycol='exposure',tmp.title,rm.y=T){
+dat.fig = base::Reduce(function(x,y) rbind(x,y),tmp.res) %>%
+  left_join(mr.sig.output[,c('exposure','outcome')],.,var=c('exposure','outcome')) %>%
+  dplyr::rename(Beta=b,SE=se,Method=method) %>%
+  #.[order(.$pval,decreasing = T),] %>%
+  mutate(ord=1:nrow(.)) 
+if(rm.y==T){
+  fig.p =
+    ggplot(dat.fig, aes(y=reorder(get(tmp.ycol),ord), x=-log10(pval), color=Method)) +
+    geom_point(position=position_dodge(width = 0.1), stat="identity", size=1.3) +
+    #facet_grid(rows = vars(get(tmp.facetcol)))+
+    theme(
+      axis.line.x = element_line(size=0.5),
+      axis.text.x=element_text(size=8), axis.title=element_text(size=9),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      axis.title.y=element_blank(),
+      plot.title = element_text(lineheight=1, face="bold", vjust=1, hjust=0.5,size=9),
+      strip.text = element_text(size=8),
+      plot.margin=unit(c(1,1,1,3),'mm')) +
+    scale_colour_hp_d(option = "Ravenclaw", name = "MR method")+
+    #scale_x_discrete(position='top')+
+    geom_vline(xintercept=0,color = "black", size=0.3)+
+    geom_vline(xintercept=-log10(0.05),color = "red",linetype='dashed', size=0.3)+
+    xlab('-log10(p)')+
+    #ylim(0,60)+
+    ggtitle(tmp.title)
+}else{
+  fig.p =
+    ggplot(dat.fig, aes(y=reorder(get(tmp.ycol),ord), x=-log10(pval), color=Method)) +
+    geom_point(position=position_dodge(width = 0.1), stat="identity", size=1.3) +
+    #facet_grid(rows = vars(get(tmp.facetcol)))+
+    theme(
+      axis.line.x = element_line(size=0.5),
+      axis.text = element_text(size=8), axis.title=element_text(size=9),
+      plot.title = element_text(lineheight=1, face="bold", vjust=1, hjust=0.5,size=9),
+      strip.text = element_text(size=8),
+      plot.margin=unit(c(1,1,1,3),'mm')) +
+    #scale_x_discrete(position='bottom')+
+    geom_vline(xintercept=0,color = "black", size=0.3)+
+    geom_vline(xintercept=-log10(0.05),color = "red",linetype='dashed', size=0.3)+
+    scale_colour_hp_d(option = "Ravenclaw", name = "MR method")+
+    xlab('-log10(p)')+
+    ylab('CpG') +
+    #ylim(0,60)+
+    ggtitle(tmp.title)
+}
+ return(fig.p)
+}
+
+# Discovery analysis
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
+names(res)='MDD'
+mr.sig.output = res[[1]] %>%#
+  filter(method=='Inverse variance weighted') %>%
+  .[order(.$pval,decreasing = T),] %>%
+  select(exposure,outcome)
+  
+fig.p.discovery.mr = p.plot.mr(res,tmp.title='DNAm (GoDMC) to MDD',rm.y = F)
+
+# Replication analysis
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
+names(res)='MDD'
+fig.p.replication.mr = p.plot.mr(res,tmp.title='DNAm (GS) to MDD',rm.y = T)
+
+# Reversed direction MR
+res = as.list(list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GS_MR_MDD_to_DNAm/',pattern='^Summary',full.names = T)) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>%
+  lapply(.,dplyr::rename,outcome=exposure,exposure=outcome)
+names(res)=list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GS_MR_Brain_to_DNAm/',pattern='^Summary') %>%
+  gsub('Summary_Brain_to_','',.) %>%
+  gsub('.csv','',.)
+fig.p.reverse.mr = p.plot.mr(res,tmp.title='MDD to DNAm (GS)',rm.y = T)
+
+fig.total = ggarrange(fig.p.discovery.mr,legend = 'bottom',
+                      fig.p.replication.mr,fig.p.reverse.mr,ncol=3,widths=c(1.4,1,1),
+                      common.legend = T)
+
+ggsave(fig.total,device = 'png',height=7.3,width = 17,units = 'cm',dpi=300,
+       filename = here::here('Figs/MainText/Figure5.png'))
+
+```
+
+  
+### Compare related and unrelated participants for GS
+
+#### P-value plot
+  
+```{r compare p plot}
+ewas_res.related=read.delim(here::here('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
+  mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
+  dplyr::rename(CpG=MarkerName) %>% 
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
+  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
+  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value)) %>% 
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR==6,'Yes','No'))
+
 
 ewas_res.unrelated=read.delim(here::here('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_unrelated_pT_0.00000005.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
   mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
   dplyr::rename(CpG=MarkerName) %>% 
   merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
   mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
-  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value))
+  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value)) %>% 
+  .[.$CpG %in% ewas_res.related$CpG,] %>% 
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR==6,'Yes','No')) 
 
-ewas_res.related=read.delim(here::here('result/EWAS_MDDprs_Shen/MDDprs_ewas_meta/ewas_meta_pT_0.00000005.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
-  mutate(p.adj = p.adjust(P.value,method='bonferroni')) %>% 
-  dplyr::rename(CpG=MarkerName) %>% 
-  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>% 
-  mutate(CHR=gsub('chr','',CHR) %>% as.numeric) %>% 
-  filter(!is.na(CpG),!is.na(CHR),!is.na(MAPINFO),!is.na(P.value))
 ls.CpG.related.sig = ewas_res.related %>% filter(p.adj<0.05) %>% .$CpG
 
 tmp.fig = m_plot(dat=ewas_res.unrelated,
                     chr="CHR", bp="MAPINFO", snp="CpG", p="P.value",
                     man_annot=ls.CpG.related.sig,
-                    add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,120))
+                    add_category_name=F,fig_size=c(22,13),tophits_annot=T,y_lim=c(0,20),
+                 outputpath=here::here('Figs/related_vs_unrelated_MWAS.png'))
+fig.manhattan = tmp.fig
+```
+
+#### Box plot for p-values
+```{r box plot}
+dat.box_plot = ewas_res.related %>% 
+  filter(p.adj<0.05) %>% 
+  select(CpG,P.value) %>% 
+  left_join(.,ewas_res.unrelated[,c('CpG','P.value','is.MHC')],by='CpG') %>% 
+  dplyr::rename(Full_sample = P.value.x, Unrelated = P.value.y) %>% 
+  pivot_longer(.,cols=2:3,names_to='Sample',values_to='p')
+
+fig.box_all = dat.box_plot %>% 
+  ggplot(aes(y = -log10(p), x = as.factor(Sample), 
+           fill = as.factor(Sample)), 
+       data = .) + 
+  geom_boxplot()+
+  scale_fill_viridis(discrete = TRUE, alpha=0.6, name = 'Sample') +
+    geom_jitter(aes(colour = is.MHC), size=0.5, alpha=0.6) +
+    theme_bw()+
+    theme(
+      plot.title = element_text(size=11)
+    ) +
+  scale_color_manual(values = c("Yes"="gray50", "No"="red"))+
+    geom_hline(yintercept=-log10(0.05), linetype="dashed", 
+               color = "gray45", size=0.2) +
+    xlab("Sample")+
+    ylab('-log10(p)')
+
+
+fig.box_all
+
+```
+
+#### Beta correlation
+```{r}
+dat.correlation = ewas_res.related %>% 
+  filter(p.adj<0.05) %>% 
+  select(CpG,Full_sample=Effect) %>% 
+  left_join(.,ewas_res.unrelated[,c('CpG','Effect','is.MHC')],by='CpG') %>% 
+  dplyr::rename(Unrelated = Effect) 
+
+r.beta.all = cor(dat.correlation$Full_sample,dat.correlation$Unrelated) %>% round(3)
+dat.correlation.noMHC = dat.correlation %>% filter(is.MHC=='No')
+r.beta.noMHC = cor(dat.correlation.noMHC$Full_sample,dat.correlation.noMHC$Unrelated) %>% round(3)
+
+fig.correlation = dat.correlation %>% 
+  ggplot(aes(y = Unrelated, x = Full_sample, 
+           colour = is.MHC), 
+       data = .) + 
+  geom_point(size=0.5, alpha=0.6)+
+  theme_bw()+
+    theme(
+      plot.title = element_text(size=11)
+    ) +
+  geom_smooth(method=lm , color="dark grey", se=TRUE)+
+  annotate(geom="text",label=paste0('r (all) = ',r.beta.all), x=0.01, y=0,hjust = 0,size=3.5)+
+  annotate(geom="text",label=paste0('r (noMHC) = ',r.beta.noMHC), x=0.01, y=-0.01,hjust = 0,size=3.5) +
+  scale_color_manual(values = c("Yes"="gray50", "No"="red"))+
+    xlab("Beta (full sample)")+
+    ylab('Beta (unrelated sample)')
+fig.correlation
+```
+
+#### All figs together
+```{r}
+fig.all =  
+  ggarrange(fig.box_all,fig.correlation,ncol = 2,labels=c('b','c'),widths=c(1.1,1)) %>% 
+  ggarrange(fig.manhattan,.,nrow=2,labels=c('a','b'),heights=c(1.8,1))
+ggsave(file=here::here('Figs/FullSample_Unrelated_comparison.png'),fig.all,units='in',device = 'png',width = 9,height = 7.5)
+fig.all
+```
+
+
+### Detailed investigation on replication analysis
+
+#### Adults (LBC1921+LBC1936+ALSPAC)
+```{r}
+
+ls.mhc.independent = c('cg03270340', 'cg14345882', 'cg10046620', 'cg08116408')
+
+ewasResults.repli=read.delim(here::here('result/EWAS_MDDprs_meta_LBC_ALSPAC/REPmeta_EWAS_MDDprs_pT_5e.08.metal.out1.tbl'),sep='\t',header=T,stringsAsFactors=F) %>%
+  select(CpG=MarkerName,Effect,SE=StdErr,P.Value=P.value,Direction) %>%
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T)
+
+ewas_res.rep.adult = ewasResults.repli %>%
+  mutate(CHR=gsub('chr','',.$CHR)) %>%
+  filter(!is.na(CHR),CHR!='X',CHR!='Y') %>%
+  mutate(CHR=as.numeric(CHR))
+
+GS.ewas = ewas_res.related
+REP.ewas = ewas_res.rep.adult
+
+GS.sig = mutate(GS.ewas,p.adj=p.adjust(P.value,method='bonferroni')) %>%
+  select(CpG=CpG,GS.beta=Effect,GS.std=StdErr,GS.p=P.value,GS.p.adj=p.adj) %>%
+  mutate(GS.beta_se=GS.beta/GS.std)
+REP.match = REP.ewas[REP.ewas$CpG %in% GS.sig$CpG,] %>%
+  select(CpG,REP.beta=Effect,REP.se=SE,REP.p=P.Value) %>%
+  mutate(REP.beta_se=REP.beta/REP.se)
+
+combined.adult = merge(REP.match,GS.sig,by='CpG') %>%
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>%
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR=='chr6','Yes','No')) %>%
+  mutate(is.MHC = factor(is.MHC,levels=c('No','Yes'))) %>%
+  filter(GS.p.adj<0.05) %>% 
+  mutate(is.sign_match = ifelse(REP.beta/GS.beta>0,'Yes','No')) %>% 
+  mutate(is.nominal_sig = ifelse(REP.p<0.05,'Yes','No')) %>% 
+  mutate(is.corr_sig = ifelse(p.adjust(REP.p,method='bonferroni')<0.05,'Yes','No')) %>% 
+  mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni'))
+
+combined.adult.noMHC = combined.adult %>% filter(is.MHC=='No')
+```
+
+**Summary:**
+
+-  Effect sizes of `r combined.adult %>% {sum(.$REP.beta/.$GS.beta>0,na.rm=T)/nrow(.)} %>% {sprintf("%1.1f%%", 100*.)}` of the CpGs remained in the same direction.
+
+-  There were `r combined.adult %>% filter(is.nominal_sig=='Yes',is.sign_match=='Yes') %>% {nrow(.)/nrow(combined.adult)} %>% {sprintf("%1.1f%%", 100*.)}` remained nominally significant and `r combined.adult %>% filter(is.corr_sig=='Yes',is.sign_match=='Yes') %>% {nrow(.)/nrow(combined.adult)} %>% {sprintf("%1.1f%%", 100*.)}` were significant after Bonferroni correction.
+
+-  Looking at the CpGs within and outside of the MHC region separately: (1)  `r combined.adult %>% .[.$CpG %in% ls.mhc.independent,] %>% {sum(.$REP.beta/.$GS.beta>0,na.rm=T)/nrow(.)} %>% {sprintf("%1.1f%%", 100*.)}` remained in the same direction. All four independent CpGs in the MHC region were significantly replicated (p-Bonferroni<`r combined.adult %>% .[.$CpG %in% ls.mhc.independent,] %>% {max(.$REP.p.adj)}`). (2) `r combined.adult %>% filter(is.MHC=='No') %>% {sum(.$REP.beta/.$GS.beta>0,na.rm=T)/nrow(.)} %>% {sprintf("%1.1f%%", 100*.)}` remained in the same direction. `r combined.adult.noMHC %>% filter(is.nominal_sig=='Yes',is.sign_match=='Yes') %>% {nrow(.)/nrow(combined.adult.noMHC)} %>% {sprintf("%1.1f%%", 100*.)}` were nominally significant and `r combined.adult.noMHC %>% filter(is.corr_sig=='Yes',is.sign_match=='Yes') %>% {nrow(.)/nrow(combined.adult.noMHC)} %>% {sprintf("%1.1f%%", 100*.)}` were significant after Bonferroni correction.
+
+
+
+
+#### Adolescents
+```{r}
+ewasResults.repli=read.delim(here::here('result/EWAS_MDDprs_ALSPAC/MDD3_k_5e08_std_sex,age,child_smoke,pc1,pc2,pc3,pc4,pc5,pc6,pc7,pc8,pc9,pc10_houseman_2021-02-12.csv'),sep='\t',header=T,stringsAsFactors=F) %>%
+  select(CpG=probeID,Effect=BETA,SE,P.Value=P_VAL) %>%
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T)
+
+ewas_res.rep.children = ewasResults.repli %>%
+  mutate(CHR=gsub('chr','',.$CHR)) %>%
+  filter(!is.na(CHR),CHR!='X',CHR!='Y') %>%
+  mutate(CHR=as.numeric(CHR))
+
+GS.ewas = ewas_res.related
+REP.ewas = ewas_res.rep.children
+
+GS.sig = mutate(GS.ewas,p.adj=p.adjust(P.value,method='bonferroni')) %>%
+  select(CpG=CpG,GS.beta=Effect,GS.std=StdErr,GS.p=P.value,GS.p.adj=p.adj) %>%
+  mutate(GS.beta_se=GS.beta/GS.std)
+REP.match = REP.ewas[REP.ewas$CpG %in% GS.sig$CpG,] %>%
+  select(CpG,REP.beta=Effect,REP.se=SE,REP.p=P.Value) %>%
+  mutate(REP.beta_se=REP.beta/REP.se)
+
+combined.children = merge(REP.match,GS.sig,by='CpG') %>%
+  merge(.,ref.tomerge,by.x='CpG',by.y='ID',all.x=T) %>%
+  mutate(is.MHC = if_else(MAPINFO>25000000&MAPINFO<35000000&CHR=='chr6','Yes','No')) %>%
+  mutate(is.MHC = factor(is.MHC,levels=c('No','Yes'))) %>%
+  filter(GS.p.adj<0.05) %>% 
+  mutate(is.sign_match = ifelse(REP.beta/GS.beta>0,'Yes','No')) %>% 
+  mutate(is.nominal_sig = ifelse(REP.p<0.05,'Yes','No')) %>% 
+  mutate(is.corr_sig = ifelse(p.adjust(REP.p,method='bonferroni')<0.05,'Yes','No')) %>% 
+  mutate(REP.p.adj = p.adjust(REP.p,method='bonferroni'))
+
+combined.children.noMHC = combined.children %>% filter(is.MHC=='No')
+combined.children.inMHC = combined.children %>% .[.$CpG %in% ls.mhc.independent,]
+
+
+```
+
+**Summary:**
+
+-  Effect sizes of `r combined.children %>% {sum(.$REP.beta/.$GS.beta>0,na.rm=T)/nrow(.)} %>% {sprintf("%1.1f%%", 100*.)}` of the CpGs remained in the same direction.
+
+-  There were `r combined.children %>% filter(is.nominal_sig=='Yes',is.sign_match=='Yes') %>% {nrow(.)/nrow(combined.children)} %>% {sprintf("%1.1f%%", 100*.)}` remained nominally significant and `r combined.children %>% filter(is.corr_sig=='Yes',is.sign_match=='Yes') %>% {nrow(.)/nrow(combined.children)} %>% {sprintf("%1.1f%%", 100*.)}` were significant after Bonferroni correction.
+
+-  Looking at the CpGs within and outside of the MHC region separately: (1)  `r combined.children %>% .[.$CpG %in% ls.mhc.independent,] %>% {sum(.$REP.beta/.$GS.beta>0,na.rm=T)/nrow(.)} %>% {sprintf("%1.1f%%", 100*.)}` remained in the same direction. `r combined.children.inMHC %>% filter(is.corr_sig=='Yes',is.sign_match=='Yes') %>% {nrow(.)/nrow(combined.children.noMHC)} %>% {sprintf("%1.1f%%", 100*.)}` were significant after Bonferroni correction. (2) `r combined.children %>% filter(is.MHC=='No') %>% {sum(.$REP.beta/.$GS.beta>0,na.rm=T)/nrow(.)} %>% {sprintf("%1.1f%%", 100*.)}` remained in the same direction. `r combined.children.noMHC %>% filter(is.nominal_sig=='Yes',is.sign_match=='Yes') %>% {nrow(.)/nrow(combined.children.noMHC)} %>% {sprintf("%1.1f%%", 100*.)}` were nominally significant and `r combined.children.noMHC %>% filter(is.corr_sig=='Yes',is.sign_match=='Yes') %>% {nrow(.)/nrow(combined.children.noMHC)} %>% {sprintf("%1.1f%%", 100*.)}` were significant after Bonferroni correction.
+
+
+#### MR results (prepare sig results table for supple materials)
+```{r godmc}
+ls.measure = c('MDD')
+
+# Load results
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
+names(res)=ls.measure
+
+reorg_fornemat <- function(tmp.res,targetmethod,tmp.trait,pval_col){
+  new.res = tmp.res[[tmp.trait]] %>%
+    filter(.,method==targetmethod) %>%
+     mutate(.,outcome=tmp.trait,p.adj=p.adjust(get(pval_col),method='fdr')) 
+}
+
+ivw.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='Inverse variance weighted',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval)) 
+
+egger.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='MR Egger',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval))
+
+wm.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='Weighted median',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval)) 
+
+mr.res.p = data.frame(exposure=ivw.res$exposure,outcome=ivw.res$outcome,
+                      ivw.padj=ivw.res$p.adj,ivw.p=ivw.res$pval,
+                      mregger.padj=egger.res$p.adj,mregger.p=egger.res$pval,
+                      wm.padj=wm.res$p.adj,wm.p=wm.res$pval) %>%
+  mutate(sig_over2 = if_else(rowSums(select(.,ends_with('.padj'))<0.05)>=2,1,0)) %>% 
+  mutate(sig_over3 = if_else(rowSums(select(.,ends_with('.padj'))<0.05)>=3,1,0))
+mr.res.beta = data.frame(exposure=ivw.res$exposure,outcome=ivw.res$outcome,
+                         ivw.beta=ivw.res$b,
+                      mregger.beta=egger.res$b,wm.beta=wm.res$b) %>%
+  mutate(is.sign.consis = if_else(ivw.beta/mregger.beta>0&ivw.beta/wm.beta>0,1,0))
+
+mr.summary=left_join(mr.res.p,mr.res.beta,by=c('exposure','outcome')) %>%
+  mutate(is.valid = if_else(.$is.sign.consis==1&.$sig_over2==1,1,0)) %>%
+  .[order(.$is.valid,decreasing = T),]
+
+mr.sig = mr.summary #%>%
+  #filter(.,is.valid==1)
+
+QC.table = ivw.res %>%
+  select(outcome,exposure,`Egger intercept`=egger_intercept,`Egger pval`=pval.1,
+         Q,`Q pval`=Q_pval,Nsnp=nsnp)
+
+mr.sig.output = mr.sig %>%
+  select(-is.valid,-sig_over2,-is.sign.consis) %>%
+  left_join(.,QC.table,by=c('exposure','outcome')) %>%
+  .[order(.$exposure,.$outcome),] %>%
+  select(ends_with('beta'),ends_with('.p'),ends_with('.padj'),
+         everything()) %>%
+  select(exposure,outcome,Nsnp,
+         starts_with('ivw'),starts_with('wm'),starts_with('mregger'),
+         everything()) %>%
+  mutate_if(is.numeric, format, digits=3,nsmall = 0)
+
+rownames(mr.sig.output)=NULL
+
+mr.sig.output.tosave = mr.sig.output %>% select(-sig_over3)
+saveRDS(mr.sig.output.tosave,file=here::here('result/GoDMC_MR_DNAm_to_MDD/mr_SigOutput.rds'))
+
+ls.discovery = mr.sig.output[,c('exposure','outcome')]
+```
+
+```{r mr gs dnam to mdd}
+ls.measure = c('MDD')
+
+# Load results
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_',ls.measure,'.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
+names(res)=ls.measure
+
+reorg_fornemat <- function(tmp.res,targetmethod,tmp.trait,pval_col){
+  new.res = tmp.res[[tmp.trait]] %>%
+    filter(.,method==targetmethod) %>%
+     mutate(.,outcome=tmp.trait,p.adj=p.adjust(get(pval_col),method='fdr')) 
+}
+
+ivw.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='Inverse variance weighted',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval)) 
+
+egger.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='MR Egger',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval))
+
+wm.res = as.list(names(res)) %>%
+  lapply(.,reorg_fornemat,tmp.res=res,
+         targetmethod='Weighted median',pval_col='pval') %>%
+  bind_rows %>%
+  mutate(log.p.val=-log10(pval)) 
+
+mr.res.p = data.frame(exposure=ivw.res$exposure,outcome=ivw.res$outcome,
+                      ivw.padj=ivw.res$p.adj,ivw.p=ivw.res$pval,
+                      mregger.padj=egger.res$p.adj,mregger.p=egger.res$pval,
+                      wm.padj=wm.res$p.adj,wm.p=wm.res$pval) %>%
+  mutate(sig_over2 = if_else(rowSums(select(.,ends_with('.padj'))<0.05)>=2,1,0)) %>% 
+  mutate(sig_over3 = if_else(rowSums(select(.,ends_with('.padj'))<0.05)>=3,1,0))
+mr.res.beta = data.frame(exposure=ivw.res$exposure,outcome=ivw.res$outcome,
+                         ivw.beta=ivw.res$b,
+                      mregger.beta=egger.res$b,wm.beta=wm.res$b) %>%
+  mutate(is.sign.consis = if_else(ivw.beta/mregger.beta>0&ivw.beta/wm.beta>0,1,0))
+
+
+mr.summary=left_join(mr.res.p,mr.res.beta,by=c('exposure','outcome')) %>%
+  mutate(is.valid = if_else(.$is.sign.consis==1&.$sig_over2==1,1,0)) %>%
+  .[order(.$is.valid,decreasing = T),]
+
+mr.sig = mr.summary #%>%
+#  filter(.,is.valid==1)
+
+QC.table = ivw.res %>%
+  select(outcome,exposure,`Egger intercept`=egger_intercept,`Egger pval`=pval.1,
+         Q,`Q pval`=Q_pval,Nsnp=nsnp)
+
+mr.sig.output = mr.sig %>%
+  select(-is.valid,-sig_over2,-is.sign.consis) %>%
+  left_join(.,QC.table,by=c('exposure','outcome')) %>%
+  left_join(ls.discovery,.,by=c('exposure','outcome')) %>%
+  .[order(.$exposure,.$outcome),] %>%
+  select(ends_with('beta'),ends_with('.p'),ends_with('.padj'),
+         everything()) %>%
+  select(exposure,outcome,Nsnp,
+         starts_with('ivw'),starts_with('wm'),starts_with('mregger'),
+         everything()) %>%
+  mutate_if(is.numeric, format, digits=3,nsmall = 0)
+
+colnames(mr.sig.output) = colnames(mr.sig.output) %>%
+  gsub('ivw.','',.) %>%
+  gsub('wm.','',.) %>%
+  gsub('mregger.','',.)
+
+rownames(mr.sig.output)=NULL
+
+saveRDS(mr.sig.output,file=here::here('result/GS_MR_DNAm_to_MDD/mr_SigOutput.rds'))
+
+```
+
+```{r mr gs mdd to dnam}
+ls.measure = list.files(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GS_MR_MDD_to_DNAm/'),pattern = 'Summary') %>% 
+  gsub('Summary_MDD_to_','',.) %>% 
+  gsub('.csv','',.)
+
+# Load results
+res = list.files(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GS_MR_MDD_to_DNAm/'),pattern = 'Summary',full.names = T) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>% 
+  bind_rows
+
+reorg_fornemat <- function(tmp.res,targetmethod,pval_col){
+  new.res = tmp.res %>%
+    filter(.,method==targetmethod) %>%
+     mutate(.,p.adj=p.adjust(get(pval_col),method='fdr')) 
+}
+
+ivw.res = reorg_fornemat(tmp.res=res,
+         targetmethod='Inverse variance weighted',pval_col='pval') %>%
+  bind_rows %>%
+  #.[.$outcome %in% ls.discovery$exposure,] %>% 
+  mutate(log.p.val=-log10(pval)) 
+
+egger.res = reorg_fornemat(tmp.res=res,
+         targetmethod='MR Egger',pval_col='pval') %>%
+  bind_rows %>%
+  #  .[.$outcome %in% ls.discovery$exposure,] %>% 
+  mutate(log.p.val=-log10(pval))
+
+wm.res = reorg_fornemat(tmp.res=res,
+         targetmethod='Weighted median',pval_col='pval') %>%
+  bind_rows %>%
+  #  .[.$outcome %in% ls.discovery$exposure,] %>% 
+  mutate(log.p.val=-log10(pval)) 
+
+mr.res.p = data.frame(exposure=ivw.res$exposure,outcome=ivw.res$outcome,
+                      ivw.padj=ivw.res$p.adj,ivw.p=ivw.res$pval,
+                      mregger.padj=egger.res$p.adj,mregger.p=egger.res$pval,
+                      wm.padj=wm.res$p.adj,wm.p=wm.res$pval) %>%
+  mutate(sig_over2 = if_else(rowSums(select(.,ends_with('.padj'))<0.05)>=2,1,0)) %>% 
+  mutate(sig_over3 = if_else(rowSums(select(.,ends_with('.padj'))<0.05)>=3,1,0))
+mr.res.beta = data.frame(exposure=ivw.res$exposure,outcome=ivw.res$outcome,
+                         ivw.beta=ivw.res$b,
+                      mregger.beta=egger.res$b,wm.beta=wm.res$b) %>%
+  mutate(is.sign.consis = if_else(ivw.beta/mregger.beta>0&ivw.beta/wm.beta>0,1,0))
+
+
+mr.summary=left_join(mr.res.p,mr.res.beta,by=c('exposure','outcome')) %>%
+  mutate(is.valid = if_else(.$is.sign.consis==1&.$sig_over2==1,1,0)) %>%
+  .[order(.$is.valid,decreasing = T),]
+
+mr.sig = mr.summary #%>%
+#  filter(.,is.valid==1)
+
+QC.table = ivw.res %>%
+  mutate(pEgger.adj = p.adjust(pval.1,method='fdr')) %>% 
+  mutate(pQ.adj=p.adjust(Q_pval,method='fdr')) %>% 
+  select(outcome,exposure,`Egger intercept`=egger_intercept,`Egger pval`=pval.1,
+         pEgger.adj,
+         Q,`Q pval`=Q_pval,pQ.adj, 
+         Nsnp=nsnp)
+
+mr.sig.output = mr.sig %>%
+  select(-is.valid,-sig_over2,-is.sign.consis) %>%
+  left_join(.,QC.table,by=c('exposure','outcome')) %>%
+  #left_join(.,ls.discovery,by=c('outcome'='exposure')) %>%
+  .[order(.$exposure,.$outcome),] %>%
+  select(ends_with('beta'),ends_with('.p'),ends_with('.padj'),
+         everything()) %>%
+  select(exposure,outcome,Nsnp,
+         starts_with('ivw'),starts_with('wm'),starts_with('mregger'),
+         everything()) %>%
+  mutate_if(is.numeric, format, digits=3,nsmall = 0) 
+
+
+rownames(mr.sig.output)=NULL
+mr.sig.output.tosave=mr.sig.output[,!colnames(mr.sig.output) %in% c('sig_over3','outcome.y')]
+saveRDS(mr.sig.output.tosave,file=here::here('result/GS_MR_MDD_to_DNAm/mr_SigOutput.rds'))
+
+```
+
+```{r mr figure, warning=F,echo=F,message=F}
+p.plot.mr = function(tmp.res,tmp.facetcol='exposure',tmp.ycol='exposure',tmp.title,rm.y=T){
+dat.fig = base::Reduce(function(x,y) rbind(x,y),tmp.res) %>%
+  left_join(mr.sig.output[,c('exposure','outcome')],.,var=c('exposure','outcome')) %>%
+  dplyr::rename(Beta=b,SE=se,Method=method) %>%
+  #.[order(.$pval,decreasing = T),] %>%
+  mutate(ord=1:nrow(.)) 
+if(rm.y==T){
+  fig.p =
+    ggplot(dat.fig, aes(y=reorder(get(tmp.ycol),ord), x=-log10(pval), color=Method)) +
+    geom_point(position=position_dodge(width = 0.1), stat="identity", size=1.3) +
+    #facet_grid(rows = vars(get(tmp.facetcol)))+
+    theme(
+      axis.line.x = element_line(size=0.5),
+      axis.text.x=element_text(size=8), axis.title=element_text(size=9),
+      axis.text.y=element_blank(),
+      axis.ticks.y=element_blank(),
+      axis.title.y=element_blank(),
+      plot.title = element_text(lineheight=1, face="bold", vjust=1, hjust=0.5,size=9),
+      strip.text = element_text(size=8),
+      plot.margin=unit(c(1,1,1,3),'mm')) +
+    scale_colour_hp_d(option = "Ravenclaw", name = "MR method")+
+    #scale_x_discrete(position='top')+
+    geom_vline(xintercept=0,color = "black", size=0.3)+
+    geom_vline(xintercept=-log10(0.05),color = "red",linetype='dashed', size=0.3)+
+    xlab('-log10(p)')+
+    #ylim(0,60)+
+    ggtitle(tmp.title)
+}else{
+  fig.p =
+    ggplot(dat.fig, aes(y=reorder(get(tmp.ycol),ord), x=-log10(pval), color=Method)) +
+    geom_point(position=position_dodge(width = 0.1), stat="identity", size=1.3) +
+    #facet_grid(rows = vars(get(tmp.facetcol)))+
+    theme(
+      axis.line.x = element_line(size=0.5),
+      axis.text = element_text(size=8), axis.title=element_text(size=9),
+      plot.title = element_text(lineheight=1, face="bold", vjust=1, hjust=0.5,size=9),
+      strip.text = element_text(size=8),
+      plot.margin=unit(c(1,1,1,3),'mm')) +
+    #scale_x_discrete(position='bottom')+
+    geom_vline(xintercept=0,color = "black", size=0.3)+
+    geom_vline(xintercept=-log10(0.05),color = "red",linetype='dashed', size=0.3)+
+    scale_colour_hp_d(option = "Ravenclaw", name = "MR method")+
+    xlab('-log10(p)')+
+    ylab('CpG') +
+    #ylim(0,60)+
+    ggtitle(tmp.title)
+}
+ return(fig.p)
+}
+
+# Discovery analysis
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GoDMC_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
+names(res)='MDD'
+mr.sig.output = res[[1]] %>%
+  filter(method=='Inverse variance weighted') %>%
+  .[order(.$pval,decreasing = T),] %>%
+  select(exposure,outcome)
+  
+fig.p.discovery.mr = p.plot.mr(res,tmp.title='DNAm (GoDMC) to MDD',rm.y = F)
+
+# Replication analysis
+res = as.list(paste0('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GS_MR_DNAm_to_MDD/Summary_DNAm_to_MDD.csv')) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F)
+names(res)='MDD'
+fig.p.replication.mr = p.plot.mr(res,tmp.title='DNAm (GS) to MDD',rm.y = T)
+
+# Reversed direction MR
+res = as.list(list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/result/GS_MR_MDD_to_DNAm/',pattern='^Summary',full.names = T)) %>% 
+  lapply(.,FUN=read.csv,header=T,sep='\t',stringsAsFactors = F) %>%
+  lapply(.,dplyr::rename,outcome=exposure,exposure=outcome)
+names(res)=list.files('/gpfs/igmmfs01/eddie/GenScotDepression/shen/ActiveProject/Genetic/result/GS_MR_Brain_to_DNAm/',pattern='^Summary') %>%
+  gsub('Summary_Brain_to_','',.) %>%
+  gsub('.csv','',.)
+fig.p.reverse.mr = p.plot.mr(res,tmp.title='MDD to DNAm (GS)',rm.y = T)
+
+fig.total = ggarrange(fig.p.discovery.mr,legend = 'bottom',
+                      fig.p.replication.mr,fig.p.reverse.mr,ncol=3,widths=c(1.4,1,1),
+                      common.legend = T)
+
+ggsave(fig.total,device = 'png',height=7.3,width = 17,units = 'cm',dpi=300,
+       filename = here::here('Figs/MainText/Fig5.png'))
 
 ```
 

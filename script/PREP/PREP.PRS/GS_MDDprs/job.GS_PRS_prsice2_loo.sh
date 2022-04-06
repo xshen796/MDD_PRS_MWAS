@@ -22,7 +22,7 @@ while read i; do
         result_tag=`echo $i | sed "s/.txt//" | sed "s/ls.SNP_//"`
 
 	bash GS_PRS_prsice2_loo.sh -g /exports/eddie/scratch/xshen33/GS_PRS_loo/data/GS20K_HRC_0.8_GCTA_nodupvar \
-	  -p /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MR_meth_MDD/data/GS_loo_PRS/dummy.MDD.GS \
+	  -p /exports/igmm/eddie/GenScotDepression/shen/ActiveProject/Genetic/MDD_PRS_MWAS/data/GS_loo_PRS/dummy.MDD.GS \
 	  -o  /exports/eddie/scratch/xshen33/GS_PRS_loo/PRS/loo_PRS_${result_tag} \
 	  -s /exports/eddie/scratch/xshen33/GS_PRS_loo/data/ls_SNP/${i}
 
