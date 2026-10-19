@@ -1,4 +1,3 @@
-setwd("/sdata/images/projects/UKBIOBANK/users/Shen/ii.PGRS/IDP_4thrls_20k/pheWAS/result/x.supplementary_materials/LD.results")
 
 ##### load sig hits
 ls.files=list.files(path = '/exports/igmm/eddie/GenScotDepression/shen/SData/STRADL/personal_folder/DNAm_projects/MR_meth_MDD/data/methQTL_GS/LD.results',pattern = 'exposure_dat$')
